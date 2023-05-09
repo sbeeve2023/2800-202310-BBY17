@@ -1,14 +1,24 @@
+
+/** Express */
 const express = require("express");
 const session = require("express-session");
-
-const MongoStore = require("connect-mongo");
-const bcrypt = require("bcrypt");
 const app = express();
-require('dotenv').config();
 app.use(express.json());
-const saltRounds = 12;
+
+/** Mongo */
+const MongoStore = require("connect-mongo");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 
+/** Security */
+const Joi = require("joi");
+const bcrypt = require("bcrypt");
+const saltRounds = 12;
+const sessionExpireTime = 1000 * 60 * 60 * 24 * 7; // 1 week
+require('dotenv').config();
+
+app.set('view engine', 'ejs');
+
+var port = process.env.PORT || 8000;
 const mongodb_user = process.env.MONGODB_USER;
 const mongodb_password = process.env.MONGODB_PASSWORD;
 const mongodb_host = process.env.MONGODB_HOST;
@@ -40,8 +50,21 @@ app.use(session({
 })
 );
 
-var port = process.env.PORT || 8000;
 app.use("/public", express.static("./public"));
+
+////////////////////////////////////////////////////////////////
+// APP ROUTES //////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+app.get("/signup", (req, res) => {
+  res.render("signup");
+});
+
+app.post("/signup-submit", async (req, res) => {
+  res.send("Sign up submit");
+});
+
+
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
