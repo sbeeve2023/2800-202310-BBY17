@@ -26,6 +26,8 @@ const client = new MongoClient(uri, {
   },
 });
 
+
+
 var mongoStore = MongoStore.create({
   mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/sessions`,
   crypto: {
@@ -38,6 +40,10 @@ app.use(session({
   saveUninitialized: true
 })
 );
+
+app.use(express.urlencoded({ extended: true }));
+
+app.set('view engine', 'ejs');
 
 var port = process.env.PORT || 8000;
 app.use("/public", express.static("./public"));
@@ -52,4 +58,8 @@ app.get("/*", (req, res) => {
 
 app.listen(port, () => {
   console.log("Server running on port " + port);
+});
+
+app.get("/test", (req, res) => {
+  res.render("test");
 });

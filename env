@@ -1,0 +1,6 @@
+MONGODB_USER=admin
+MONGODB_PASSWORD=QKBo7OmIxCmapuor
+MONGODB_HOST=cluster0.m5xqrdf.mongodb.net
+MONGODB_SECRET=55c0e2a5-0a6f-40f3-9fa5-64908155d5a5
+MONGODB_DATABASE=mongodb+srv://admin:QKBo7OmIxCmapuor@cluster0.m5xqrdf.mongodb.net/?retryWrites=true&w=majority
+NODE_SESSION_SECRET=f5e2e87e-d7ae-44f7-b3c1-b21617bd586f
