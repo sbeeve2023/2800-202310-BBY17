@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+require("./utils.js");
 
 const MongoStore = require("connect-mongo");
 const bcrypt = require("bcrypt");
@@ -17,8 +18,12 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
+var {database} = include('connections');
+
+// const recipeCollection = database.db(mongodb_database).collection('recipes');
+
 //to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
-const uri = mongodb_database;
+const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -28,11 +33,21 @@ const client = new MongoClient(uri, {
 });
 
 var mongoStore = MongoStore.create({
-  mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/sessions`,
+  mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/?retryWrites=true&w=majority`,
   crypto: {
     secret: mongodb_session_secret,
   },
 });
+
+MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('Connected to MongoDB successfully!');
+  })
+  .catch((error) => {
+    console.log('Error connecting to MongoDB:', error);
+  });
+
+
 app.use(session({
   secret: "secret",
   resave: true,
@@ -45,6 +60,16 @@ app.use("/public", express.static("./public"));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
+});
+
+app.get("/dbtest", (req, res) => {
+  var html = "";
+  var read = recipeCollection.find({}).limit(10).project({name: 1}).toArray();
+
+  for (let i = 0; i < read.length; i++){
+    html += "<p>" + read[i] +"</p>";
+  }
+  res.send(html);
 });
 
 app.get("/*", (req, res) => {
