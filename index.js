@@ -20,7 +20,7 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 var {database} = include('connections');
 
-// const recipeCollection = database.db(mongodb_database).collection('recipes');
+const recipeCollection = database.db(mongodb_database).collection('recipes');
 
 //to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
 const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/?retryWrites=true&w=majority`;
@@ -62,12 +62,13 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/dbtest", (req, res) => {
+app.get("/dbtest", async (req, res) => {
   var html = "";
-  var read = recipeCollection.find({}).limit(10).project({name: 1}).toArray();
+  var read = await recipeCollection.find({}).limit(10).toArray();
+  console.log(read);
 
   for (let i = 0; i < read.length; i++){
-    html += "<p>" + read[i] +"</p>";
+    html += "<p>" + read[i].name +"</p>";
   }
   res.send(html);
 });
