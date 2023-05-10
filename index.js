@@ -89,18 +89,18 @@ app.get("/", async (req, res) => {
 
 //Sign Up
 app.get("/signup", (req, res) => {
+  if(req.session.authenticated){
+    res.redirect("/");
+    return;
+  }
   res.render("signup");
 });
 app.post("/signup-submit", async (req, res) => {
-  console.log(req.body);
   let fname = req.body.firstname;
   let lname = req.body.lastname;
   let username = req.body.username;
   let email = req.body.email;
   let password = req.body.password;
-
-  console.log("Username: " + username);
-  console.log("Email: " + email);
 
   //Validate input
   const schema = Joi.object({
@@ -116,7 +116,6 @@ app.post("/signup-submit", async (req, res) => {
   var userTaken = await userCollection.find({username: username}).toArray();
   var emailTaken = await userCollection.find({email: email}).toArray();
   if(result.error != null || userTaken.length != 0 || emailTaken.length != 0){
-    console.log("Invalid input: " + result.error);
     res.redirect("/signup");
     return;
   }
@@ -140,6 +139,10 @@ app.post("/signup-submit", async (req, res) => {
 
 //Login
 app.get("/login", (req, res) => {
+  if(req.session.authenticated){
+    res.redirect("/");
+    return;
+  }
   var error = req.query.error != null;
   res.render("login", {error: error});
 });
@@ -151,7 +154,6 @@ app.post("/login-submit", async (req, res) => {
   const schema = Joi.string().alphanum().max(30).required()
   const result = schema.validate(username);
   if(result.error != null){
-    console.log("Invalid input: " + result.error)
     res.redirect("/login?error=true");
     return;
   }
@@ -165,6 +167,7 @@ app.post("/login-submit", async (req, res) => {
   //Check if password is correct
   if(await bcrypt.compare(password, findUser.password)){
     //Make a cookie
+    console.log(findUser);
     req.session.authenticated = true;
     req.session.firstname = findUser.firstname;
     req.session.lastname = findUser.lastname;
@@ -177,6 +180,77 @@ app.post("/login-submit", async (req, res) => {
     res.redirect("/login?error=true");
     return;
   }
+});
+
+//Profile
+app.get("/profile", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  res.render("profile", {session: req.session});
+});
+
+//Change Password
+app.get("/change-password", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  res.render("change-password", {error: req.query.error});
+});
+app.post("/change-password-submit", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  var email = req.body.email;
+  var oldPassword = req.body.oldPassword;
+  var newPassword = req.body.newPassword;
+  var newPasswordConfirm = req.body.newPasswordConfirm;
+
+  //Validate input with Joi
+  const schema = Joi.string().email().required();
+  const result = schema.validate(email);
+  if(result.error != null){
+    res.redirect("/change-password?error=email-invalid");
+    return;
+  }
+  //Check if user exists
+  const findUser = await userCollection.findOne({email: email});
+  if(findUser == null){
+    res.redirect("/change-password?error=email-invalid");
+    return;
+  }
+
+  //Check if old password is correct
+  if(!await bcrypt.compare(oldPassword, findUser.password)){
+    res.redirect("/change-password?error=password-incorrect");
+    return;
+  }
+
+   //Check that new pasword does not match old password
+   if(newPassword == oldPassword){
+    res.redirect("/change-password?error=password-same");
+    return;
+   }
+
+  //Check if new passwords match
+  if(newPassword != newPasswordConfirm){
+    res.redirect("/change-password?error=password-mismatch");
+    return;
+  }
+
+  //Update password
+  var hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+  await userCollection.updateOne({email: email}, {$set: {password: hashedPassword}});
+
+  //Confirm Change
+  req.session.destroy();
+  res.redirect("/changed-password");
+});
+  app.get("/changed-password", (req, res) => {
+  res.render("changed-password");
 });
 
 
