@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(10).toArray();
-  console.log(read);
+  // console.log(read);
 
   for (let i = 0; i < read.length; i++){
     html += "<p>" + read[i].name + "<ul>";
@@ -75,9 +75,18 @@ app.get("/dbtest", async (req, res) => {
     ing = ing.replaceAll("]", "");
     ing = ing.split(",");
 
-    for (let j = 0; j < ing.length; j++){
-      console.log();
-      html += "<li>" + ing[j]; + "</li>";
+    for (let g = 0; g < ing.length; g++){
+      html += "<li>" + ing[g] + "</li>";
+    }
+    html += "</ul><ul>"
+    var steps = read[i].steps;
+    steps = steps.replaceAll("'", "");
+    steps = steps.replaceAll("[", "");
+    steps = steps.replaceAll("]", "");
+    steps = steps.split(",");
+
+    for (let s = 0; s < steps.length; s++){
+      html += "<li>" + steps[s] + "</li>";
     }
 
     html += "</ul></p>"
