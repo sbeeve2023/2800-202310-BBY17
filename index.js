@@ -246,8 +246,10 @@ app.post("/change-password-submit", async (req, res) => {
   await userCollection.updateOne({email: email}, {$set: {password: hashedPassword}});
 
   //Confirm Change
-  req.session.destroy();
-  res.redirect("/changed-password");
+  req.session.destroy(()=>{
+    res.redirect("/changed-password");
+  });
+ 
 });
   app.get("/changed-password", (req, res) => {
   res.render("changed-password");
