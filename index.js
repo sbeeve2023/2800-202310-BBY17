@@ -64,8 +64,8 @@ app.get("/", (req, res) => {
 
 app.get("/dbtest", async (req, res) => {
   var html = "";
-  var read = await recipeCollection.find({}).limit(10).toArray();
-  // console.log(read);
+  var read = await recipeCollection.find({}).limit(1).toArray();
+  console.log(read);
 
   for (let i = 0; i < read.length; i++){
     html += "<p>" + read[i].name + "<ul>";
