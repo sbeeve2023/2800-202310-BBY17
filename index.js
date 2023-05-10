@@ -69,7 +69,11 @@ app.get("/dbtest", async (req, res) => {
 
   for (let i = 0; i < read.length; i++){
     html += "<p>" + read[i].name + "<ul>";
-    var ing = JSON.parse(read[i].ingredients)
+    var ing = read[i].ingredients;
+    ing = ing.replaceAll("'", "");
+    ing = ing.replaceAll("[", "");
+    ing = ing.replaceAll("]", "");
+    ing = ing.split(",");
 
     for (let j = 0; j < ing.length; j++){
       console.log();
