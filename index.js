@@ -65,20 +65,20 @@ app.get("/", (req, res) => {
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
-  console.log(read);
+  // console.log(read);
 
   for (let i = 0; i < read.length; i++){
     html += "<p>" + read[i].name + "<ul>";
-    var ing = read[i].ingredients;
-    ing = ing.replaceAll("'", "");
-    ing = ing.replaceAll("[", "");
-    ing = ing.replaceAll("]", "");
-    ing = ing.split(",");
+    var ing = read[i].ingredientArray;
 
     for (let g = 0; g < ing.length; g++){
       html += "<li>" + ing[g] + "</li>";
     }
-    html += "</ul><ul>"
+    html += "</ul>"
+
+    html += "Servings: " + read[i].servings;
+    html += "<br>Serving Size: " + read[i].serving_size;
+    html += "<ul>"
     var steps = read[i].steps;
     steps = steps.replaceAll("'", "");
     steps = steps.replaceAll("[", "");
@@ -91,6 +91,13 @@ app.get("/dbtest", async (req, res) => {
 
     html += "</ul></p>"
   }
+  res.send(html);
+});
+
+app.get("/querytest", async (req, res) => {
+  var html = "";
+var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", " eggs"] } }).limit(10).toArray();
+console.log(read);
   res.send(html);
 });
 
