@@ -6,6 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/public", express.static("./public"));
+//body parser
+const bodyParser = require("body-parser");
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 //EJS
 app.set('view engine', 'ejs');
 
@@ -189,6 +192,18 @@ app.get("/profile", async (req, res) => {
     return;
   }
   res.render("profile", {session: req.session});
+});
+
+//Update Profile
+app.post("/profileUpdate", urlencodedParser, async (req, res) => {
+  let email = req.body.email;
+  let username = req.body.username;
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("users");
+  database.updateMany({email: req.session.email, username: req.session.username}, {$set: {username: username, email: email}});
+  req.session.username = username;
+  req.session.email = email;
+  res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
 
 //Change Password
