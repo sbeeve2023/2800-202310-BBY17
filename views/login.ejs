@@ -1,0 +1,11 @@
+<h3>Log In</h3>
+<form action="/login-submit" method="post">
+  <input type="text" name="username" placeholder="Username" required >
+  <input type="password" name="password" placeholder="Password" required>
+  <button>Log In</button>
+</form>
+<p>
+  <%if(error){%>
+    Username/password combo is incorrect
+  <%}%>
+</p>
