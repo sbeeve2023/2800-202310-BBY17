@@ -1,11 +1,67 @@
 <%- include('templates/header') %>
 
-<h3>Hello</h3>
-<form action="/login">
-  <button>Log In</button>
-</form>
-<form action="/signup">
-  <button>Sign Up</button>
-</form>
+<section class="mb-32 text-gray-800 text-center">
+  <div class="px-6 py-12 md:px-12">
+    <div class="container mx-auto xl:px-32">
+      <div class="grid lg:grid-cols-2 flex items-center">
+        <div class="md:mt-12 lg:mt-0 mb-12 lg:mb-0">
+          <div
+            class="block rounded-lg shadow-lg px-6 py-12 md:px-12 lg:-mr-14"
+            style="background: hsla(0, 0%, 100%, 0.55); backdrop-filter: blur(30px)"
+          >
+            <h1 class="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl">
+              Welcome to MealMatch.
+            </h1>
+            <h2><span class="">From pantry to plate, and easy to make.</span></h2>
+            <br/>
+            <div class="grid md:grid-cols-2 gap-x-6">
+              <div class="mb-12 flex">
+                <div class="inline-flex flex-grow items-center justify-center w-full h-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto bg-blue-100 hover:bg-blue-200 focus:ring-4 focus:ring-gray-100">
+                  <a href="/login" >
+                    Log in
+                  </a>
+                </div>
+              </div>
+              
+
+              <div class="mb-12 flex">
+                <div class="inline-flex flex-grow items-center justify-center w-full h-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto bg-blue-100 hover:bg-blue-200 focus:ring-4 focus:ring-gray-100">
+                  <a href="/signup" >
+                    Sign up
+                  </a>
+                </div>
+              </div>
+              
+
+              <div class="mb-12 flex">
+                <div class="inline-flex flex-grow items-center justify-center w-full h-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-green-300 focus:ring-4 focus:ring-gray-100 bg-green-200">
+                  <a href="/ingredients">
+                    Search by ingredients
+                  </a>
+                </div>
+              </div>
+              
+              <div class="mb-12 flex">
+                <div class="inline-flex flex-grow items-center justify-center w-full h-full px-5 py-3 text-sm font-medium text-center text-gray-900 border border-gray-200 rounded-lg sm:w-auto hover:bg-green-300 focus:ring-4 focus:ring-gray-100 bg-green-200">
+                  <a href="/search">
+                    Search by Recipe
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="md:mb-12 lg:mb-0 hidden lg:block">
+          <img
+            src="/public/chorizo-mozarella-gnocchi-bake-cropped-9ab73a3.jpg"
+            class="w-full rounded-lg shadow-lg"
+            alt=""
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <%- include('templates/footer') %>
