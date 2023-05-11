@@ -318,7 +318,7 @@ app.get("/logout", (req, res) => {
 //Recipe display
 app.get("/recipe", async (req, res) => {
   // var recipeId = new ObjectId(req.query.id);
-  var recipeId = new ObjectId("645c034dda87e30762932e96");
+  var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
   console.log(read);
@@ -329,10 +329,18 @@ app.get("/recipe", async (req, res) => {
   parsingSteps = parsingSteps.replaceAll("'", "");
   parsingSteps = parsingSteps.replaceAll("[", "");
   parsingSteps = parsingSteps.replaceAll("]", "");
-  recipeSteps = parsingSteps.split(",");
-  console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps);
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  recipeSteps = parsingSteps.split(".,");
+  parsingTerms = read[0].search_terms;
+  parsingTerms = parsingTerms.replaceAll("'", "");
+  parsingTerms = parsingTerms.replaceAll("{", "");
+  parsingTerms = parsingTerms.replaceAll("}", "");
+  parsingTerms = parsingTerms.replaceAll("\"", "");
+  recipeTerms = parsingTerms.split(",");
+  console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
+  console.log(typeof recipeTerms);
 
-  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps});
+  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms});
 });
 
 //Databsetest path
