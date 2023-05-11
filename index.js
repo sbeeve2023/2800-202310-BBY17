@@ -315,6 +315,7 @@ app.get("/logout", (req, res) => {
 app.get("/recipe", async (req, res) => {
   // var recipeId = new ObjectId(req.query.id);
   var recipeId = new ObjectId("645c0359da87e30762935715");
+  //Query and parse parts of the recipe
   var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
   recipeName = read[0].name;
   recipeIngList = read[0].ingredientArray;
