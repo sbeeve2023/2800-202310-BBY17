@@ -323,24 +323,34 @@ app.get("/recipe", async (req, res) => {
   var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
   console.log(read);
   recipeName = read[0].name;
-  recipeIngList = read[0].ingredientArray;
-  recipeServings = read[0].servings;
+  //IngredientsArray
+  var recipeIngList = read[0].ingredients_raw_str;
+  recipeIngList = recipeIngList.replaceAll("'", "");
+  recipeIngList = recipeIngList.replaceAll("[", "");
+  recipeIngList = recipeIngList.replaceAll("]", "");
+  recipeIngList = recipeIngList.replaceAll("\"", "");
+  recipeIngList = recipeIngList.split(",");
+
+  var recipeServings = read[0].servings;
+  var recipeSize = read[0].serving_size;
+  //Instructions Array
   parsingSteps = read[0].steps;
   parsingSteps = parsingSteps.replaceAll("'", "");
   parsingSteps = parsingSteps.replaceAll("[", "");
   parsingSteps = parsingSteps.replaceAll("]", "");
   parsingSteps = parsingSteps.replaceAll("\"", "");
-  recipeSteps = parsingSteps.split(".,");
-  parsingTerms = read[0].search_terms;
+  var recipeSteps = parsingSteps.split(".,");
+  //Search Terms Array
+  var parsingTerms = read[0].search_terms;
   parsingTerms = parsingTerms.replaceAll("'", "");
   parsingTerms = parsingTerms.replaceAll("{", "");
   parsingTerms = parsingTerms.replaceAll("}", "");
   parsingTerms = parsingTerms.replaceAll("\"", "");
-  recipeTerms = parsingTerms.split(",");
+  var recipeTerms = parsingTerms.split(",");
   console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
   console.log(typeof recipeTerms);
 
-  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms});
+  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms, size: recipeSize});
 });
 
 //Databsetest path
