@@ -191,6 +191,35 @@ app.post("/login-submit", async (req, res) => {
   }
 });
 
+//Search for recipes in the database test
+app.get("/search", async (req, res) => {
+  let search = req.query.search;
+  let recipes = false;
+  if (search) {
+    await client.connect();
+    const database = await client.db(mongodb_database).collection("recipes");
+    recipes = await database.find({ingredientArray: {"$regex": search}}).limit(5).toArray();
+  }
+  let times = [];
+  for (let i = 0; i < recipes.length; i++) {
+    timeCurrent = recipes[i].tags;
+    timeCurrent = timeCurrent.replaceAll("'", "");
+    timeCurrent = timeCurrent.replaceAll("[", "");
+    timeCurrent = timeCurrent.replaceAll("]", "");
+    timeCurrent = timeCurrent.split(",");
+    for (let i = timeCurrent.length - 1; i >=  0; i--) {
+      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours") ) {
+        timeCurrent.splice(i,1);
+      }
+    }
+    times.push(timeCurrent);
+  }
+  
+  
+
+  res.render("search", {recipes: recipes, session: req.session, times : times});
+});
+
 //Profile
 app.get("/profile", async (req, res) => {
   if(!req.session.authenticated){
