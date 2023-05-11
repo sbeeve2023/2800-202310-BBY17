@@ -96,8 +96,9 @@ app.get("/dbtest", async (req, res) => {
 
 app.get("/querytest", async (req, res) => {
   var html = "";
-var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", " eggs"] } }).limit(10).toArray();
-console.log(read);
+  var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", "eggs"] } }).limit(5).toArray();
+  console.log(read);
+  html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
 
