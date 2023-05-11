@@ -10,6 +10,9 @@ app.use('/styles', express.static('styles'));
 //EJS
 app.set('view engine', 'ejs');
 
+//tailwind
+const tailwindcss = require("tailwindcss");
+
 //Security
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
@@ -87,6 +90,10 @@ app.get("/", async (req, res) => {
   res.render("landing-loggedin", {username: user.username});
 });
 
+app.get("/recipe", async (req, res) => {
+  res.render("recipe");
+});
+
 
 //Sign Up
 app.get("/signup", (req, res) => {
@@ -140,6 +147,7 @@ app.post("/signup-submit", async (req, res) => {
 
 //Login
 app.get("/login", (req, res) => {
+
   if(req.session.authenticated){
     res.redirect("/");
     return;
@@ -147,6 +155,7 @@ app.get("/login", (req, res) => {
   var error = req.query.error != null;
   res.render("login", {error: error});
 });
+
 app.post("/login-submit", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
