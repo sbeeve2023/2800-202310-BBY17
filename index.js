@@ -15,6 +15,9 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 //EJS
 app.set('view engine', 'ejs');
 
+//tailwind
+const tailwindcss = require("tailwindcss");
+
 //Security
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
@@ -26,6 +29,7 @@ require('dotenv').config();
 //Mongo 
 const MongoStore = require("connect-mongo");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { ObjectId } = require('mongodb');
 var port = process.env.PORT || 8000;
 //ENV Variables
 const mongodb_user = process.env.MONGODB_USER;
@@ -95,7 +99,6 @@ app.get("/", async (req, res) => {
   res.render("landing-loggedin", {username: req.session.username});
 });
 
-
 //Sign Up
 app.get("/signup", (req, res) => {
   if(req.session.authenticated){
@@ -148,6 +151,7 @@ app.post("/signup-submit", async (req, res) => {
 
 //Login
 app.get("/login", (req, res) => {
+
   if(req.session.authenticated){
     res.redirect("/");
     return;
@@ -155,6 +159,7 @@ app.get("/login", (req, res) => {
   var error = req.query.error != null;
   res.render("login", {error: error});
 });
+
 app.post("/login-submit", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
@@ -189,6 +194,35 @@ app.post("/login-submit", async (req, res) => {
     res.redirect("/login?error=true");
     return;
   }
+});
+
+//Search for recipes in the database test
+app.get("/search", async (req, res) => {
+  let search = req.query.search;
+  let recipes = false;
+  if (search) {
+    await client.connect();
+    const database = await client.db(mongodb_database).collection("recipes");
+    recipes = await database.find({ingredientArray: {"$regex": search}}).limit(5).toArray();
+  }
+  let times = [];
+  for (let i = 0; i < recipes.length; i++) {
+    timeCurrent = recipes[i].tags;
+    timeCurrent = timeCurrent.replaceAll("'", "");
+    timeCurrent = timeCurrent.replaceAll("[", "");
+    timeCurrent = timeCurrent.replaceAll("]", "");
+    timeCurrent = timeCurrent.split(",");
+    for (let i = timeCurrent.length - 1; i >=  0; i--) {
+      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours") ) {
+        timeCurrent.splice(i,1);
+      }
+    }
+    times.push(timeCurrent);
+  }
+  
+  
+
+  res.render("search", {recipes: recipes, session: req.session, times : times});
 });
 
 //Profile
@@ -310,8 +344,46 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
+//Recipe display
+app.get("/recipe", async (req, res) => {
+  var recipeId = new ObjectId(req.query.id);
+  console.log(recipeId);
+  // var recipeId = new ObjectId("645c034dda87e30762932eb4");
+  //Query and parse parts of the recipe
+  var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
+  console.log(read);
+  recipeName = read[0].name;
+  //IngredientsArray
+  var recipeIngList = read[0].ingredients_raw_str;
+  recipeIngList = recipeIngList.replaceAll("'", "");
+  recipeIngList = recipeIngList.replaceAll("[", "");
+  recipeIngList = recipeIngList.replaceAll("]", "");
+  recipeIngList = recipeIngList.replaceAll("\"", "");
+  recipeIngList = recipeIngList.split(",");
 
-//404
+  var recipeServings = read[0].servings;
+  var recipeSize = read[0].serving_size;
+  //Instructions Array
+  parsingSteps = read[0].steps;
+  parsingSteps = parsingSteps.replaceAll("'", "");
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  var recipeSteps = parsingSteps.split(".,");
+  //Search Terms Array
+  var parsingTerms = read[0].search_terms;
+  parsingTerms = parsingTerms.replaceAll("'", "");
+  parsingTerms = parsingTerms.replaceAll("{", "");
+  parsingTerms = parsingTerms.replaceAll("}", "");
+  parsingTerms = parsingTerms.replaceAll("\"", "");
+  var recipeTerms = parsingTerms.split(",");
+  console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
+  console.log(typeof recipeTerms);
+
+  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms, size: recipeSize});
+});
+
+//Databsetest path
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
@@ -344,6 +416,7 @@ app.get("/dbtest", async (req, res) => {
   res.send(html);
 });
 
+//Ingredient Query test path
 app.get("/querytest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", "eggs"] } }).limit(5).toArray();
@@ -352,6 +425,7 @@ app.get("/querytest", async (req, res) => {
   res.send(html);
 });
 
+//404
 app.get("/*", (req, res) => {
   res.send("404, page not found");
 });
