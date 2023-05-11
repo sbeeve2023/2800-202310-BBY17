@@ -18,7 +18,7 @@ const mongodb_database = process.env.MONGODB_DATABASE;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
 //to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
-const uri = mongodb_database;
+const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -49,8 +49,14 @@ app.set('view engine', 'ejs');
 var port = process.env.PORT || 8000;
 app.use("/public", express.static("./public"));
 
+app.use('/styles', express.static('styles'));
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
+});
+
+app.get("/test", (req, res) => {
+  res.render("test");
 });
 
 app.get("/*", (req, res) => {
@@ -61,6 +67,3 @@ app.listen(port, () => {
   console.log("Server running on port " + port);
 });
 
-app.get("/test", (req, res) => {
-  res.render("test");
-});
