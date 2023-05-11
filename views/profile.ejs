@@ -1,3 +1,24 @@
 <h3>Profile</h3>
-<div><%=session.username%></div>
+<div>Welcome, <%=session.firstname%></div>
+
+<form action="/profileUpdate" method="post">
+    <fieldset id="editable" disabled="true">
+    <input type="text" name="email" value="<%=session.email%>" />
+    <input type="text" name="username" value="<%=session.username%>"" />
+    <input type="submit" value="Update" onclick="return confirm('Are you sure?')" />
+    </fieldset>
+</form>
+<button id="edit">Edit Username</button>
+<form action="/dietEdit">
+<button id="diet">Edit Dietary Restriction</button>
+</form>
 <form action="/change-password"><button>Change Password</button></form>
+<script>
+    document.getElementById("edit").addEventListener("click", function () {
+        if (document.getElementById("editable").disabled == true) {
+            document.getElementById("editable").disabled = false;
+        } else {
+            document.getElementById("editable").disabled = true;
+        }
+    });
+</script>
