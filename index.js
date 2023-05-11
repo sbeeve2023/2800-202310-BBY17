@@ -2,6 +2,10 @@
 //Express
 const express = require("express");
 const session = require("express-session");
+require("./utils.js");
+
+const MongoStore = require("connect-mongo");
+const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -38,8 +42,12 @@ var mongoStore = MongoStore.create({
   },
 });
 
-//to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
 const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
+var {database} = include('connections');
+
+const recipeCollection = database.db(mongodb_database).collection('recipes');
+
+//to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -265,6 +273,46 @@ app.get("/logout", (req, res) => {
 
 
 //404
+app.get("/dbtest", async (req, res) => {
+  var html = "";
+  var read = await recipeCollection.find({}).limit(1).toArray();
+  // console.log(read);
+
+  for (let i = 0; i < read.length; i++){
+    html += "<p>" + read[i].name + "<ul>";
+    var ing = read[i].ingredientArray;
+
+    for (let g = 0; g < ing.length; g++){
+      html += "<li>" + ing[g] + "</li>";
+    }
+    html += "</ul>"
+
+    html += "Servings: " + read[i].servings;
+    html += "<br>Serving Size: " + read[i].serving_size;
+    html += "<ul>"
+    var steps = read[i].steps;
+    steps = steps.replaceAll("'", "");
+    steps = steps.replaceAll("[", "");
+    steps = steps.replaceAll("]", "");
+    steps = steps.split(",");
+
+    for (let s = 0; s < steps.length; s++){
+      html += "<li>" + steps[s] + "</li>";
+    }
+
+    html += "</ul></p>"
+  }
+  res.send(html);
+});
+
+app.get("/querytest", async (req, res) => {
+  var html = "";
+  var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", "eggs"] } }).limit(5).toArray();
+  console.log(read);
+  html += read[0].name + read[1].name + read[2].name;
+  res.send(html);
+});
+
 app.get("/*", (req, res) => {
   res.send("404, page not found");
 });
