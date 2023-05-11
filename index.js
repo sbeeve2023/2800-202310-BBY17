@@ -4,13 +4,14 @@ const express = require("express");
 const session = require("express-session");
 require("./utils.js");
 
-const MongoStore = require("connect-mongo");
-const bcrypt = require("bcrypt");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/public", express.static("./public"));
 app.use('/styles', express.static('styles'));
+//body parser
+const bodyParser = require("body-parser");
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 //EJS
 app.set('view engine', 'ejs');
 
@@ -43,9 +44,7 @@ var mongoStore = MongoStore.create({
 });
 
 const uri = `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/${mongodb_database}`;
-var {database} = include('connections');
 
-const recipeCollection = database.db(mongodb_database).collection('recipes');
 
 //to connect to the database do  await client.connect() and then  await client.db("database_name") to get the database
 const client = new MongoClient(uri, {
@@ -69,6 +68,7 @@ async function connectToDatabase() {
 connectToDatabase();
 const database = client.db(mongodb_database);
 const userCollection = database.collection("users");
+const recipeCollection = database.collection('recipes');
 
 //Enables Cookies in Express
 app.use(session({
@@ -92,7 +92,7 @@ app.get("/", async (req, res) => {
   }
 
   var user = await userCollection.findOne({username: req.session.username});
-  res.render("landing-loggedin", {username: user.username});
+  res.render("landing-loggedin", {username: req.session.username});
 });
 
 
@@ -198,6 +198,45 @@ app.get("/profile", async (req, res) => {
     return;
   }
   res.render("profile", {session: req.session});
+});
+
+//Change the dietary restrictions
+app.get("/dietEdit", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  res.render("dietEdit", {session: req.session});
+});
+
+//Update the dietary restrictions
+app.post("/dietUpdate", urlencodedParser, async (req, res) => {
+  let diet = req.body.diet;
+  console.log(diet, req.session.email, req.session.username);
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("users");
+  database.findOneAndUpdate({
+      email: req.session.email, 
+      username: req.session.username
+    }, 
+    {"$set": 
+        {diet: diet}
+    });
+  
+  req.session.diet = diet;
+  res.send("Diet Updated <a href='/profile'>Go Back</a>")
+});
+
+//Update Profile
+app.post("/profileUpdate", urlencodedParser, async (req, res) => {
+  let email = req.body.email;
+  let username = req.body.username;
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("users");
+  database.updateMany({email: req.session.email, username: req.session.username}, {$set: {username: username, email: email}});
+  req.session.username = username;
+  req.session.email = email;
+  res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
 
 //Change Password
