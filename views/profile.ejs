@@ -1,13 +1,16 @@
+<%- include('templates/header') %>
+
 <h3>Profile</h3>
 <div>Welcome, <%=session.firstname%></div>
-
+<div>
 <form action="/profileUpdate" method="post">
     <fieldset id="editable" disabled="true">
-    <input type="text" name="email" value="<%=session.email%>" />
-    <input type="text" name="username" value="<%=session.username%>"" />
+    <input type="text" name="email" value="<%=session.email%>" class="border-solid border-white border-8"/>
+    <input type="text" name="username" value="<%=session.username%>" />
     <input type="submit" value="Update" onclick="return confirm('Are you sure?')" />
     </fieldset>
 </form>
+</div>
 <button id="edit">Edit Username</button>
 <form action="/dietEdit">
 <button id="diet">Edit Dietary Restriction</button>
@@ -22,3 +25,4 @@
         }
     });
 </script>
+<%- include('templates/footer') %>
