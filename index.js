@@ -99,11 +99,6 @@ app.get("/", async (req, res) => {
   res.render("landing-loggedin", {username: req.session.username});
 });
 
-app.get("/recipe", async (req, res) => {
-  res.render("recipe");
-});
-
-
 //Sign Up
 app.get("/signup", (req, res) => {
   if(req.session.authenticated){
@@ -323,9 +318,10 @@ app.get("/logout", (req, res) => {
 //Recipe display
 app.get("/recipe", async (req, res) => {
   // var recipeId = new ObjectId(req.query.id);
-  var recipeId = new ObjectId("645c0359da87e30762935715");
+  var recipeId = new ObjectId("645c034dda87e30762932e96");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
+  console.log(read);
   recipeName = read[0].name;
   recipeIngList = read[0].ingredientArray;
   recipeServings = read[0].servings;

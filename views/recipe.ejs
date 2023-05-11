@@ -3,11 +3,11 @@
 <div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-beige-50">
   <!-- Recipe Title and Subtitle -->
   <div class="mb-4">
-    <h1 class="text-3xl font-bold">Recipe Name</h1>
+    <h1 class="text-3xl font-bold"><%= name %></h1>
     <div class="border-b-2 my-4"></div>
     <p class="text-gray-600 mb-2"><strong>Review:</strong> 4.5/5</p>
     <p class="text-gray-600 mb-2"><strong>Prep/Cook Time:</strong> 30 minutes</p>
-    <p class="text-gray-600 mb-2"><strong>Portion Size:</strong> 4 servings</p>
+    <p class="text-gray-600 mb-2"><strong>Portion Size:</strong> <%= servings %> servings</p>
     <div class="border-b-2 my-4"></div>
   </div>
   
@@ -51,19 +51,18 @@
   <div class="mb-8">
     <h2 class="text-xl font-bold mb-4">Ingredients</h2>
     <ul>
-
-        <li class="mb-2">Ingredient 1</li>
-        <li class="mb-2">Ingredient 2</li>
+        <% for (var i = 0; i < ingredients.length; i++) { %>
+        <li class="mb-2"><%= ingredients[i] %></li>
+        <% }%>
     </ul>
   </div>
 
   <!-- Box 3: Instructions -->
   <div>
     <h2 class="text-xl font-bold mb-4">Instructions</h2>
-
-      <p class="mb-4"><strong>1</strong>Step 1</p>
-      <p class="mb-4"><strong>2</strong>Step 2</p>
-
+        <% for (var j = 0; j < steps.length; j++) { %>
+      <p class="mb-4"><strong><%= j+1 %> </strong><%= steps[j] %></p>
+      <% } %>
   </div>
 </div>
 
