@@ -317,8 +317,9 @@ app.get("/logout", (req, res) => {
 
 //Recipe display
 app.get("/recipe", async (req, res) => {
-  // var recipeId = new ObjectId(req.query.id);
-  var recipeId = new ObjectId("645c034dda87e30762932eb4");
+  var recipeId = new ObjectId(req.query.id);
+  console.log(recipeId);
+  // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
   console.log(read);
