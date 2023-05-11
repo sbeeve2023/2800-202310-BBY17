@@ -86,7 +86,7 @@ app.get("/", async (req, res) => {
   }
 
   var user = await userCollection.findOne({username: req.session.username});
-  res.render("landing-loggedin", {username: user.username});
+  res.render("landing-loggedin", {username: req.session.username});
 });
 
 
@@ -192,6 +192,33 @@ app.get("/profile", async (req, res) => {
     return;
   }
   res.render("profile", {session: req.session});
+});
+
+//Change the dietary restrictions
+app.get("/dietEdit", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  res.render("dietEdit", {session: req.session});
+});
+
+//Update the dietary restrictions
+app.post("/dietUpdate", urlencodedParser, async (req, res) => {
+  let diet = req.body.diet;
+  console.log(diet, req.session.email, req.session.username);
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("users");
+  database.findOneAndUpdate({
+      email: req.session.email, 
+      username: req.session.username
+    }, 
+    {"$set": 
+        {diet: diet}
+    });
+  
+  req.session.diet = diet;
+  res.send("Diet Updated <a href='/profile'>Go Back</a>")
 });
 
 //Update Profile
