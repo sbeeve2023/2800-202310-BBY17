@@ -26,6 +26,7 @@ require('dotenv').config();
 //Mongo 
 const MongoStore = require("connect-mongo");
 const { MongoClient, ServerApiVersion } = require("mongodb");
+const { ObjectId } = require('mongodb');
 var port = process.env.PORT || 8000;
 //ENV Variables
 const mongodb_user = process.env.MONGODB_USER;
@@ -310,8 +311,25 @@ app.get("/logout", (req, res) => {
   res.redirect("/");
 });
 
+//Recipe display
+app.get("/recipe", async (req, res) => {
+  // var recipeId = new ObjectId(req.query.id);
+  var recipeId = new ObjectId("645c0359da87e30762935715");
+  var read = await recipeCollection.find({_id: recipeId}).limit(1).toArray();
+  recipeName = read[0].name;
+  recipeIngList = read[0].ingredientArray;
+  recipeServings = read[0].servings;
+  parsingSteps = read[0].steps;
+  parsingSteps = parsingSteps.replaceAll("'", "");
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  recipeSteps = parsingSteps.split(",");
+  console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps);
 
-//404
+  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps});
+});
+
+//Databsetest path
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
@@ -344,6 +362,7 @@ app.get("/dbtest", async (req, res) => {
   res.send(html);
 });
 
+//Ingredient Query test path
 app.get("/querytest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({ ingredientArray: { $all: ["sugar", "eggs"] } }).limit(5).toArray();
@@ -352,6 +371,7 @@ app.get("/querytest", async (req, res) => {
   res.send(html);
 });
 
+//404
 app.get("/*", (req, res) => {
   res.send("404, page not found");
 });
