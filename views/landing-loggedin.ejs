@@ -1,5 +1,22 @@
 <%- include('templates/header') %>
 <h3>Hello, <%=username%>!</h3>
+<div id="search-area"></div>
+<div id="recent-recipes-area">
+  <label class="text-gray-700" for="recipe-scroll">Recent Recipes</label>
+  <div id="recipe-scroll" class="overflow-x-scroll flex bg-gray-700 max-w-0">
+    <!-- Item -->
+    <div class="flex-none min-h-[20vh] bg-black">
+      <img class="h-10r" src="https://picsum.photos/200/200" alt="Recipe Image"/>
+    </div>
+    
+    
+
+
+  </div>
+  <div id="recent-recipes"></div>
+</div>
+
 <form action="/logout">
-<button>Log Out</button>
+  <button>Log Out</button>
+</form>
 <%- include('templates/footer') %>
