@@ -1,13 +1,24 @@
 <%- include('templates/header') -%>
     <p>seperate the ingredients by commas(,)</p>
-    <form onsubmit="addItem(); return false;">
+    <form>
         <input id="ingredient" type="text" name="search" placeholder="Enter an ingredient" />
-        <input type="submit" value="Search" />
+        <input type="button" value="Search" id="addBtn"/>
     </form>
-    <div id="list">
-
-    </div>
-
+    <div id="list" style="display: flex; justify-content: space-between; width: 25%; flex-wrap: wrap;"></div>
+    <script>
+        document.getElementById("addBtn").addEventListener("click", 
+        function () {
+            var textBox = document.getElementById("ingredient");
+            var item = textBox.value;
+            var newBox = document.createElement("span");
+            newBox.setAttribute("name", item);
+            newBox.innerHTML += item;
+            document.getElementById("list").appendChild(newBox);
+        });
+    </script>
+    <form action="/searchIngredients">
+        
+    </form>
     <% if (recipes) { %>
         <h3>Recipes</h3>
         <% for (let i=0; i < recipes.length; i++) { %>
@@ -41,15 +52,5 @@
                     </svg>
                 </a>
             </div>
-            <script>
-                function addItem() {
-                    var textBox = document.getElementById("ingredient");
-                    var item = textBox.value;
-                    var newBox = document.createElement("span");
-                    newBox.setAttribute("name", item);
-                    newBox.innerHTML += item;
-                    document.getElementById("list").appendChild(newBox);
-                }
-            </script>
             <% }} %>
                 <%- include('templates/footer') -%>
