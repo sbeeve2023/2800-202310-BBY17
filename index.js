@@ -82,6 +82,16 @@ app.use(session({
 })
 );
 
+
+//middleware to check if user is logged in
+const sessionValidation = (req, res, next) => {
+  res.locals.validSession = req.session.authenticated;
+ next();
+};
+
+// Attach middleware function to the app
+app.use(sessionValidation);
+
 ////////////////////////////////////////////////////////////////
 // APP ROUTES //////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
