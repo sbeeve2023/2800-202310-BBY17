@@ -1,45 +1,173 @@
-<form action="/dietUpdate" method="post">
-<input type="checkbox" name="diet" value="vegetarian">Vegetarian<br>
-<input type="checkbox" name="diet" value="vegan">Vegan<br>
-<input type="checkbox" name="diet" value="gluten-free">Gluten-Free<br>
-<input type="checkbox" name="diet" value="dairy-free">Dairy-Free<br>
-<input type="checkbox" name="diet" value="nut-free">Nut-Free<br>
-<input type="checkbox" name="diet" value="kosher">Kosher<br>
-<input type="checkbox" name="diet" value="halal">Halal<br>
-<input type="checkbox" name="diet" value="pescatarian">Pescatarian<br>
-<input type="checkbox" name="diet" value="paleo">Paleo<br>
-<input type="checkbox" name="diet" value="low-sodium">Low-Sodium<br>
-<input type="checkbox" name="diet" value="low-carb">Low-Carb<br>
-<input type="checkbox" name="diet" value="low-fat">Low-Fat<br>
-<input type="checkbox" name="diet" value="low-sugar">Low-Sugar<br>
-<input type="checkbox" name="diet" value="organic">Organic<br>
-<input type="checkbox" name="diet" value="raw">Raw<br>
-<input type="checkbox" name="diet" value="whole30">Whole30<br>
-<input type="checkbox" name="diet" value="keto">Keto<br>
-<input type="checkbox" name="diet" value="mediterranean">Mediterranean<br>
-<input type="checkbox" name="diet" value="south-beach">South Beach<br>
-<input type="checkbox" name="diet" value="weight-watchers">Weight Watchers<br>
-<input type="checkbox" name="diet" value="fodmap-friendly">FODMAP Friendly<br>
-<input type="checkbox" name="diet" value="anti-inflammatory">Anti-Inflammatory<br>
-<input type="checkbox" name="diet" value="dairy-free">Dairy-Free<br>
-<input type="checkbox" name="diet" value="egg-free">Egg-Free<br>
-<input type="checkbox" name="diet" value="fish-free">Fish-Free<br>
-<input type="checkbox" name="diet" value="low-fodmap">Low-FODMAP<br>
-<input type="checkbox" name="diet" value="pork-free">Pork-Free<br>
-<input type="checkbox" name="diet" value="red-meat-free">Red Meat-Free<br>
-<input type="checkbox" name="diet" value="sesame-free">Sesame-Free<br>
-<input type="checkbox" name="diet" value="shellfish-free">Shellfish-Free<br>
-<input type="checkbox" name="diet" value="soy-free">Soy-Free<br>
-<input type="checkbox" name="diet" value="sugar-conscious">Sugar-Conscious<br>
-<input type="checkbox" name="diet" value="tree-nut-free">Tree Nut-Free<br>
-<input type="checkbox" name="diet" value="wheat-free">Wheat-Free<br>
-<input type="checkbox" name="diet" value="alcohol-free">Alcohol-Free<br>
-<input type="checkbox" name="diet" value="immuno-supportive">Immuno-Supportive<br>
-<input type="checkbox" name="diet" value="celery-free">Celery-Free<br>
-<input type="checkbox" name="diet" value="crustacean-free">Crustacean-Free<br>
-<input type="checkbox" name="diet" value="lupine-free">Lupine-Free<br>
-<button type="submit">Save</button>
+<%- include('templates/header') %>
+
+<h3 class="text-lg font-semibold text-gray-700 capitalize dark:text-white justify-center mb-4">Dietary Preferences</h3>
+
+<hr>
+
+<form action="/dietUpdate" method="post" class="mt-4">
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="vegetarian">
+            <label for="vegetarian">Vegetarian</label>
+        </div>
+        <div class="flex items-center">        
+            <input type="checkbox" name="diet" value="vegan">
+            <label for="vegan">Vegan</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="gluten-free">
+            <label for="gluten-free">Gluten-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="dairy-free">
+            <label for="dairy-free">Dairy-Free</label>
+        </div>
+        <div class="flex items-center">     
+            <input type="checkbox" name="diet" value="nut-free">
+            <label for="nut-free">Nut-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="kosher">
+            <label for="kosher">Kosher</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="halal">
+            <label for="halal">Halal</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="pescatarian">
+            <label for="pescatarian">Pescatarian</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="paleo">
+            <label for="paleo">Paleo</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="low-sodium">
+            <label for="low-sodium">Low-Sodium</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="low-carb">
+            <label for="low-carb">Low-Carb</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="low-fat">
+            <label for="low-fat">Low-Fat</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="low-sugar">
+            <label for="low-sugar">Low-Sugar</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="organic">
+            <label for="organic">Organic</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="raw">
+            <label for="raw">Raw</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="whole30">
+            <label for="whole30">Whole30</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="keto">
+            <label for="keto">Keto</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="mediterranean">
+            <label for="mediterranean">Mediterranean</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="south-beach">
+            <label for="south-beach">South Beach</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="weight-watchers">
+            <label for="weight-watchers">Weight Watchers</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="fodmap-friendly">
+            <label for="fodmap-friendly">FODMAP Friendly</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="anti-inflammatory">
+            <label for="anti-inflammatory">Anti-Inflammatory</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="dairy-free">
+            <label for="dairy-free">Dairy-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="egg-free">
+            <label for="egg-free">Egg-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="fish-free">
+            <label for="fish-free">Fish-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="low-fodmap">
+            <label for="low-fodmap">Low-FODMAP</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="pork-free">
+            <label for="pork-free">Pork-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="red-meat-free">
+            <label for="red-meat-free">Red Meat-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="sesame-free">
+            <label for="sesame-free">Sesame-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="shellfish-free">
+            <label for="shellfish-free">Shellfish-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="soy-free">
+            <label for="soy-free">Soy-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="sugar-conscious">
+            <label for="sugar-conscious">Sugar-Conscious</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="tree-nut-free">
+            <label for="tree-nut-free">Tree Nut-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="wheat-free">
+            <label for="wheat-free">Wheat-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="alcohol-free">
+            <label for="alcohol-free">Alcohol-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="immuno-supportive">
+            <label for="immuno-supportive">Immuno-Supportive</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="celery-free">
+            <label for="celery-free">Celery-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="crustacean-free">
+            <label for="crustacean-free">Crustacean-Free</label>
+        </div>
+        <div class="flex items-center">
+            <input type="checkbox" name="diet" value="lupine-free">
+            <label for="lupine-free">Lupine-Free</label>
+        </div>
+    </div>
+    <div class="text-center mt-4">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Save</button>
+        <a href="/profile" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Return to profile</a>
+    </div>
+
 </form>
-<form action="/profile">
-<button>Close</button>
-</form>
+
+<%- include('templates/footer') %>
