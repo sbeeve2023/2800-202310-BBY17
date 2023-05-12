@@ -225,6 +225,36 @@ app.get("/search", async (req, res) => {
   res.render("search", {recipes: recipes, session: req.session, times : times});
 });
 
+//Search for recipes using a list of ingredients.
+app.get("/searchIngredients", async (req, res) => {
+  let search = req.query.search;
+  let recipes = false;
+  if (search) {
+    const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
+    await client.connect();
+    const database = await client.db(mongodb_database).collection("recipes");
+    recipes = await database.find({ingredientArray: {$all: keywordArray}}).limit(5).toArray();
+  }
+  let times = [];
+  for (let i = 0; i < recipes.length; i++) {
+    timeCurrent = recipes[i].tags;
+    timeCurrent = timeCurrent.replaceAll("'", "");
+    timeCurrent = timeCurrent.replaceAll("[", "");
+    timeCurrent = timeCurrent.replaceAll("]", "");
+    timeCurrent = timeCurrent.split(",");
+    for (let i = timeCurrent.length - 1; i >=  0; i--) {
+      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours") ) {
+        timeCurrent.splice(i,1);
+      }
+    }
+    times.push(timeCurrent);
+  }
+  
+  
+
+  res.render("searchIngredients", {recipes: recipes, session: req.session, times : times});
+});
+
 //Profile
 app.get("/profile", async (req, res) => {
   if(!req.session.authenticated){
