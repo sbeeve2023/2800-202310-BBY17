@@ -347,6 +347,7 @@ app.get("/logout", (req, res) => {
 //Recipe display
 app.get("/recipe", async (req, res) => {
   var recipeId = new ObjectId(req.query.id);
+  var recipeTime = req.query.time;
   console.log(recipeId);
   // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
@@ -380,7 +381,7 @@ app.get("/recipe", async (req, res) => {
   console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
   console.log(typeof recipeTerms);
 
-  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms, size: recipeSize});
+  res.render("recipe", {name: recipeName, ingredients: recipeIngList, servings: recipeServings, steps: recipeSteps, searchterms: recipeTerms, size: recipeSize, time: recipeTime});
 });
 
 //Databsetest path
