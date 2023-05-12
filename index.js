@@ -169,7 +169,6 @@ app.get("/login", (req, res) => {
   var error = req.query.error != null;
   res.render("login", {error: error});
 });
-
 app.post("/login-submit", async (req, res) => {
   var username = req.body.username;
   var password = req.body.password;
@@ -206,6 +205,7 @@ app.post("/login-submit", async (req, res) => {
   }
 });
 
+
 //Search for recipes in the database test
 app.get("/search", async (req, res) => {
   let search = req.query.search;
@@ -213,7 +213,7 @@ app.get("/search", async (req, res) => {
   if (search) {
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    recipes = await database.find({ingredientArray: {"$regex": search}}).limit(5).toArray();
+    recipes = await database.find({ingredientArray: {"$regex": search}}).limit(20).toArray();
   }
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
@@ -229,11 +229,14 @@ app.get("/search", async (req, res) => {
     }
     times.push(timeCurrent);
   }
-  
-  
-
   res.render("search", {recipes: recipes, session: req.session, times : times});
 });
+//Required for home page search
+app.post("/search", async (req, res) => {
+  let search = req.body.search;
+  res.redirect("/search?search=" + search);
+});
+
 
 //Profile
 app.get("/profile", async (req, res) => {
@@ -243,34 +246,6 @@ app.get("/profile", async (req, res) => {
   }
   res.render("profile", {session: req.session});
 });
-
-//Change the dietary restrictions
-app.get("/dietEdit", async (req, res) => {
-  if(!req.session.authenticated){
-    res.redirect("/login");
-    return;
-  }
-  res.render("dietEdit", {session: req.session});
-});
-
-//Update the dietary restrictions
-app.post("/dietUpdate", urlencodedParser, async (req, res) => {
-  let diet = req.body.diet;
-  console.log(diet, req.session.email, req.session.username);
-  await client.connect();
-  const database = await client.db(mongodb_database).collection("users");
-  database.findOneAndUpdate({
-      email: req.session.email, 
-      username: req.session.username
-    }, 
-    {"$set": 
-        {diet: diet}
-    });
-  
-  req.session.diet = diet;
-  res.send("Diet Updated <a href='/profile'>Go Back</a>")
-});
-
 //Update Profile
 app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   let email = req.body.email;
@@ -282,7 +257,6 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   req.session.email = email;
   res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
-
 //Change Password
 app.get("/change-password", async (req, res) => {
   if(!req.session.authenticated){
@@ -343,8 +317,35 @@ app.post("/change-password-submit", async (req, res) => {
   });
  
 });
-  app.get("/changed-password", (req, res) => {
+app.get("/changed-password", (req, res) => {
   res.render("changed-password");
+});
+
+
+//Change the dietary restrictions
+app.get("/dietEdit", async (req, res) => {
+  if(!req.session.authenticated){
+    res.redirect("/login");
+    return;
+  }
+  res.render("dietEdit", {session: req.session});
+});
+//Update the dietary restrictions
+app.post("/dietUpdate", urlencodedParser, async (req, res) => {
+  let diet = req.body.diet;
+  console.log(diet, req.session.email, req.session.username);
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("users");
+  database.findOneAndUpdate({
+      email: req.session.email, 
+      username: req.session.username
+    }, 
+    {"$set": 
+        {diet: diet}
+    });
+  
+  req.session.diet = diet;
+  res.redirect("/dietEdit");
 });
 
 
