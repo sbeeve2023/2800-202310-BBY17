@@ -272,9 +272,10 @@ app.post("/login-submit", async (req, res) => {
 
 //Search for recipes in the database test
 app.get("/search", async (req, res) => {
-  let search = req.query.search.toLowerCase();
+  let search = req.query.search;
   let recipes = false;
   if (search) {
+    search = search.toLowerCase();
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
@@ -312,9 +313,10 @@ app.post("/search", async (req, res) => {
 
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
-  let search = req.query.search.toLowerCase();
+  let search = req.query.search;
   let recipes = false;
   if (search) {
+    search = search.toLowerCase();
     const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
