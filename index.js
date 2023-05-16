@@ -353,7 +353,7 @@ app.get("/searchIngredients", async (req, res) => {
 });
 
 //Profile
-app.get("/profile", async (req, res) => {
+app.get("/profile", async (req, res) => { 
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
