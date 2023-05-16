@@ -314,6 +314,7 @@ app.post("/search", async (req, res) => {
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
   let search = req.query.search;
+  console.log(search);
   let recipes = false;
   if (search) {
     search = search.toLowerCase();

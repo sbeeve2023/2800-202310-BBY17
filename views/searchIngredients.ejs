@@ -1,10 +1,13 @@
 <%- include('templates/header') -%>
     <p>Enter each ingredient individually</p>
-    <form>
+    <form id="thisForm">
         <input id="ingredient" type="text" name="search" placeholder="Enter an ingredient" />
-        <input type="button" value="Search" id="addBtn"/>
+        <input type="button" value="Add Item" id="addBtn"/>
     </form>
     <div id="list" style="display: flex; justify-content: space-between; width: 25%; flex-wrap: wrap;"></div>
+    <form action="/searchIngredients?search=egg" method="get" id="submitForm" >
+        <input id="search" type="submit" value="Search" style="background-color: lightblue;"/>
+    </form>
     <script>
         document.getElementById("addBtn").addEventListener("click", 
         function () {
@@ -14,47 +17,13 @@
             newBox.setAttribute("name", item);
             newBox.innerHTML += item;
             document.getElementById("list").appendChild(newBox);
+            document.getElementById("thisForm").reset();
+            // document.getElementById("submitForm").setAttribute("action", "/searchIngredients?search=" + item);
+            console.log("help");
         });
     </script>
-    <form action="/searchIngredients">
-        
-    </form>
-
-    <script>
-            function searchIngredients() {
-        // Collect the span values
-        var spans = document.querySelectorAll("#list span");
-        var values = Array.from(spans).map(function(span) {
-        return span.innerText;
-        });
-
-        // Construct the query parameters
-        var queryParams = values.map(function(value) {
-        return "ingredient=" + encodeURIComponent(value);
-        });
-
-        // Build the URL with the query parameters
-        var url = "/searchIngredients?" + queryParams.join("&");
-
-        // Make a GET request to the Node.js server
-        fetch(url)
-        .then(function(response) {
-            // Handle the response here
-            // For example, you can process the data returned by the server
-            // or perform any other desired actions
-            console.log("GET request succeeded!");
-            // return response.json(); // Assuming the server returns JSON
-        })
-        .then(function(data) {
-            // Process the data returned by the server
-            console.log(data);
-        })
-        .catch(function(error) {
-            // Handle any errors that occur during the request
-            console.log("GET request failed:", error);
-        });
-    }
-    </script>
+    
+   
     <% if (recipes) { %>
         <h3>Recipes</h3>
         <% for (let i=0; i < recipes.length; i++) { %>
