@@ -107,6 +107,8 @@ app.use(session({
 //middleware to check if user is logged in
 const sessionValidation = (req, res, next) => {
   res.locals.validSession = req.session.authenticated;
+  res.locals.username = req.session.username;
+  res.locals.firstname = req.session.firstname;
   next();
 };
 
@@ -145,6 +147,8 @@ app.get("/signup", (req, res) => {
     error: req.query.error
   });
 });
+
+
 app.post("/signup-submit", async (req, res) => {
   let fname = req.body.firstname;
   let lname = req.body.lastname;
@@ -377,6 +381,7 @@ console.log(bookmarks);
     bookmarks: bookmarks
   });
 });
+
 //Update Profile
 app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   let email = req.body.email;
@@ -670,6 +675,11 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
   });
   res.redirect("/recipe?id=" + req.body.id);
 
+});
+
+//Easter Egg
+app.get("/easter-egg", async (req, res) => {
+  res.render("easterEgg", {session: req.session});
 });
 
 
