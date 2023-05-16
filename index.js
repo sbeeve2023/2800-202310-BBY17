@@ -128,6 +128,8 @@ app.get("/", async (req, res) => {
   var user = await userCollection.findOne({
     username: req.session.username
   });
+
+
   res.render("landing-loggedin", {
     username: req.session.username
   });
@@ -356,8 +358,23 @@ app.get("/profile", async (req, res) => {
     res.redirect("/login");
     return;
   }
+  user = await userCollection.findOne({email: req.session.email});
+  
+  let bookmarks = [];
+  if (user.bookmarks != undefined) {
+    var bookmarkIds = user.bookmarks;
+    
+    for (let i = 0; i < bookmarkIds.length; i++) {
+      let recipe = await recipeCollection.findOne({
+        _id: bookmarkIds[i]
+      });
+      bookmarks.push(recipe);
+    }
+  }
+console.log(bookmarks);
   res.render("profile", {
-    session: req.session
+    session: req.session,
+    bookmarks: bookmarks
   });
 });
 //Update Profile
@@ -498,6 +515,25 @@ app.get("/logout", (req, res) => {
 
 //Recipe display
 app.get("/recipe", async (req, res) => {
+
+//Check if user is logged in and if the recipe is already bookmarked
+var isBookmarked = false;
+
+if (req.session.authenticated) {
+  var user = await userCollection.findOne({email: req.session.email});
+  
+  if (user.bookmarks) {
+   
+    for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
+      if (user.bookmarks[i].toString() == req.query.id) {
+        isBookmarked = true;
+       
+      }
+    }
+  }
+}
+
+
   var recipeId = new ObjectId(req.query.id);
   var recipeTime = req.query.time;
   console.log(recipeId);
@@ -535,7 +571,10 @@ app.get("/recipe", async (req, res) => {
   console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
   console.log(typeof recipeTerms);
 
+  console.log(isBookmarked);
   res.render("recipe", {
+    id: req.query.id,
+    bookmarked: isBookmarked,
     name: recipeName,
     ingredients: recipeIngList,
     servings: recipeServings,
@@ -545,6 +584,94 @@ app.get("/recipe", async (req, res) => {
     time: recipeTime
   });
 });
+
+//Recipe save
+app.post("/recipe-save", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  //Get the user's bookmarks
+  var bookmarks;
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user){
+    res.redirect("/login");
+    return;
+  }
+  if (!user.bookmarks) {
+    bookmarks = [];
+  } else {
+    bookmarks = user.bookmarks;
+  }
+
+  //Return if the recipe is already bookmarked
+  for (let i = 0; i < bookmarks.length; i++) {
+    if (bookmarks[i].toString() == req.body.id) {
+      res.redirect("/recipe?id=" + req.body.id);
+      return;
+    }
+  }
+
+
+  //Save the recipe
+  var recipeId = new ObjectId(req.body.id);
+  bookmarks.push(recipeId);
+ 
+  console.log(req.session);
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      bookmarks: bookmarks
+    }
+  });
+
+
+  res.redirect("/recipe?id=" + req.body.id);
+
+});
+
+//Recipe unsave
+app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  //Get the user's bookmarks
+  var bookmarks;
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user || !user.bookmarks){
+    res.redirect("/login");
+    return;
+  }
+
+
+  //Return if the recipe is already bookmarked
+  var newBookmarks = [];
+  for (let i = 0; i < user.bookmarks.length; i++) {
+    if (user.bookmarks[i].toString() != req.body.id) {
+      newBookmarks.push(user.bookmarks[i]);
+    }
+  }
+  if(newBookmarks.length == user.bookmarks.length){
+    res.redirect("/recipe?id=" + req.body.id);
+    return;
+  }
+
+ 
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      bookmarks: newBookmarks
+    }
+  });
+  res.redirect("/recipe?id=" + req.body.id);
+
+});
+
 
 //Databsetest path
 app.get("/dbtest", async (req, res) => {
