@@ -48,6 +48,8 @@ const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_session_secret = process.env.MONGODB_SECRET;
 const mongodb_database = process.env.MONGODB_DATABASE;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
+const apiKey = process.env.GOOGLE_API_KEY;
+const searchEngineId = process.env.SEARCH_ENGINE_ID;
 
 //Session Store for Mongo
 var mongoStore = MongoStore.create({
@@ -273,7 +275,9 @@ app.post("/login-submit", async (req, res) => {
 //Search for recipes in the database test
 app.get("/search", async (req, res) => {
   let search = req.query.search;
+  let time = req.query.time;
   let recipes = false;
+  let images = [];
   if (search) {
     search = search.toLowerCase();
     await client.connect();
@@ -298,10 +302,37 @@ app.get("/search", async (req, res) => {
     }
     times.push(timeCurrent);
   }
+  if (!time == "0") {
+    for(let i = times.length - 1; i >= 0; i--){
+      if (typeof times[i][0] == 'undefined') {
+        times.splice(i, 1);
+        recipes.splice(i, 1);
+      } else if(!times[i][0].includes(time)){
+        console.log(times[i][0]);
+        times.splice(i, 1);
+        recipes.splice(i, 1);
+      } else {
+        let apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
+        await fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+        if (data.items && data.items.length > 0) {
+          const imageUrl = data.items[0].link;
+          images.push(imageUrl);
+        } else {
+          console.log('No images found.');
+      }
+    })
+    .catch(error => {
+    console.error('An error occurred:', error);
+    });
+      }
+    }}
   res.render("search", {
     recipes: recipes,
     session: req.session,
-    times: times
+    times: times,
+    images: images
   });
 });
 //Required for home page search
@@ -591,6 +622,31 @@ app.get("/querytest", async (req, res) => {
   html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
+
+//Image test for reference
+app.get("/test", async (req, res) => {
+  const apiKey = 'AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k';
+  const searchEngineId = '139666e4b509c4654';
+  const searchTerm = 'banana';
+
+  const apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
+
+fetch(apiUrl)
+  .then(response => response.json())
+  .then(data => {
+    if (data.items && data.items.length > 0) {
+      const imageUrl = data.items[0].link;
+      console.log('Image URL:', imageUrl);
+      res.render("test", { url: imageUrl });
+    } else {
+      console.log('No images found.');
+    }
+  })
+  .catch(error => {
+    console.error('An error occurred:', error);
+  });
+});
+
 
 //404
 app.get("/*", (req, res) => {
