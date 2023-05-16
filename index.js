@@ -279,7 +279,7 @@ app.get("/search", async (req, res) => {
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
-      ingredientArray: {
+      name: {
         "$regex": search
       }
     }).limit(20).toArray();
