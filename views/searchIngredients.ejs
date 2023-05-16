@@ -5,20 +5,35 @@
         <input type="button" value="Add Item" id="addBtn"/>
     </form>
     <div id="list" style="display: flex; justify-content: space-between; width: 25%; flex-wrap: wrap;"></div>
-    <form action="/searchIngredients?search=egg" method="get" id="submitForm" >
-        <input id="search" type="submit" value="Search" style="background-color: lightblue;"/>
+    <form action="/searchIngredients?search=" method="get" id="submitForm" >
+        <!-- <input type="text" name="search" value="egg"> -->
+        <input id="search" type="submit" value="Search" form="submitForm" style="background-color: lightblue;"/>
     </form>
     <script>
         document.getElementById("addBtn").addEventListener("click", 
         function () {
             var textBox = document.getElementById("ingredient");
             var item = textBox.value;
-            var newBox = document.createElement("span");
-            newBox.setAttribute("name", item);
-            newBox.innerHTML += item;
-            document.getElementById("list").appendChild(newBox);
+            var newBox = document.createElement("input");
+            newBox.setAttribute("type", "text");
+            newBox.setAttribute("name", "search")
+            newBox.setAttribute("value", item);
+            newBox.setAttribute("class", "ingredientBtn")
+            // newBox.setAttribute("disabled", true);
+            // newBox.innerHTML += item;
+            newBox.addEventListener("click", function () {
+                this.remove();
+            });
+            document.getElementById("submitForm").appendChild(newBox);
             document.getElementById("thisForm").reset();
-            // document.getElementById("submitForm").setAttribute("action", "/searchIngredients?search=" + item);
+            var url = document.getElementById("submitForm");
+            if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
+                // url.setAttribute("action",  url.getAttribute("action") + encodeURIComponent(item));
+                url.action += item;
+            } else {
+                // url.setAttribute("action",  url.getAttribute("action") + "," + encodeURIComponent(item));
+                url.action += "," + item;
+            }   
             console.log("help");
         });
     </script>

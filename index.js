@@ -314,19 +314,23 @@ app.post("/search", async (req, res) => {
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
   let search = req.query.search;
-  console.log(search);
+  console.log("Search: " + search);
   let recipes = false;
-  if (search) {
-    search = search.toLowerCase();
-    const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
+  if (search != undefined) {
+    // search = search.toLowerCase();
+    // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
+    for (var i = 0; i < search.length; i++){
+      search[i].toLowerCase;
+    }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
       ingredientArray: {
-        $all: keywordArray
+        $in: search
       }
     }).limit(5).toArray();
   }
+  console.log("res" + recipes);
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
