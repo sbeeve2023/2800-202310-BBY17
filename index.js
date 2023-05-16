@@ -129,9 +129,22 @@ app.get("/", async (req, res) => {
     username: req.session.username
   });
 
+  let recipes = [];
+  if (user.recents) {
+    recents = user.recents;
+    //get the recipes from the database
+    for (let i = 0; i < user.recents.length; i++) {
+      let recipe = await recipeCollection.findOne({
+        _id: new ObjectId(recents[i])
+      });
+      recipes.push(recipe);
+    }
+  }
+
 
   res.render("landing-loggedin", {
-    username: req.session.username
+    username: req.session.username,
+    recipes: recipes
   });
 });
 
@@ -521,9 +534,8 @@ var isBookmarked = false;
 
 if (req.session.authenticated) {
   var user = await userCollection.findOne({email: req.session.email});
-  
+  //Display Bookmarks
   if (user.bookmarks) {
-   
     for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
       if (user.bookmarks[i].toString() == req.query.id) {
         isBookmarked = true;
@@ -531,6 +543,24 @@ if (req.session.authenticated) {
       }
     }
   }
+  //Add to recent recipes
+  let recents = [];
+  if (user.recents) {
+    recents = user.recents;
+    //Remove from recents if already there
+    for (let i = 0; i < recents.length; i++) {
+      if (recents[i].toString() == req.query.id) {
+        recents.splice(i, 1);
+      }
+    }
+    //Make sure recents is not too long
+    while (user.recents.length >= 10) {
+      recents.shift();
+    }    
+  }
+  //Add to recents
+  recents.push(new ObjectId(req.query.id));
+  await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
 }
 
 
