@@ -359,11 +359,17 @@ app.get("/profile", async (req, res) => {
     return;
   }
   user = await userCollection.findOne({email: req.session.email});
-  var bookmarkIds = user.bookmarks;
+  
   let bookmarks = [];
-  for (let i = 0; i < bookmarkIds.length; i++) {
-    let recipe = await recipeCollection.findOne({_id: bookmarkIds[i]});
-    bookmarks.push(recipe);
+  if (user.bookmarks != undefined) {
+    var bookmarkIds = user.bookmarks;
+    
+    for (let i = 0; i < bookmarkIds.length; i++) {
+      let recipe = await recipeCollection.findOne({
+        _id: bookmarkIds[i]
+      });
+      bookmarks.push(recipe);
+    }
   }
 console.log(bookmarks);
   res.render("profile", {
