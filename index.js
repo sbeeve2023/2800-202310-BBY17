@@ -128,6 +128,8 @@ app.get("/", async (req, res) => {
   var user = await userCollection.findOne({
     username: req.session.username
   });
+
+
   res.render("landing-loggedin", {
     username: req.session.username
   });
@@ -356,8 +358,17 @@ app.get("/profile", async (req, res) => {
     res.redirect("/login");
     return;
   }
+  user = await userCollection.findOne({email: req.session.email});
+  var bookmarkIds = user.bookmarks;
+  let bookmarks = [];
+  for (let i = 0; i < bookmarkIds.length; i++) {
+    let recipe = await recipeCollection.findOne({_id: bookmarkIds[i]});
+    bookmarks.push(recipe);
+  }
+console.log(bookmarks);
   res.render("profile", {
-    session: req.session
+    session: req.session,
+    bookmarks: bookmarks
   });
 });
 //Update Profile
@@ -511,10 +522,6 @@ if (req.session.authenticated) {
       if (user.bookmarks[i].toString() == req.query.id) {
         isBookmarked = true;
        
-      }else{
-        console.log("Kade!");
-        console.log(user.bookmarks[i].toString());
-        console.log(req.query.id);
       }
     }
   }
