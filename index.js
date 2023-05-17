@@ -155,10 +155,65 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/ai", async (req, res) => {
+
+
+
   if(req.query.chat == undefined){
-    res.render("ai", {text: "No Query"});
+    tempText = `{
+      "name": "Vegan Nut-Free Peanut Butter Cookies",
+      "ingredients": [
+        "1/2 cup unsweetened applesauce",
+        "1/2 cup creamy peanut butter",
+        "1/4 cup coconut oil, melted",
+        "1/2 cup maple syrup",
+        "1 teaspoon vanilla extract",
+        "1 3/4 cups all-purpose flour",
+        "1/2 teaspoon baking soda",
+        "1/4 teaspoon salt",
+        "2 tablespoons granulated sugar, for rolling"
+      ],
+      "serving_size": "Makes 16 cookies",
+      "steps": [
+        "Preheat the oven to 350°F (175°C) and line a baking sheet with parchment paper.",
+        "In a large mixing bowl, combine the unsweetened applesauce, creamy peanut butter, melted coconut oil, maple syrup, and vanilla extract. Stir until well combined.",
+        "In a separate bowl, whisk together the all-purpose flour, baking soda, and salt.",
+        "Gradually add the dry ingredients to the wet ingredients, stirring until a thick dough forms.",
+        "Roll the dough into small balls, about 1 inch in diameter.",
+        "Roll each ball in granulated sugar to coat the exterior.",
+        "Place the coated balls onto the prepared baking sheet, spacing them about 2 inches apart.",
+        "Using a fork, gently press down on each ball to create a crisscross pattern.",
+        "Bake for 10-12 minutes, or until the cookies are lightly golden around the edges.",
+        "Remove from the oven and let the cookies cool on the baking sheet for 5 minutes.",
+        "Transfer the cookies to a wire rack to cool completely before serving."
+      ]
+    }
+    `
+    let tempObject = JSON.parse(tempText);
+    let name = tempObject.name;
+    let ingredients = tempObject.ingredients;
+    let serving_size = tempObject.serving_size;
+    let steps = tempObject.steps;
+    res.render("ai", {name: name,
+       ingredients: ingredients,
+        serving_size: serving_size,
+         steps: steps});
     return;
   }
+
+  /*
+
+  recipe for peanut butter cookies that meets dietary
+  restrictions: nut-free, vegan. formatted as a JSON
+  object with keys: name, ingredients, serving_size, steps.
+  
+  */
+  
+  let dietaryRestrictions = `that meets dietary restrictions: none`;
+  let recipeName= req.query.chat;
+
+  let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
+  formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings).
+  `;
 
   try{
     const response = await fetch(chatgpt_url,{
@@ -168,19 +223,35 @@ app.get("/ai", async (req, res) => {
         'Authorization': `Bearer ${chatgpt_key}`
       },
       body: JSON.stringify({"model": "gpt-3.5-turbo",
-      "messages": [{"role": "user", "content": req.query.chat}]
+      "messages": [{"role": "user", "content": request}]
     })
     });
 
+
+
     const data = await response.json();
-    console.log(data);
-    res.render("ai", {text: data.choices[0].message.content});
+   
+
+    let aiString = data.choices[0].message.content;
+    console.log(aiString);
+    let aiObject = JSON.parse(aiString);
+    console.log(aiObject);
+    let name = aiObject.name;
+    let ingredients = aiObject.ingredients;
+    let serving_size = aiObject.serving_size;
+    let steps = aiObject.steps;
+
+    res.render("ai", {name: name,
+      ingredients: ingredients,
+       serving_size: serving_size,
+        steps: steps});
     return;
   } catch (error) {console.error("Error:", error);}
 
-  res.render("ai", {text: "Error"});
+  res.send("error: " + error);
  
 });
+
 
 //Sign Up
 app.get("/signup", (req, res) => {
