@@ -212,7 +212,7 @@ app.get("/ai", async (req, res) => {
   let recipeName= req.query.chat;
 
   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
-  formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings).
+  formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
   `;
 
   try{
@@ -236,15 +236,17 @@ app.get("/ai", async (req, res) => {
     console.log(aiString);
     let aiObject = JSON.parse(aiString);
     console.log(aiObject);
-    let name = aiObject.name;
-    let ingredients = aiObject.ingredients;
-    let serving_size = aiObject.serving_size;
-    let steps = aiObject.steps;
+    let name = aiObject.name || recipeName;
+    let ingredients = aiObject.ingredients || ["error"];
+    let servings = aiObject.serving_size || "error";
+    let steps = aiObject.steps || ["error"];
+    let time = aiObject.cook_time || "error";
 
     res.render("ai", {name: name,
       ingredients: ingredients,
-       serving_size: serving_size,
-        steps: steps});
+      servings: servings,
+      steps: steps,
+      time: time});
     return;
   } catch (error) {console.error("Error:", error);}
 
