@@ -1,4 +1,12 @@
 <%- include('templates/header') -%>
+<ul>
+<% for (let i = 0; i < profile.diet.length; i++) { %>
+    <li>
+        <%= profile.diet[i] %>
+    </li>
+    <% } %>
+</ul>
+
 
 <!--Search Bar -->
 <form type="text" name="search" class="h-[30vmin]" action="/search" method="get">
@@ -18,7 +26,17 @@
             <option name="time" value="60">60 Minutes</option>
             <option name="time" value="4">60+ Minutes</option>
         </select>
-        
+        <select name="diet">
+            <option name="diet" value="0">Diet</option>
+            <option name="diet" value="vegan">Vegan</option>
+            <option name="diet" value="vegetarian">Vegetarian</option>
+            <option name="diet" value="gluten-free">Gluten Free</option>
+            <option name="diet" value="keto">Keto</option>
+            <option name="diet" value="paleo">Paleo</option>
+            <option name="diet" value="pescatarian">Pescatarian</option>
+            <option name="diet" value="low FODMAP">Low FODMAP</option>
+            <option name="diet" value="whole 30">Whole 30</option>
+        </select>
         <input name="search" type="search" id="default-search"
             class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Search for a recipe" required>

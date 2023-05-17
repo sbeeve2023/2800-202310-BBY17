@@ -276,18 +276,34 @@ app.post("/login-submit", async (req, res) => {
 app.get("/search", async (req, res) => {
   let search = req.query.search;
   let time = req.query.time;
+  let diet = req.query.diet;
+  await client.connect(); 
+  let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+  console.log(profile);
   let recipes = false;
   let images = [];
-  if (search) {
+  if (search && !(diet == 0)) {
     search = search.toLowerCase();
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
       name: {
-        "$regex": search
+        $regex: new RegExp(search, "i")
+      },
+      search_terms: {
+        $regex: new RegExp(diet, "i")
       }
     }).limit(20).toArray();
-  }
+  } else if (search) {
+    search = search.toLowerCase();
+    await client.connect();
+    const database = await client.db(mongodb_database).collection("recipes");
+    recipes = await database.find({
+      name: {
+        $regex: new RegExp(search, "i")
+      }
+    }).limit(20).toArray();
+  } 
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -302,37 +318,38 @@ app.get("/search", async (req, res) => {
     }
     times.push(timeCurrent);
   }
-  if (!time == "0") {
-    for(let i = times.length - 1; i >= 0; i--){
-      if (typeof times[i][0] == 'undefined') {
+  if (!(time == 0)) {
+    for (let i = times.length - 1; i >= 0; i--) {
+      if (typeof times[i][0] == "undefined") {
         times.splice(i, 1);
         recipes.splice(i, 1);
-      } else if(!times[i][0].includes(time)){
-        console.log(times[i][0]);
+      } else if (!times[i][0].includes(time)) {
         times.splice(i, 1);
         recipes.splice(i, 1);
       } else {
-        let apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
-        await fetch(apiUrl)
-        .then(response => response.json())
-        .then(data => {
-        if (data.items && data.items.length > 0) {
-          const imageUrl = data.items[0].link;
-          images.push(imageUrl);
-        } else {
-          console.log('No images found.');
+        let apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(
+          recipes[i].name
+        )}&searchType=image`;
+        await fetch(apiUrl).then((response) => response.json()).then((data) => {
+            if (data.items && data.items.length > 0) {
+              const imageUrl = data.items[0].link;
+              images.push(imageUrl);
+            } else {
+              console.log("No images found.");
+            }
+          })
+          .catch((error) => {
+            console.error("An error occurred:", error);
+          });
       }
-    })
-    .catch(error => {
-    console.error('An error occurred:', error);
-    });
-      }
-    }}
+    }
+  }
   res.render("search", {
     recipes: recipes,
     session: req.session,
     times: times,
-    images: images
+    images: images,
+    profile: profile
   });
 });
 //Required for home page search
