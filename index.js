@@ -338,6 +338,9 @@ app.get("/searchIngredients", async (req, res) => {
   if (search != undefined) {
     // search = search.toLowerCase();
     // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
+    if (typeof search != "String"){
+      search = [search]
+    }
     for (var i = 0; i < search.length; i++){
       search[i].toLowerCase;
     }
