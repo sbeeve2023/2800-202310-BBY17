@@ -7,13 +7,18 @@
         <div class="items-center justify-between flex w-auto order-1">
             <ul class="flex flex-row font-medium p-3 rounded-lg space-x-8 mt-0 border-0 bg-white">
                 <% if (validSession) { %>
-                <li>
-                    <a href="/logout" class="block rounded bg-transparent text-gray-900 rounded p-4 hover:bg-gray-100">Logout</a>
-                </li>
+                    <li>
+                        <a href="/logout" class="block rounded bg-transparent text-gray-900 rounded p-4 hover:bg-gray-100">Logout</a>
+                    </li>
+                    <% if (easterEgg) { %>
+                        <li class="flex items-center">
+                            <img class="ml-0 h-7 w-7" src="/public/images/EggGif32.gif">
+                        </li>
+                    <% } %>
                 <% } else { %>
-                <li>
-                    <a href="/login" class="block rounded bg-transparent text-gray-900 rounded p-4 hover:bg-gray-100">Login</a>
-                </li>
+                    <li>
+                        <a href="/login" class="block rounded bg-transparent text-gray-900 rounded p-4 hover:bg-gray-100">Login</a>
+                    </li>
                 <% } %>
             </ul>
         </div>
