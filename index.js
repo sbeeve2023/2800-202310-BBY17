@@ -348,9 +348,21 @@ app.get("/searchIngredients", async (req, res) => {
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
-      ingredientArray: {
-        $all: search
-      }
+      // ingredientArray: {
+        // $size: search.length, //Makes it so the ingredients much exactly match the search parameters.
+      //   $or: [
+      //     {$size: search.length},
+      //     {$lt: [{$size: search.length}]}
+      //   ],
+      //   $all: search
+      // }
+      $or: [
+        {ingredientArray: {$all: search}},
+        {$and: [
+          { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
+          {ingredientArray: {$in: search}}
+      ]}
+    ]
     }).limit(5).toArray();
   }
   console.log("res" + recipes);
