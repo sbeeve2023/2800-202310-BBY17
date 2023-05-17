@@ -438,11 +438,15 @@ app.post("/search", async (req, res) => {
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
   let search = req.query.search;
-  console.log("Search: " + search);
+  console.log(req.query);
   let recipes = false;
   if (search != undefined) {
     // search = search.toLowerCase();
     // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
+    if (typeof search === "string"){
+      search = search.split(',').map(search => search.trim());
+    }
+    console.log("Search: " + typeof search);
     for (var i = 0; i < search.length; i++){
       search[i].toLowerCase;
     }
@@ -450,7 +454,7 @@ app.get("/searchIngredients", async (req, res) => {
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
       ingredientArray: {
-        $in: search
+        $all: search
       }
     }).limit(5).toArray();
   }
@@ -669,7 +673,7 @@ if (req.session.authenticated) {
       }
     }
     //Make sure recents is not too long
-    while (user.recents.length >= 10) {
+    while (user.recents.length >= 20) {
       recents.shift();
     }    
   }
