@@ -49,6 +49,10 @@ const mongodb_session_secret = process.env.MONGODB_SECRET;
 const mongodb_database = process.env.MONGODB_DATABASE;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
 
+//ChatGPT Variables
+const chatgpt_key = process.env.CHATGPT_KEY;
+const chatgpt_url = process.env.CHATGPT_URL;
+
 //Session Store for Mongo
 var mongoStore = MongoStore.create({
   mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/sessions`,
@@ -148,6 +152,34 @@ app.get("/", async (req, res) => {
     username: req.session.username,
     recipes: recipes
   });
+});
+
+app.get("/ai", async (req, res) => {
+  if(req.query.chat == undefined){
+    res.render("ai", {text: "No Query"});
+    return;
+  }
+
+  try{
+    const response = await fetch(chatgpt_url,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${chatgpt_key}`
+      },
+      body: JSON.stringify({"model": "gpt-3.5-turbo",
+      "messages": [{"role": "user", "content": req.query.chat}]
+    })
+    });
+
+    const data = await response.json();
+    console.log(data);
+    res.render("ai", {text: data.choices[0].message.content});
+    return;
+  } catch (error) {console.error("Error:", error);}
+
+  res.render("ai", {text: "Error"});
+ 
 });
 
 //Sign Up
