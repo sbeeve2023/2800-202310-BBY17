@@ -568,7 +568,7 @@ if (req.session.authenticated) {
       }
     }
     //Make sure recents is not too long
-    while (user.recents.length >= 10) {
+    while (user.recents.length >= 20) {
       recents.shift();
     }    
   }
