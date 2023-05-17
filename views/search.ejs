@@ -1,7 +1,15 @@
 <%- include('templates/header') -%>
+<ul>
+<% for (let i = 0; i < profile.diet.length; i++) { %>
+    <li>
+        <%= profile.diet[i] %>
+    </li>
+    <% } %>
+</ul>
+
 
 <!--Search Bar -->
-<form type="text" name="search" class="h-[30vmin]">
+<form type="text" name="search" class="h-[30vmin]" action="/search" method="get">
     <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
     <div id="search-area" class="relative">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -11,6 +19,24 @@
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
+        <select name="time">
+            <option name="time" value="0">Prep Time</option>
+            <option name="time" value="15">15 Minutes</option>
+            <option name="time" value="30">30 Minutes</option>
+            <option name="time" value="60">60 Minutes</option>
+            <option name="time" value="4">60+ Minutes</option>
+        </select>
+        <select name="diet">
+            <option name="diet" value="0">Diet</option>
+            <option name="diet" value="vegan">Vegan</option>
+            <option name="diet" value="vegetarian">Vegetarian</option>
+            <option name="diet" value="gluten-free">Gluten Free</option>
+            <option name="diet" value="keto">Keto</option>
+            <option name="diet" value="paleo">Paleo</option>
+            <option name="diet" value="pescatarian">Pescatarian</option>
+            <option name="diet" value="low FODMAP">Low FODMAP</option>
+            <option name="diet" value="whole 30">Whole 30</option>
+        </select>
         <input name="search" type="search" id="default-search"
             class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Search for a recipe" required>
@@ -57,7 +83,7 @@
 </div> -->
 
 <div class=" flex-none text-center bg-white border border-gray-200 rounded-lg w-96">
-    <img class="rounded-t-lg w-[100%] object-contain " src="https://picsum.photos/100/100" alt="" />
+    <img class="rounded-t-lg w-[100%] object-contain " src="<%= images[i]%>" alt="" />
     <div class=" p-5 ">
       <a href="#">
         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"><%= recipes[i].name.replace(/&quot;/g, '\"' ) %></h5>
