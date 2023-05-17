@@ -1,95 +1,45 @@
 <%- include('templates/header') -%>
-    <p>Enter each ingredient individually</p>
-    <form>
-        <input id="ingredient" type="text" name="search" placeholder="Enter an ingredient"/>
-        <input class="mt-4" type="button" value="Search" id="addBtn"/>
+    <!-- <p>Enter each ingredient individually</p>
+    <form id="thisForm">
+        <input id="ingredient" type="text" name="search" placeholder="Enter an ingredient" />
+        <input type="button" value="Add Item" id="addBtn"/>
     </form>
     <div id="list" style="display: flex; justify-content: space-between; width: 25%; flex-wrap: wrap;"></div>
+    <form action="/searchIngredients?search=" method="get" id="submitForm" >
+        <input type="text" name="search" value="egg">
+        <input id="search" type="submit" value="Search" form="submitForm" style="background-color: lightblue;"/>
+    </form>
     <script>
         document.getElementById("addBtn").addEventListener("click", 
         function () {
             var textBox = document.getElementById("ingredient");
             var item = textBox.value;
-            var newBox = document.createElement("span");
-            newBox.setAttribute("name", item);
-            newBox.innerHTML += item;
-            document.getElementById("list").appendChild(newBox);
+            var newBox = document.createElement("input");
+            newBox.setAttribute("type", "text");
+            newBox.setAttribute("name", "search")
+            newBox.setAttribute("value", item);
+            newBox.setAttribute("class", "ingredientBtn")
+            // newBox.setAttribute("disabled", true);
+            // newBox.innerHTML += item;
+            newBox.addEventListener("click", function () {
+                this.remove();
         });
-    </script>
-    <form action="/searchIngredients">
-        
-    </form>
-
-    <script>
-            function searchIngredients() {
-        // Collect the span values
-        var spans = document.querySelectorAll("#list span");
-        var values = Array.from(spans).map(function(span) {
-        return span.innerText;
+            document.getElementById("submitForm").appendChild(newBox);
+            document.getElementById("thisForm").reset();
+            var url = document.getElementById("submitForm");
+            if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
+                // url.setAttribute("action",  url.getAttribute("action") + encodeURIComponent(item));
+                url.action += item;
+            } else {
+                // url.setAttribute("action",  url.getAttribute("action") + "," + encodeURIComponent(item));
+                url.action += "," + item;
+            }   
+            console.log("help");
         });
+    </script> -->
 
-        // Construct the query parameters
-        var queryParams = values.map(function(value) {
-        return "ingredient=" + encodeURIComponent(value);
-        });
 
-        // Build the URL with the query parameters
-        var url = "/searchIngredients?" + queryParams.join("&");
 
-        // Make a GET request to the Node.js server
-        fetch(url)
-        .then(function(response) {
-            // Handle the response here
-            // For example, you can process the data returned by the server
-            // or perform any other desired actions
-            console.log("GET request succeeded!");
-            // return response.json(); // Assuming the server returns JSON
-        })
-        .then(function(data) {
-            // Process the data returned by the server
-            console.log(data);
-        })
-        .catch(function(error) {
-            // Handle any errors that occur during the request
-            console.log("GET request failed:", error);
-        });
-    }
-    </script>
-    <% if (recipes) { %>
-        <h3>Recipes</h3>
-        <% for (let i=0; i < recipes.length; i++) { %>
-
-            <div
-                class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                <a href="#">
-                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"><%= recipes[i].name.replace(/&quot;/g, '\"' ) %></h5>
-                </a>
-                <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Ingredients:
-                    <ul>
-                        <% for (let j=0; j < recipes[i].ingredientArray.length; j++) {%>
-                            <li>
-                                <%= recipes[i].ingredientArray[j]%>
-                            </li>
-                            <% } %>
-                    </ul>
-                    <p>Servings: <%= recipes[i].servings %>
-                    </p>
-                    <p>Prep Time: <%= times[i] %>
-                    </p>
-                    </p>
-                <a href="/recipe?id=<%= recipes[i]._id %>&time=<%= times[i] %>"
-                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                    View Recipe
-                    <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd"
-                            d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </a>
-            </div>
-
-            <% }} %>
 
             <!-- new layout starts here -->
 
@@ -169,21 +119,24 @@
                 
                 <!-- Search Bar with Add Button -->
                 <div class="relative mt-4">
-                  <input name="search" type="search" id="default-search"
+                    <form id="thisForm">
+                        <input name="search" type="search" id="ingredient"
                   class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Search for a recipe" required>
-                  <button type="submit"
+                        placeholder="Enter an Ingredient" required>
+                        <button type="button" id="addBtn"
                   class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">
                   Add
                   </button>
-      
+                    </form>
                 </div>
                 
                 <!-- Ingredients List -->
+                <form action="/searchIngredients?search=" method="get" id="submitForm" >
                 <div class="mt-4">
                   <!-- Ingredient item -->
-                  <div class="flex items-center mb-2">
-                    <span class="bg-blue-400 text-white py-1 px-2 rounded-full flex items-center">
+                  <div class="flex items-center mb-2" id="ingList">
+                    <!-- <span class="bg-blue-400 text-white py-1 px-2 rounded-full flex items-center">
+                      <% %>
                       <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" value="Ingredient Name">
                       <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
                         <g transform="translate(1173.2 38.831)">
@@ -192,7 +145,7 @@
                           </g>
                         </g>
                       </svg>
-                    </span>
+                    </span> -->
                   
                     <!-- Add more ingredient items -->
                   
@@ -200,7 +153,59 @@
                 </div>
 
                 <!-- Find Recipe Button -->
-                <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mb-4 rounded w-full">Find Recipe</button>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
+                </form>
+                <script>
+                    document.getElementById("addBtn").addEventListener("click", 
+                    function () {
+                        var textBox = document.getElementById("ingredient");
+                        var item = textBox.value;
+                        //Make span element
+                        var newSpan = document.createElement("span");
+                        newSpan.setAttribute("class", "bg-blue-400 text-white py-1 px-2 rounded-full flex items-center");
+
+                        //Make input element
+                        var newBox = document.createElement("input");
+                        newBox.setAttribute("type", "text");
+                        newBox.setAttribute("name", "search")
+                        newBox.setAttribute("value", item);
+                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-white outline-none pr-1 mr-1")
+                        // newBox.setAttribute("disabled", true);
+                        // newBox.innerHTML += item;
+                        newSpan.addEventListener("click", function () {
+                            this.remove();
+                        });
+                        newSpan.appendChild(newBox);
+
+                        //make svg
+                        // var newSVG = document.createElement("svg");
+                        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+                        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
+                        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+                        newSVG.setAttribute("viewBox", "0 0 400 400");
+                        newSVG.setAttribute("version", "1.0");
+                        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+                          <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                            <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
+                          </g>
+                        </g>`;
+                        newSpan.appendChild(newSVG);
+                        document.getElementById("ingList").appendChild(newSpan);
+
+                        // document.getElementById("submitForm").appendChild(newBox);
+                        document.getElementById("thisForm").reset();
+                        var url = document.getElementById("submitForm");
+                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
+                            // url.setAttribute("action",  url.getAttribute("action") + encodeURIComponent(item));
+                            url.action += item;
+                        } else {
+                            // url.setAttribute("action",  url.getAttribute("action") + "," + encodeURIComponent(item));
+                            url.action += "," + item;
+                        }   
+                        console.log("help");
+                    });
+                </script>
                 
                   <!-- Ingredient Categories -->
                   <div class="mt-5">
@@ -537,8 +542,42 @@
               </div>
               
             <!-- new layout ends here -->
-
-            <!-- Scripts -->
+            <% if (recipes) { %>
+              <h3>Recipes</h3>
+              <% for (let i=0; i < recipes.length; i++) { %>
+      
+                  <div
+                      class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+                      <a href="#">
+                          <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"><%= recipes[i].name.replace(/&quot;/g, '\"' ) %></h5>
+                      </a>
+                      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Ingredients:
+                          <ul>
+                              <% for (let j=0; j < recipes[i].ingredientArray.length; j++) {%>
+                                  <li>
+                                      <%= recipes[i].ingredientArray[j]%>
+                                  </li>
+                                  <% } %>
+                          </ul>
+                          <p>Servings: <%= recipes[i].servings %>
+                          </p>
+                          <p>Prep Time: <%= times[i] %>
+                          </p>
+                          </p>
+                      <a href="/recipe?id=<%= recipes[i]._id %>&time=<%= times[i] %>"
+                          class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                          View Recipe
+                          <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
+                              xmlns="http://www.w3.org/2000/svg">
+                              <path fill-rule="evenodd"
+                                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"></path>
+                          </svg>
+                      </a>
+                  </div>
+      
+                  <% }} %>
+                  
             <script type="module" src="/scripts/Ingredientsearch.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 

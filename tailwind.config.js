@@ -4,13 +4,14 @@ module.exports = {
   content: [    './views/**/*.ejs',
                 './**/*.{html,js}'],
   theme: {
-    colors: {
-      'mmpr': '#395144',
-      'mmse': '#4E6C50',
-      'mmth': '#AA8B56',
-      'mmfo': '#F0EBCE',
+    extend: {
+      colors: {
+        'mmpr': '#395144',
+        'mmse': '#4E6C50',
+        'mmth': '#AA8B56',
+        'mmfo': '#F0EBCE',
+      },
     },
-    extend: {},
   },
   plugins: [],
 }
