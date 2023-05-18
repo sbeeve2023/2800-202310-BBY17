@@ -139,6 +139,7 @@ app.get("/", async (req, res) => {
   });
 
   let recipes = [];
+  let images = [];
   if (user.recents) {
     recents = user.recents;
     //get the recipes from the database
@@ -147,13 +148,26 @@ app.get("/", async (req, res) => {
         _id: new ObjectId(recents[i])
       });
       recipes.push(recipe);
+      let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipe.name)}&searchType=image`;
+        await fetch(apiUrl).then((response) => response.json()).then((data) => {
+            if (data.items && data.items.length > 0) {
+              const imageUrl = encodeURIComponent(data.items[0].link);
+              images.push(imageUrl);
+            } else {
+              console.log("No images found.");
+            }
+          })
+          .catch((error) => {
+            console.error("An error occurred:", error);
+          });
     }
   }
 
 
   res.render("landing-loggedin", {
     username: req.session.username,
-    recipes: recipes
+    recipes: recipes,
+    images: images
   });
 });
 
@@ -303,9 +317,20 @@ app.get("/search", async (req, res) => {
   let search = req.query.search;
   let time = req.query.time;
   let diet = req.query.diet;
-  await client.connect(); 
-  let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
-  let profileDiet = profile.diet;
+  if (!diet) {
+    diet = 0;
+  }
+  if (!time) {
+    time = 0;
+  }
+  if (req.session.authenticated) {
+    await client.connect(); 
+    let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+    var profileDiet = profile.diet;
+  } else {
+    var profile = false;
+    var profileDiet = false;
+  }
   let recipes = false;
   let images = [];
 
