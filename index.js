@@ -348,14 +348,6 @@ app.get("/searchIngredients", async (req, res) => {
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
     recipes = await database.find({
-      // ingredientArray: {
-        // $size: search.length, //Makes it so the ingredients much exactly match the search parameters.
-      //   $or: [
-      //     {$size: search.length},
-      //     {$lt: [{$size: search.length}]}
-      //   ],
-      //   $all: search
-      // }
       $or: [
         {ingredientArray: {$all: search}},
         {$and: [
@@ -363,6 +355,7 @@ app.get("/searchIngredients", async (req, res) => {
           {ingredientArray: {$in: search}}
       ]}
     ]
+    // ingredientArray: {$regex: new RegExp(search)}
     }).limit(5).toArray();
   }
   console.log("res" + recipes);
@@ -386,7 +379,8 @@ app.get("/searchIngredients", async (req, res) => {
   res.render("searchIngredients", {
     recipes: recipes,
     session: req.session,
-    times: times
+    times: times,
+    current: search
   });
 });
 
