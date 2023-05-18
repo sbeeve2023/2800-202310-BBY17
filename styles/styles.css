@@ -1060,6 +1060,19 @@ video {
   width: 100%;
 }
 
+.w-\[95\%\] {
+  width: 95%;
+}
+
+.w-max {
+  width: -moz-max-content;
+  width: max-content;
+}
+
+.w-\[calc\(100\%-1rem\)\] {
+  width: calc(100% - 1rem);
+}
+
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -3341,6 +3354,10 @@ video {
 }
 
 @media (min-width: 768px) {
+  .md\:visible {
+    visibility: visible;
+  }
+
   .md\:inset-0 {
     inset: 0px;
   }

@@ -96,43 +96,51 @@
     <div class="mt-12 flex flex-col justify-center">
 
 
-      <!-- Saved Recipes Area -->
-      <div id="saved-recipes" class="bg-gray-700">
-        <label class="text-white" for="recipe-scroll">Bookmarked Recipes</label>
-        <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
-          <%if (bookmarks != undefined) {
-          for (let i = 0; i < bookmarks.length; i++) {%>
-
-          <!-- Item -->
-          <div class=" flex-none text-center bg-white border border-gray-200 rounded-lg w-96">
-            <img class="rounded-t-lg w-[100%] object-contain " src="https://picsum.photos/100/100" alt="" />
-            <div class=" p-5 ">
-              <a href="#">
-                <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"><%=bookmarks[i].name%></h5>
-              </a>
-              <p class="mb-3 font-normal text-gray-700">Awesome delicious dish </p>
-              <a href="/recipe?id=<%=bookmarks[i]._id%>"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-                View Recipe
-                <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg">
-                  <path fill-rule="evenodd"
-                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          <%}}%>
-
+ <!-- Recent Recipes Area -->
+<div id="recent-recipes" class="bg-gray-700">
+  <label class="text-white" for="recipe-scroll">Bookmarked Recipes</label>
+  <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
+    <%if (bookmarks != undefined) {
+      for (let i = 0; i < bookmarks.length; i++) {%>
+        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: ""}) -%>
+      <%}}%>
   </div>
   <!-- More Button -->
-  <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 m-3 ">More</button>
-      </div>
-      <button class="text-indigo-500 py-2 px-4 font-medium mt-4">
-        Show more
-      </button>
+  <%if (bookmarks.length > 10){console.log("Hello");%>
+  <button id="more-recipes" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
+  <%}%>
+</div>
+
+<div id="recipe-modal" tabindex="-1" class="hidden fixed top-0 left-0 right-0 z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-max max-h-full">
+        <!-- Modal content -->
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <!-- Modal header -->
+            <div class="flex items-center justify-between p-5 border-b rounded-t dark:border-gray-600">
+                <h3 class="text-xl font-medium text-gray-900 dark:text-white">
+                    Extra Large modal
+                </h3>
+             
+                <button id="close-recipes" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="extralarge-modal">
+                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+              
+            </div>
+            <!-- Modal body -->
+            <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
+              <%if (bookmarks != undefined && bookmarks.length > 10) {
+                for (let i = 0; i < bookmarks.length; i++) {%>
+                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: ""}) -%>
+                <%}}%>
+            </div>
+            <!-- Modal footer -->
+            <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
+            </div>
+        </div>
+    </div>
+</div>
+
     </div>
   </div>
 </div>
@@ -156,6 +164,48 @@
         document.getElementById("editable2").disabled = true;
       }
     });
+
+
+
+    if(<%=bookmarks.length%> > 10){
+
+    // Get the modal
+    var modal = document.getElementById("recipe-modal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("more-recipes");
+
+    var closeModal = document.getElementById("close-recipes");
+
+    //Hide the modal
+    function hideModal() {
+    modal.classList.add("hidden");
+    }
+
+    // When the user clicks the button, open the modal
+    btn.onclick = function() {
+    modal.classList.remove("hidden");
+    }
+
+    btn.addEventListener("keyup", (event)=>{
+    if (event.key === "Escape") {
+    hideModal();
+    }
+    })
+
+    closeModal.onclick = function() {
+    hideModal();
+    }
+
+    modal.addEventListener("keyup", (event)=>{
+    if (event.key === "Escape") {
+    hideModal();
+    }
+    })
+    }
+  
+  
+
   </script>
 
 <%- include('templates/footer') %>
