@@ -32,7 +32,7 @@
                     <% if (current != undefined) { %>
                     <% for (var i = 0; i < current.length; i++) { %>
                     <span class="bg-blue-400 text-white py-1 px-2 rounded-full flex items-center Initial">
-                      <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" value="<%= current[i]%>">
+                      <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" name="search" value="<%= current[i]%>">
                       <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
                         <g transform="translate(1173.2 38.831)">
                           <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
@@ -48,7 +48,7 @@
                 </div>
 
                 <!-- Find Recipe Button -->
-                <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
+                <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mb-4 rounded w-full" id="search" type="submit">Find Recipe</button>
                 </form>
                 <script>
                     window.addEventListener("load", function () {
@@ -58,14 +58,16 @@
                         initialList[i].addEventListener("click", function () {
                               this.remove();
                           });
-                          var item = initialList[i].children[0].getAttribute("value");
+                          var item = initialList[i].children[0].value;
                           console.log(item);
                           var url = document.getElementById("submitForm");
                         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
                             url.action += item;
+                            console.log("help1");
                         } else {
-                            url.action += "," + item;
-                        }   
+                            url.action += "&search=" + item;
+                            console.log("help2");
+                        }
                       }
                     });
                     document.getElementById("ingredient").addEventListener("keypress", function (e) {

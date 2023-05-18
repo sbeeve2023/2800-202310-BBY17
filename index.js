@@ -347,16 +347,26 @@ app.get("/searchIngredients", async (req, res) => {
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    recipes = await database.find({
-      $or: [
-        {ingredientArray: {$all: search}},
-        {$and: [
-          { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-          {ingredientArray: {$in: search}}
-      ]}
-    ]
-    // ingredientArray: {$regex: new RegExp(search)}
-    }).limit(5).toArray();
+    var filter = 0;
+    if (filter == 1){
+    var connection = {};
+    connection.$and = search.map(ingredient => ({
+      ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
+    }));
+    recipes = await database.find(connection);
+    }else {
+      recipes = await database.find({
+        $or: [
+          {ingredientArray: {$all: search}},
+          {$and: [
+            { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
+            {ingredientArray: {$in: search}}
+        ]}
+      ]
+      
+      // ingredientArray: {$regex: new RegExp(search)}
+    }).limit(10).toArray();
+    }
   }
   console.log("res" + recipes);
   let times = [];
@@ -375,7 +385,7 @@ app.get("/searchIngredients", async (req, res) => {
   }
 
 
-
+  console.log(search);
   res.render("searchIngredients", {
     recipes: recipes,
     session: req.session,
