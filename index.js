@@ -222,11 +222,13 @@ app.get("/ai", async (req, res) => {
         }
       }else{
         dietaryRestrictions += ` ${user.diet},`;
+        restrictionsArray.push(user.diet);
       }
       
  
   }else{
     dietaryRestrictions += ` none`;
+    
   }
 
   }
@@ -265,6 +267,7 @@ app.get("/ai", async (req, res) => {
     let servings = aiObject.serving_size || "error";
     let steps = aiObject.steps || ["error"];
     let time = aiObject.cook_time || "error";
+
 
     res.render("ai", {name: name,
       ingredients: ingredients,
