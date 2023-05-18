@@ -154,10 +154,11 @@ app.get("/", async (req, res) => {
   });
 });
 
+//ChatGPT
 app.get("/ai", async (req, res) => {
 
 
-
+//Temporary Query-less-page
   if(req.query.chat == undefined){
     tempText = `{
       "name": "Vegan Nut-Free Peanut Butter Cookies",
@@ -185,7 +186,8 @@ app.get("/ai", async (req, res) => {
         "Bake for 10-12 minutes, or until the cookies are lightly golden around the edges.",
         "Remove from the oven and let the cookies cool on the baking sheet for 5 minutes.",
         "Transfer the cookies to a wire rack to cool completely before serving."
-      ]
+      ],
+      "cook_time": "10-12 minutes"
     }
     `
     let tempObject = JSON.parse(tempText);
@@ -193,22 +195,44 @@ app.get("/ai", async (req, res) => {
     let ingredients = tempObject.ingredients;
     let serving_size = tempObject.serving_size;
     let steps = tempObject.steps;
+    let cook_time = tempObject.cook_time;
     res.render("ai", {name: name,
        ingredients: ingredients,
-        serving_size: serving_size,
-         steps: steps});
+        servings: serving_size,
+        time: cook_time,
+         steps: steps,
+        restrictions: []});
     return;
   }
 
-  /*
 
-  recipe for peanut butter cookies that meets dietary
-  restrictions: nut-free, vegan. formatted as a JSON
-  object with keys: name, ingredients, serving_size, steps.
-  
-  */
-  
-  let dietaryRestrictions = `that meets dietary restrictions: none`;
+
+
+  let dietaryRestrictions = "that meets dietary restrictions:";
+  let restrictionsArray = [];
+
+  //Check if user is logged in
+  if (req.session.authenticated) {
+    user = await userCollection.findOne({email: req.session.email});
+    if(user.diet){
+      if(Array.isArray(user.diet)){
+        for(let i = 0; i < user.diet.length; i++){
+          dietaryRestrictions += ` ${user.diet[i]},`;
+          restrictionsArray.push(user.diet[i]);
+        }
+      }else{
+        dietaryRestrictions += ` ${user.diet},`;
+      }
+      
+ 
+  }else{
+    dietaryRestrictions += ` none`;
+  }
+
+  }
+
+
+
   let recipeName= req.query.chat;
 
   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
@@ -246,7 +270,8 @@ app.get("/ai", async (req, res) => {
       ingredients: ingredients,
       servings: servings,
       steps: steps,
-      time: time});
+      time: time,
+      restrictions: restrictionsArray});
     return;
   } catch (error) {console.error("Error:", error);}
 
