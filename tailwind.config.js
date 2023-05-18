@@ -6,10 +6,10 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'mmpr': '#395144',
-        'mmse': '#4E6C50',
-        'mmth': '#AA8B56',
-        'mmfo': '#F0EBCE',
+        'mmpr': '#518f3a',
+        'mmse': '#6cbd4f',
+        'mmth': '#86ee60',
+        'mmfo': '#f4f7ed',
       },
     },
   },
