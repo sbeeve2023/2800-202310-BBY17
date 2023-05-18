@@ -10,6 +10,10 @@ app.use(express.urlencoded({
 }));
 app.use("/public", express.static("./public"));
 app.use('/styles', express.static('styles'));
+
+//he
+const he = require('he');
+
 //body parser
 const bodyParser = require("body-parser");
 var urlencodedParser = bodyParser.urlencoded({
@@ -48,6 +52,8 @@ const mongodb_host = process.env.MONGODB_HOST;
 const mongodb_session_secret = process.env.MONGODB_SECRET;
 const mongodb_database = process.env.MONGODB_DATABASE;
 const node_session_secret = process.env.NODE_SESSION_SECRET;
+const apiKey = process.env.G_API_KEY;
+const searchEngineId = process.env.SEARCH_ENGINE_ID;
 
 //Session Store for Mongo
 var mongoStore = MongoStore.create({
@@ -295,17 +301,55 @@ app.post("/login-submit", async (req, res) => {
 //Search for recipes in the database test
 app.get("/search", async (req, res) => {
   let search = req.query.search;
+  let time = req.query.time;
+  let diet = req.query.diet;
+  await client.connect(); 
+  let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+  let profileDiet = profile.diet;
   let recipes = false;
+  let images = [];
+
+  let connection = {};
+  
   if (search) {
-    search = search.toLowerCase();
-    await client.connect();
-    const database = await client.db(mongodb_database).collection("recipes");
-    recipes = await database.find({
-      ingredientArray: {
-        "$regex": search
-      }
-    }).limit(20).toArray();
+    connection.name = {
+      $regex: new RegExp(search, "i")
+    }
   }
+  if (Array.isArray(profileDiet) && !(diet == 0)) {
+    profileDiet.push(diet);
+    connection.$and = profileDiet.map(restriction => ({
+      search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
+    }))
+  } else if (!(diet == 0) && !Array.isArray(profileDiet)) {
+    let dietArray = [profileDiet, diet];
+    connection.$and = dietArray.map(restriction => ({
+      search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
+    }))
+  } else {
+      if (!(diet == 0)) {
+        connection.search_terms = {
+        $regex: new RegExp(diet, "i")
+        } 
+      }
+      if (Array.isArray(profileDiet)) {
+        connection.$and = profileDiet.map(restriction => ({
+        search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
+        }))
+      } else {
+          connection.search_terms = {
+          $regex: new RegExp(profileDiet, "i")
+          }
+        }
+    }
+  if (!(time == 0)) {
+    connection.tags = {
+      $regex: new RegExp(time, "i")
+    }
+  }
+  await client.connect();
+  const database = await client.db(mongodb_database).collection("recipes");
+  recipes = await database.find(connection).limit(20).toArray();
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -313,6 +357,19 @@ app.get("/search", async (req, res) => {
     timeCurrent = timeCurrent.replaceAll("[", "");
     timeCurrent = timeCurrent.replaceAll("]", "");
     timeCurrent = timeCurrent.split(",");
+    recipes[i].name = he.decode(recipes[i].name);
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
+        await fetch(apiUrl).then((response) => response.json()).then((data) => {
+            if (data.items && data.items.length > 0) {
+              const imageUrl = encodeURIComponent(data.items[0].link);
+              images.push(imageUrl);
+            } else {
+              console.log("No images found.");
+            }
+          })
+          .catch((error) => {
+            console.error("An error occurred:", error);
+          });
     for (let i = timeCurrent.length - 1; i >= 0; i--) {
       if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
         timeCurrent.splice(i, 1);
@@ -323,7 +380,9 @@ app.get("/search", async (req, res) => {
   res.render("search", {
     recipes: recipes,
     session: req.session,
-    times: times
+    times: times,
+    images: images,
+    profile: profile
   });
 });
 //Required for home page search
@@ -550,7 +609,7 @@ app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   });
 
   req.session.diet = diet;
-  res.redirect("/dietEdit");
+  res.redirect("/profile");
 });
 
 
@@ -600,13 +659,12 @@ if (req.session.authenticated) {
 
   var recipeId = new ObjectId(req.query.id);
   var recipeTime = req.query.time;
-  console.log(recipeId);
+  let recipeImg = req.query.img;
   // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({
     _id: recipeId
-  }).limit(1).toArray();
-  console.log(read);
+  }).limit(1).toArray();  
   recipeName = read[0].name;
   //IngredientsArray
   var recipeIngList = read[0].ingredients_raw_str;
@@ -632,10 +690,7 @@ if (req.session.authenticated) {
   parsingTerms = parsingTerms.replaceAll("}", "");
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
-  console.log(recipeName + "\n" + recipeIngList + "\n" + recipeServings + "\n" + recipeSteps + "\n" + recipeTerms[0]);
-  console.log(typeof recipeTerms);
 
-  console.log(isBookmarked);
   res.render("recipe", {
     id: req.query.id,
     bookmarked: isBookmarked,
@@ -645,7 +700,8 @@ if (req.session.authenticated) {
     steps: recipeSteps,
     searchterms: recipeTerms,
     size: recipeSize,
-    time: recipeTime
+    time: recipeTime,
+    Image: recipeImg
   });
 });
 
@@ -839,6 +895,31 @@ app.get("/querytest", async (req, res) => {
   html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
+
+//Image test for reference
+app.get("/test", async (req, res) => {
+  const apiKey = 'AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k';
+  const searchEngineId = '139666e4b509c4654';
+  const searchTerm = 'banana';
+
+  const apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
+
+fetch(apiUrl)
+  .then(response => response.json())
+  .then(data => {
+    if (data.items && data.items.length > 0) {
+      const imageUrl = data.items[0].link;
+      console.log('Image URL:', imageUrl);
+      res.render("test", { url: imageUrl });
+    } else {
+      console.log('No images found.');
+    }
+  })
+  .catch(error => {
+    console.error('An error occurred:', error);
+  });
+});
+
 
 //404
 app.get("/*", (req, res) => {
