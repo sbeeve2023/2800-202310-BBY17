@@ -346,7 +346,7 @@ app.get("/search", async (req, res) => {
     connection.$and = profileDiet.map(restriction => ({
       search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
     }))
-  } else if (!(diet == 0) && !Array.isArray(profileDiet)) {
+  } else if (!(diet == 0) && profileDiet) {
     let dietArray = [profileDiet, diet];
     connection.$and = dietArray.map(restriction => ({
       search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
@@ -361,7 +361,7 @@ app.get("/search", async (req, res) => {
         connection.$and = profileDiet.map(restriction => ({
         search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
         }))
-      } else {
+      } else if (profileDiet){
           connection.search_terms = {
           $regex: new RegExp(profileDiet, "i")
           }
@@ -372,6 +372,7 @@ app.get("/search", async (req, res) => {
       $regex: new RegExp(time, "i")
     }
   }
+  console.log(connection);
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
