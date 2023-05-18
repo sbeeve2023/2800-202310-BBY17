@@ -26,16 +26,22 @@
             <option name="time" value="60">60 Minutes</option>
             <option name="time" value="4">60+ Minutes</option>
         </select>
+        <select name="profileDiet" style="visibility:hidden">
+            <% if (session.diet) {%>
+                <option name="placeholder" value="<%= session.diet %>"><%= session.diet %></option>
+            <% } %>
+        </select>
         <select name="diet">
             <option name="diet" value="0">Diet</option>
             <option name="diet" value="vegan">Vegan</option>
             <option name="diet" value="vegetarian">Vegetarian</option>
+            <option name="diet" value="dairy-free">Dairy Free</option>
+            <option name="diet" value="healthy">Healthy</option>
             <option name="diet" value="gluten-free">Gluten Free</option>
             <option name="diet" value="keto">Keto</option>
-            <option name="diet" value="paleo">Paleo</option>
-            <option name="diet" value="pescatarian">Pescatarian</option>
-            <option name="diet" value="low FODMAP">Low FODMAP</option>
-            <option name="diet" value="whole 30">Whole 30</option>
+            <option name="diet" value="low-fat">Low Fat</option>
+            <option name="diet" value="low-sodium">Low Sodium</option>
+            <option name="diet" value="low-carb">Low Carb</option>
         </select>
         <input name="search" type="search" id="default-search"
             class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
@@ -83,16 +89,16 @@
 </div> -->
 
 <div class=" flex-none text-center bg-white border border-gray-200 rounded-lg w-96">
-    <img class="rounded-t-lg w-[100%] object-contain " src="<%= images[i]%>" alt="" />
+    <img class="rounded-t-lg w-[100%] object-contain " src="<%= decodeURIComponent(images[i])%>" alt="" />
     <div class=" p-5 ">
       <a href="#">
-        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"><%= recipes[i].name.replace(/&quot;/g, '\"' ) %></h5>
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"><%= decodeURIComponent(recipes[i].name) %></h5>
       </a>
       <p class="mb-3 font-normal text-gray-700">Ingredients:</p>
       <ul>
         <% for (let j=0; j < recipes[i].ingredientArray.length; j++) {%>
         <li class="mb-3 font-normal text-gray-700">
-            <%= recipes[i].ingredientArray[j]%>
+            <%= decodeURIComponent(recipes[i].ingredientArray[j])%>
         </li>
         <% } %>
     </ul>
@@ -100,7 +106,7 @@
     </p>
     <p class="mb-3 font-normal text-gray-700">Prep Time: <%= times[i] %>
     </p>
-      <a href="/recipe?id=<%= recipes[i]._id %>&time=<%= times[i] %>"
+      <a href="/recipe?id=<%= recipes[i]._id %>&time=<%= times[i] %>&img=<%=images[i]%>"
         class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
         View Recipe
         <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
