@@ -42,9 +42,11 @@
 
 
             <!-- new layout starts here -->
-
+            
             <div class="container mx-auto p-4">
                 <!-- Dropdown Menu and Advanced Filters Button -->
+              <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex items-center justify-center">Mealmatch - Select your ingredients</h2>
+
                 <div class="flex justify-between items-center mb-4">
                   <select class="p-2 rounded border bg-mmth">
                     <option value="">Select Prep Time</option>
@@ -109,13 +111,6 @@
                     </div>
                   </div>
                 </div>
-
-
-
-
-
-
-
                 
                 <!-- Search Bar with Add Button -->
                 <div class="relative mt-4">
@@ -562,7 +557,8 @@
               </div>
               
             <!-- new layout ends here -->
-            <% if (recipes) { %>
+
+            <!-- <% if (recipes) { %>
               <h3>Recipes</h3>
               <% for (let i=0; i < recipes.length; i++) { %>
       
@@ -596,7 +592,29 @@
                       </a>
                   </div>
       
-                  <% }} %>
+                  <% }} %> -->
+
+            <!-- new results layout start here -->
+            <% if (recipes) { %>
+              <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
+
+              <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with  </h3>
+              <!--Recipe List-->
+              <div class="min-h-screen flex justify-center items-center py-20">
+                <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
+              <% for (let i=0; i < recipes.length; i++) { %>
+                  <% var recipe = recipes[i] %>
+                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i]}) -%>
+              <% } %>
+          
+            </div>
+          </div>
+          </div>
+          <% } %>
+
+            
+
+            
                   
             <script type="module" src="/scripts/Ingredientsearch.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>

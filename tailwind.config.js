@@ -11,7 +11,10 @@ module.exports = {
         'mmth': '#86ee60',
         'mmfo': '#f4f7ed',
       },
-    },
+      fontFamily: {
+        'title': ['Varela Round', 'sans-serif']
+      },
   },
   plugins: [],
+}
 }
