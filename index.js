@@ -108,11 +108,12 @@ app.use(session({
 }));
 
 
-//middleware to check if user is logged in
+//middleware to check if user is logged in and pass info to ejs
 const sessionValidation = (req, res, next) => {
   res.locals.validSession = req.session.authenticated;
   res.locals.username = req.session.username;
   res.locals.firstname = req.session.firstname;
+  res.locals.easterEgg = req.session.easterEgg;
   next();
 };
 
@@ -364,6 +365,7 @@ app.post("/signup-submit", async (req, res) => {
   req.session.lastname = lname;
   req.session.username = username;
   req.session.email = email;
+  req.session.easterEgg = false;
   req.session.cookie.maxAge = sessionExpireTime;
 
   res.redirect("/");
@@ -412,6 +414,7 @@ app.post("/login-submit", async (req, res) => {
     req.session.lastname = findUser.lastname;
     req.session.username = findUser.username;
     req.session.email = findUser.email;
+    req.session.easterEgg = findUser.easterEgg;
     req.session.cookie.maxAge = sessionExpireTime;
     res.redirect("/");
     return;
@@ -556,6 +559,7 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   req.session.email = email;
   res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
+
 //Change Password
 app.get("/change-password", async (req, res) => {
   if (!req.session.authenticated) {
@@ -852,6 +856,58 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
 //Easter Egg
 app.get("/easter-egg", async (req, res) => {
   res.render("easterEgg", {session: req.session});
+});
+
+//create easteregg check on profile
+app.post("/add-egg", async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user){
+    res.redirect("/login");
+    return;
+  } else {
+    await userCollection.findOneAndUpdate({
+      email: req.session.email
+    }, {
+      "$set": {
+        easterEgg: true
+      }
+    });
+
+    req.session.easterEgg = true;
+
+  res.redirect("/profile");
+}});
+
+//remove easteregg check on profile
+app.post("/remove-egg", async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user){
+    res.redirect("/login");
+    return;
+  } else {
+    await userCollection.findOneAndUpdate({
+      email: req.session.email
+    }, {
+      "$set": {
+        easterEgg: false
+      }
+    });
+
+    req.session.easterEgg = false;
+
+  res.redirect("/profile");
+}});
+
+app.get("/test", async (req, res) => {
+  res.render("test", {session: req.session});
 });
 
 

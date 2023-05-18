@@ -23,7 +23,7 @@
             // newBox.innerHTML += item;
             newBox.addEventListener("click", function () {
                 this.remove();
-            });
+        });
             document.getElementById("submitForm").appendChild(newBox);
             document.getElementById("thisForm").reset();
             var url = document.getElementById("submitForm");
@@ -37,32 +37,96 @@
             console.log("help");
         });
     </script> -->
-    
-   
-    
+
+
+
 
             <!-- new layout starts here -->
 
             <div class="container mx-auto p-4">
                 <!-- Dropdown Menu and Advanced Filters Button -->
                 <div class="flex justify-between items-center mb-4">
-                  <select class="p-2 rounded border">
+                  <select class="p-2 rounded border bg-mmth">
                     <option value="">Select Prep Time</option>
                     <!-- Add dropdown options here -->
                   </select>
-                  <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Advanced Filters</button>
+                  <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</button>
                 </div>
+
+                <!-- Modal -->
+                <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+                  <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
+                    <div class="flex justify-end">
+                      <button class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
+                    <div class="mb-4">
+                      <label class="flex items-center">
+                        <input type="checkbox" class="form-checkbox mr-2">
+                        Placeholder 1
+                      </label>
+                      <label class="flex items-center">
+                        <input type="checkbox" class="form-checkbox mr-2">
+                        Placeholder 2
+                      </label>
+                      <!-- Add more checkboxes placeholders here -->
+                    </div>
+
+                    <hr class="my-4">
+
+                    <h3 class="text-lg font-semibold mb-2">Remove Ingredients</h3>
+                    <div class="flex items-center">
+                      <input type="text" placeholder="Search ingredient" class="p-2 rounded border mr-2">
+                      <button class="bg-mmse hover:bg-mmpr text-white py-2 px-4 rounded">Add</button>
+                    </div>
+                    
+                    <div class="mt-4 flex flex-wrap">
+                      <span class="bg-mmse text-mmfo py-1 px-2 rounded-full flex items-center mb-2">
+                        <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" value="Ingredient Name">
+                        <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
+                          <g transform="translate(1173.2 38.831)">
+                            <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                              <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
+                            </g>
+                          </g>
+                        </svg>
+                      </span>
+                      <span class="bg-mmse text-mmfo py-1 px-2 rounded-full flex items-center mb-2">
+                        <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" value="Ingredient Name 2">
+                        <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
+                          <g transform="translate(1173.2 38.831)">
+                            <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                              <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
+                            </g>
+                          </g>
+                        </svg>
+                      </span>
+                      <!-- Add more input fields placeholders here -->
+                    </div>
+                  </div>
+                </div>
+
+
+
+
+
+
+
                 
                 <!-- Search Bar with Add Button -->
                 <div class="relative mt-4">
                     <form id="thisForm">
                         <input name="search" type="search" id="ingredient"
-                        class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                  class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Enter an Ingredient" required>
                         <button type="button" id="addBtn"
-                        class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">
-                        Add
-                        </button>
+                  class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
+                  Add
+                  </button>
                     </form>
                 </div>
                 
@@ -89,7 +153,7 @@
                 </div>
 
                 <!-- Find Recipe Button -->
-                <button class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
+                <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
                 </form>
                 <script>
                     document.getElementById("addBtn").addEventListener("click", 
@@ -142,17 +206,19 @@
                         console.log("help");
                     });
                 </script>
-
+                
                   <!-- Ingredient Categories -->
                   <div class="mt-5">
-                    <h1 class="text-center text-lg font-bold mb-5">Most Common Ingredients</h1>
+                    <h1 class="text-center text-lg font-bold mb-5 text-mmpr">Most Common Ingredients</h1>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       
                       <!-- Category 1 -->
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/fats_and_oils.jpeg" alt="Category 1" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Spices and Herbs</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                            <img src="/public/images/fats_and_oils.jpeg" alt="Category 1" class="h-full w-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Spices and Herbs</h2>
                         </label>
 
                         <!-- Ingredients in Category 1 -->
@@ -160,19 +226,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -182,8 +248,10 @@
                       <!-- Category 2 -->
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/fruits_detailfeature.jpg" alt="Category 2" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Fruits</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9">
+                            <img src="/public/images/fruits_detailfeature.jpg" alt="Category 2" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Fruits</h2>
                         </label>
 
                         <!-- Ingredients in Category 2 -->
@@ -191,19 +259,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -212,8 +280,10 @@
                       <!-- Category 3 -->
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/different-types-of-meat.jpg" alt="Category 3" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Meat</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                            <img src="/public/images/different-types-of-meat.jpg" alt="Category 3" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Meat</h2>
                         </label>
 
                         <!-- Ingredients in Category 3 -->
@@ -221,19 +291,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -244,8 +314,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 4" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Vegetables</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/vegetables.jpg" alt="Category 4" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Vegetables</h2>
                         </label>
 
                         <!-- Ingredients in Category 4 -->
@@ -253,19 +325,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -275,8 +347,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 5" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Dairy Products</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/dairy.jpg" alt="Category 5" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Dairy Products</h2>
                         </label>
 
                         <!-- Ingredients in Category 5 -->
@@ -284,19 +358,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -307,8 +381,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 6" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Seafood</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/seafood.jpg" alt="Category 6" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Seafood</h2>
                         </label>
 
                         <!-- Ingredients in Category 6 -->
@@ -316,19 +392,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -339,8 +415,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 7" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Cereal and pulses</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/Cereals-and-Pulses.jpg" alt="Category 7" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Cereal and pulses</h2>
                         </label>
 
                         <!-- Ingredients in Category 7 -->
@@ -348,19 +426,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -372,8 +450,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 8" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Sugar and sugar products</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/sugarprod.jpg" alt="Category 8" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Sugar and sugar products</h2>
                         </label>
 
                         <!-- Ingredients in Category 8 -->
@@ -381,19 +461,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -404,8 +484,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 9" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Nuts and oilseeds</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/nuts-seeds.jpeg" alt="Category 9" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Nuts and oilseeds</h2>
                         </label>
 
                         <!-- Ingredients in Category 9 -->
@@ -413,19 +495,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -436,8 +518,10 @@
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <img src="/public/images/vegetables.jpg" alt="Category 10" class="w-8 h-8 mr-2">
-                          <h2 class="text-lg font-semibold">Other</h2>
+                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
+                          <img src="/public/images/unknown.png" alt="Category 10" class="w-full h-full mr-2">
+                          </div>
+                          <h2 class="text-lg font-semibold text-mmpr">Other</h2>
                         </label>
 
                         <!-- Ingredients in Category 10 -->
@@ -445,19 +529,19 @@
                           <!-- Ingredient item -->
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 1</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 3</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 4</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
                           </label>
                           <label class="flex items-center">
                             <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2">Ingredient Name 5</span>
+                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
                           </label>
 
                           <!-- Add more ingredient items -->
@@ -516,6 +600,15 @@
                   
             <script type="module" src="/scripts/Ingredientsearch.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+
+            <script>
+              function openModal() {
+                document.getElementById("modal").classList.remove("hidden");
+              }
+              function closeModal() {
+                document.getElementById("modal").classList.add("hidden");
+              }
+            </script>
 
 
                 <%- include('templates/footer') -%>

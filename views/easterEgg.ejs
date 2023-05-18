@@ -1,20 +1,19 @@
 <%- include('templates/header') %>
 
-<h3 class="text-3xl font-semibold text-gray-700 capitalize dark:text-white justify-center mb-4 text-center">You found the cracked egg</h3>
+<h3 class="text-3xl font-semibold text-mmpr capitalize justify-center mb-4 text-center mt-4">You have cracked the Egg</h3>
 
-<img src="/public/images/cracked-egg.jpg">
-
-
-<h3 
-class="text-3xl font-semibold text-gray-700 capitalize dark:text-white justify-center mb-4 text-center"
->
-    You found the cracked egg
-</h3>
+<div class="flex justify-center">
+    <img src="/public/images/EggGifLQ.gif">
+  </div>
+  
 
 <h3 
-class="text-3xl font-semibold text-gray-700 capitalize dark:text-white justify-center mb-4 text-center"
+class="text-xl justify-center mb-4 text-center"
 >
-    Click here to add the cracked egg to your profile
+    <form action="/add-egg" method="post">
+        <input type="submit" value="Click here to add the cracked egg next to your profile" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mr-2">
+    </form>
+
 </h3>
 
 
