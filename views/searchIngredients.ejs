@@ -95,8 +95,8 @@
                   <div class="flex items-center mb-2" id="ingList">
                     <% if (current != undefined) { %>
                     <% for (var i = 0; i < current.length; i++) { %>
-                    <span class="bg-blue-400 text-white py-1 px-2 rounded-full flex items-center Initial">
-                      <input type="text" class="bg-transparent text-white outline-none pr-1 mr-1" name="search" value="<%= current[i]%>">
+                    <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
+                      <input type="text" class="bg-mmse hover:bg-mmpr text-mmfo outline-none pr-1 mr-1" name="search" value="<%= current[i]%>">
                       <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
                         <g transform="translate(1173.2 38.831)">
                           <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
@@ -141,14 +141,14 @@
                         var item = textBox.value;
                         //Make span element
                         var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-blue-400 text-white py-1 px-2 rounded-full flex items-center");
+                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
 
                         //Make input element
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
                         newBox.setAttribute("value", item);
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-white outline-none pr-1 mr-1")
+                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;
                         newSpan.addEventListener("click", function () {
@@ -189,14 +189,14 @@
                         var item = textBox.value;
                         //Make span element
                         var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-blue-400 text-white py-1 px-2 rounded-full flex items-center");
+                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
 
                         //Make input element
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
                         newBox.setAttribute("value", item);
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-white outline-none pr-1 mr-1")
+                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;
                         newSpan.addEventListener("click", function () {
