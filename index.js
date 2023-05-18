@@ -155,86 +155,41 @@ app.get("/", async (req, res) => {
   });
 });
 
-//ChatGPT
+//AI Test
 app.get("/ai", async (req, res) => {
 
 
 //Temporary Query-less-page
+
+
   if(req.query.chat == undefined){
-    tempText = `{
-      "name": "Vegan Nut-Free Peanut Butter Cookies",
-      "ingredients": [
-        "1/2 cup unsweetened applesauce",
-        "1/2 cup creamy peanut butter",
-        "1/4 cup coconut oil, melted",
-        "1/2 cup maple syrup",
-        "1 teaspoon vanilla extract",
-        "1 3/4 cups all-purpose flour",
-        "1/2 teaspoon baking soda",
-        "1/4 teaspoon salt",
-        "2 tablespoons granulated sugar, for rolling"
-      ],
-      "serving_size": "Makes 16 cookies",
-      "steps": [
-        "Preheat the oven to 350°F (175°C) and line a baking sheet with parchment paper.",
-        "In a large mixing bowl, combine the unsweetened applesauce, creamy peanut butter, melted coconut oil, maple syrup, and vanilla extract. Stir until well combined.",
-        "In a separate bowl, whisk together the all-purpose flour, baking soda, and salt.",
-        "Gradually add the dry ingredients to the wet ingredients, stirring until a thick dough forms.",
-        "Roll the dough into small balls, about 1 inch in diameter.",
-        "Roll each ball in granulated sugar to coat the exterior.",
-        "Place the coated balls onto the prepared baking sheet, spacing them about 2 inches apart.",
-        "Using a fork, gently press down on each ball to create a crisscross pattern.",
-        "Bake for 10-12 minutes, or until the cookies are lightly golden around the edges.",
-        "Remove from the oven and let the cookies cool on the baking sheet for 5 minutes.",
-        "Transfer the cookies to a wire rack to cool completely before serving."
-      ],
-      "cook_time": "10-12 minutes"
-    }
-    `
-    let tempObject = JSON.parse(tempText);
-    let name = tempObject.name;
-    let ingredients = tempObject.ingredients;
-    let serving_size = tempObject.serving_size;
-    let steps = tempObject.steps;
-    let cook_time = tempObject.cook_time;
-    res.render("ai", {name: name,
-       ingredients: ingredients,
-        servings: serving_size,
-        time: cook_time,
-         steps: steps,
-        restrictions: []});
+    res.render("ai-frame", {recipe: undefined, restrictions: ["none"]});
+    console.log(req.query.chat)
     return;
   }
-
-
-
 
   let dietaryRestrictions = "that meets dietary restrictions:";
   let restrictionsArray = [];
 
   //Check if user is logged in
   if (req.session.authenticated) {
-    user = await userCollection.findOne({email: req.session.email});
-    if(user.diet){
-      if(Array.isArray(user.diet)){
-        for(let i = 0; i < user.diet.length; i++){
+    user = await userCollection.findOne({
+      email: req.session.email
+    });
+    if (user.diet) {
+      if (Array.isArray(user.diet)) {
+        for (let i = 0; i < user.diet.length; i++) {
           dietaryRestrictions += ` ${user.diet[i]},`;
           restrictionsArray.push(user.diet[i]);
         }
-      }else{
+      } else {
         dietaryRestrictions += ` ${user.diet},`;
         restrictionsArray.push(user.diet);
       }
-      
- 
-  }else{
-    dietaryRestrictions += ` none`;
-    
+    } else {
+      dietaryRestrictions += ` none`;
+    }
   }
-
-  }
-
-
 
   let recipeName= req.query.chat;
 
@@ -262,27 +217,68 @@ app.get("/ai", async (req, res) => {
     let aiString = data.choices[0].message.content;
     console.log(aiString);
     let aiObject = JSON.parse(aiString);
-    console.log(aiObject);
-    let name = aiObject.name || recipeName;
-    let ingredients = aiObject.ingredients || ["error"];
-    let servings = aiObject.serving_size || "error";
-    let steps = aiObject.steps || ["error"];
-    let time = aiObject.cook_time || "error";
-
-
-    res.render("ai", {name: name,
-      ingredients: ingredients,
-      servings: servings,
-      steps: steps,
-      time: time,
-      restrictions: restrictionsArray});
+    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray});
     return;
   } catch (error) {console.error("Error:", error);}
 
-  res.send("error: " + error);
+  res.render("ai-frame", {recipe: undefined, restrictions: ["none"]});
  
 });
 
+//ChatGPT
+app.get("/ai-substitute", async (req, res) => {
+  //Only allow access if user is logged in
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  //throw error if no recipe is specified
+  if (req.query.recipeID == undefined) {
+    res.redirect("/");
+    return;
+  }
+
+  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  let user = await userCollection.findOne({email: req.session.email});
+  
+  let restrictionsArray = []
+  if(user.diet){
+    restrictionsArray = user.diet;
+  }
+  res.render("ai-frame", {originalRecipe: originalRecipe, restrictionsArray: restrictionsArray});
+
+  });
+
+app.post("/ai-recipe", async (req, res) => {
+
+  console.log(req.body);
+  return res.send("what's happening");
+  try{
+    const response = await fetch(chatgpt_url,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${chatgpt_key}`
+      },
+      body: JSON.stringify({"model": "gpt-3.5-turbo",
+      "messages": [{"role": "user", "content": request}]
+    })
+    });
+
+
+
+    const data = await response.json();
+   
+
+    let aiString = data.choices[0].message.content;
+    console.log(aiString);
+    let aiObject = JSON.parse(aiString);
+    //res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray});
+    console.log(aiObject);
+    return;
+  } catch (error) {console.error("Error:", error);}
+  return;
+});
 
 //Sign Up
 app.get("/signup", (req, res) => {
