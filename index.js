@@ -778,8 +778,10 @@ app.get("/searchIngredients", async (req, res) => {
       // ingredientArray: {$regex: new RegExp(search)}
     }
   }
-  recipes.sort((a, b) => b.score - a.score);
-  recipes = recipes.slice(0, 10);
+  if (search) {
+    recipes.sort((a, b) => b.score - a.score);
+    recipes = recipes.slice(0, 10);
+  }
   console.log('Filtered:', recipes);
   //CG CODE
   for (let i = 0; i < recipes.length; i++) {
