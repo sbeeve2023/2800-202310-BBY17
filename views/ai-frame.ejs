@@ -1,0 +1,34 @@
+<%- include('templates/header') %>
+
+<%if(locals.recipe){%>
+  <%- include('ai-recipe', {
+    name: recipe.name || "Error",
+    ingredients: recipe.ingredients || ["Error"],
+    servings: recipe.serving_size || "Error",
+    steps: recipe.steps || ["Error"],
+    time: recipe.cook_time || "Error",
+    restrictions: restrictions || ["Error"]}) %>
+  <%}else{%>
+    <img class="h-36 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/2048px-ChatGPT_logo.svg.png"/>
+    <h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Something went wrong.</h1>
+    <%}%>
+
+
+  <div class="flex justify-center mb-4 mt-3">
+    <form action="/ai-substitute?recipeID=<%=recipeID%>">
+      <input type="hidden" name="generate" value="true">
+      <button type="submit" class="mb-4 px-6 py-2 leading-5 text-mmfo transition-colors duration-200 transform bg-mmpr rounded-md hover:bg-mmse focus:outline-none focus:bg-mmse" name="recipeID" value="<%=recipeID%>" onclick="showLoading()">
+        Regenerate
+      </button>
+      <div class="flex items-center justify-center">
+        <div id="loading" class="w-12 h-12 rounded-full animate-spin
+        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+      </div>
+      </form>
+  </div>
+  <script>
+    function showLoading(){
+    document.getElementById("loading").hidden = false;
+    }
+  </script>
+<%- include('templates/footer') %>
