@@ -332,13 +332,13 @@ app.get("/ai-recipe", async (req, res) => {
     return;
   }
 
-  if (user.aibookmarks) {
-    for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
-      if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
-        isBookmarked = true;
-      }
-    }
-  }
+  // if (user.aibookmarks) {
+  //   for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
+  //     if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
+  //       isBookmarked = true;
+  //     }
+  //   }
+  // }
 
   res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
 });
@@ -996,15 +996,34 @@ if (req.session.authenticated) {
 }
 
 
+
+
   var recipeId = new ObjectId(req.query.id);
   var recipeTime = req.query.time;
-  let recipeImg = req.query.img;
+
   // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
   recipeName = read[0].name;
+
+  //Generate image
+  var imageURL = "";
+     apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipeName)}&searchType=image`;
+  await fetch(apiUrl).then((response) => response.json()).then((data) => {
+    if (data.items && data.items.length > 0) {
+      const imageFullURL = encodeURIComponent(data.items[0].link);
+      imageURL =  decodeURIComponent((imageFullURL));
+    } else {
+      console.log("No images found.");
+    }
+  })
+  .catch((error) => {
+    console.error("An error occurred:", error);
+  });
+  let recipeImg = req.query.img || imageURL;
+
   //IngredientsArray
   var recipeIngList = read[0].ingredients_raw_str;
   recipeIngList = recipeIngList.replaceAll("[", "");
