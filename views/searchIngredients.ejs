@@ -62,7 +62,7 @@
                       </label>
                       <!-- Add more checkboxes placeholders here -->
                     </div>
-                    <% if (profileDiet) { %>
+                    <% if (profileDiet && session.useDiet) { %>
                     <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
                     <ul>
                     <% if (Array.isArray(profileDiet)) { %>
@@ -74,7 +74,15 @@
                     <% } %>
                     </ul>
                     <% } %>
-
+                    <% if (session.useDiet) { %>
+                      <div class="py-3">
+                     <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=nope">Turn profile diet off</a>
+                     </div>
+                  <% } else { %>
+                      <div class="py-3">
+                      <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=nope">Turn profile diet on</a>
+                      </div>
+                  <% } %>
                   
                   </div>
                 </div>
@@ -128,9 +136,9 @@
                           var item = initialList[i].children[0].value;
                           var url = document.getElementById("submitForm");
                         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item;
+                            url.action += item.toLowerCase();
                         } else {
-                            url.action += "&search=" + item;
+                            url.action += "&search=" + item.toLowerCase();
                         }
                       }
                     });
@@ -147,7 +155,7 @@
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item);
+                        newBox.setAttribute("value", item.toLowerCase());
                         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;
@@ -195,7 +203,7 @@
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item);
+                        newBox.setAttribute("value", item.toLowerCase());
                         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;

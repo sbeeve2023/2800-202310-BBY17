@@ -60,7 +60,7 @@
               low-carb
             </label>
             <!-- Add more checkboxes placeholders here -->
-            <% if (profileDiet) { %>
+            <% if (profileDiet && session.useDiet) { %>
                 <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
                 <ul>
                 <% if (Array.isArray(profileDiet)) { %>
@@ -72,6 +72,15 @@
                 <% } %>
                 </ul>
                 <% } %>
+            <% if (session.useDiet) { %>
+                <div class="py-3">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=regular">Turn profile diet off</a>
+               </div>
+            <% } else { %>
+                <div class="py-3">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=regular">Turn profile diet on</a>
+                </div>
+            <% } %>
           </div>
           </div>
           </div>
@@ -122,14 +131,14 @@
   //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
   // });
 
-function openModal() {
+  function openModal() {
                 document.getElementById("modal").classList.remove("hidden");
               }
               function closeModal() {
                 document.getElementById("modal").classList.add("hidden");
               }
 
-window.addEventListener('load', function() {
+  window.addEventListener('load', function() {
   var egg = 'egg';
   var easter = '/easter-egg';
   var body = document.querySelector('body');
