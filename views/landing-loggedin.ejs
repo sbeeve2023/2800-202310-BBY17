@@ -19,15 +19,11 @@
 <!-- Recent Recipes Area -->
 <div id="recent-recipes" class="bg-gray-700">
   <label class="text-white" for="recipe-scroll">Recent Recipes</label>
-  <div class="flex w-auto overflow-x-auto overflow-y-hidden relative">
-    <div id="recipe-scroll" class=" flex overflow-x-scroll">
-      <%if (recipes.length > 0){%>
-      <%for (let i = recipes.length-1; i >= 0; i--) {%>
-        <div class="flex-shrink-0 min-w-[300px] mx-4">
-        <%- include('templates/recipe-card', {recipe: recipes[i], time: ""}) -%>
-        </div>
-        <%}}%>
-    </div>
+  <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
+    <%if (recipes.length > 0){%>}
+    <%for (let i = recipes.length-1; i >= 0; i--) {%>
+      <%- include('templates/recipe-card', {recipe: recipes[i], time: "", image: images[i]}) -%>
+      <%}}%>
   </div>
   <!-- More Button -->
   <%if (recipes.length > 10){%>
@@ -54,7 +50,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
               <%if (recipes.length > 10){%>
               <%for (let i = recipes.length-1; i >= 0; i--) {%>
-              <%- include('templates/recipe-card', {recipe: recipes[i], time: ""}) -%>
+                <%- include('templates/recipe-card', {recipe: recipes[i], time: "", image: images[i]}) -%>
               <%}}%>
             </div>
             <!-- Modal footer -->
