@@ -175,6 +175,11 @@ app.get("/", async (req, res) => {
     }
     time.push(timeCurrent);
   }
+  for(let i = 0; i < time.length; i++){
+    if (time[i].length == 0){
+      time[i].push("N/A");
+    }
+  }
 
 
   res.render("landing-loggedin", {
@@ -332,13 +337,13 @@ app.get("/ai-recipe", async (req, res) => {
     return;
   }
 
-  if (user.aibookmarks) {
-    for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
-      if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
-        isBookmarked = true;
-      }
-    }
-  }
+  // if (user.aibookmarks) {
+  //   for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
+  //     if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
+  //       isBookmarked = true;
+  //     }
+  //   }
+  // }
 
   res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
 });
@@ -586,6 +591,9 @@ app.get("/search", async (req, res) => {
           search_terms: {$regex: new RegExp(profileDiet, "i")}
           })
         }
+  if (connection.$and.length == 0) {
+    delete connection.$and;
+  }
   console.log(connection);
   if (search) {
   await client.connect();
@@ -619,6 +627,11 @@ app.get("/search", async (req, res) => {
       }
     }
     times.push(timeCurrent);
+  }
+  for(let i = 0; i < times.length; i++){
+    if (times[i].length == 0){
+      times[i].push("N/A");
+    }
   }
   res.render("search", {
     search: search,
@@ -698,6 +711,9 @@ app.get("/searchIngredients", async (req, res) => {
         ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
       }))
       });
+      if (connection.$and.length == 0) {
+        delete connection.$and;
+      }
       recipes = await database.find(connection).limit(10).toArray();
     }else {
       recipes = await database.find({
@@ -742,6 +758,11 @@ app.get("/searchIngredients", async (req, res) => {
       }
     }
     times.push(timeCurrent);
+  }
+  for(let i = 0; i < times.length; i++){
+    if (times[i].length == 0){
+      times[i].push("N/A");
+    }
   }
 console.log(connection);
 
@@ -807,6 +828,11 @@ app.get("/profile", async (req, res) => {
       }
     }
     time.push(timeCurrent);
+  }
+  for(let i = 0; i < time.length; i++){
+    if (time[i].length == 0){
+      time[i].push("N/A");
+    }
   }
 
 
@@ -996,15 +1022,34 @@ if (req.session.authenticated) {
 }
 
 
+
+
   var recipeId = new ObjectId(req.query.id);
   var recipeTime = req.query.time;
-  let recipeImg = req.query.img;
+
   // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
   recipeName = read[0].name;
+
+  //Generate image
+  var imageURL = "";
+     apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipeName)}&searchType=image`;
+  await fetch(apiUrl).then((response) => response.json()).then((data) => {
+    if (data.items && data.items.length > 0) {
+      const imageFullURL = encodeURIComponent(data.items[0].link);
+      imageURL =  decodeURIComponent((imageFullURL));
+    } else {
+      console.log("No images found.");
+    }
+  })
+  .catch((error) => {
+    console.error("An error occurred:", error);
+  });
+  let recipeImg = req.query.img || imageURL;
+
   //IngredientsArray
   var recipeIngList = read[0].ingredients_raw_str;
   recipeIngList = recipeIngList.replaceAll("[", "");
