@@ -95,7 +95,7 @@
                 <!-- Ingredients List -->
                 <div class="mt-4">
                   <!-- Ingredient item -->
-                  <div class="flex items-center mb-2" id="ingList">
+                  <div class="flex items-center mb-2 flex-wrap" id="ingList">
                     <% if (current != undefined) { %>
                     <% for (var i = 0; i < current.length; i++) { %>
                     <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
@@ -590,7 +590,6 @@
               </div>
               
             <!-- new layout ends here -->
-<<<<<<< HEAD
 
             <!-- <% if (recipes) { %>
               <h3>Recipes</h3>
@@ -638,7 +637,7 @@
                 <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
               <% for (let i=0; i < recipes.length; i++) { %>
                   <% var recipe = recipes[i] %>
-                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i]}) -%>
+                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
               <% } %>
           
             </div>
@@ -649,17 +648,6 @@
             
 
             
-=======
-            <% if (recipes) { %>
-              <h3 class="text-4xl font-medium text-gray-700">Recipes</h3>
-              <!--Recipe List-->
-              <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around overflow-y-scroll">
-              <% for (let i=0; i < recipes.length; i++) { %>
-                  <%var recipe = recipes[i] %>
-                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
-              <% }} %>
-              </div>
->>>>>>> callum_goss_adding_search_terms
                   
             <script type="module" src="/scripts/Ingredientsearch.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
