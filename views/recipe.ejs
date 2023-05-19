@@ -1,88 +1,94 @@
 <%- include('templates/header') %>
 
 <div class="container w-full bg-mmse">
-<div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-mmfo">
-  <!-- Recipe Title and Subtitle -->
-  <div class="mb-4">
-    <h1 class="text-3xl font-bold"><%= name %></h1>
-    <form <%if(bookmarked){%>action="airecipe-unsave"<%}else{%>action="airecipe-save"<%}%> method="post">
-      <button name="id" value="<%=id%>" type="submit" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"><%if(bookmarked){%>Remove From Bookmarks<%}else{%>Bookmark<%}%></button>
-    </form>
-    <div class="border-b-2 my-4"></div>
-    <p class="text-gray-600 mb-2"><strong>Review:</strong> 4.5/5</p>
-    <p class="text-gray-600 mb-2"><strong>Prep/Cook Time:</strong> <%= time%></p>
-    <p class="text-gray-600 mb-2"><strong>Number of Portions:</strong> <%= servings %> servings</p>
-    <p class="text-gray-600 mb-2"><strong>Portions Size:</strong> <%= size %> serving</p>
-    <div class="border-b-2 my-4"></div>
-  </div>
-  
-  
-  
-    <!-- Recipe tags -->
-  <div class="flex flex-wrap mb-4">
-      <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#Vegetarian</span>
-      <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#Healthy</span>
-      <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#LowCarb</span>
-      <!-- Add more tags as needed -->
-  </div>
+  <div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-mmfo">
+    <!-- Recipe Title and Subtitle -->
+    <div class="mb-4">
+      <h1 class="text-3xl font-bold mb-4"><%= name %></h1>
+      <form <%if(bookmarked){%>action="airecipe-unsave"<%}else{%>action="airecipe-save"<%}%> method="post">
+        <button name="id" value="<%=id%>" type="submit" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"><%if(bookmarked){%>Remove From Bookmarks<%}else{%>Bookmark<%}%></button>
+      </form>
+      <div class="border-b-2 my-4"></div>
+      <p class="text-gray-600 mb-2"><strong>Review:</strong> 4.5/5</p>
+      <p class="text-gray-600 mb-2"><strong>Prep/Cook Time:</strong> <%= time%></p>
+      <p class="text-gray-600 mb-2"><strong>Number of Portions:</strong> <%= servings %> servings</p>
+      <p class="text-gray-600 mb-2"><strong>Portions Size:</strong> <%= size %> serving</p>
+      <div class="border-b-2 my-4"></div>
+    </div>
+    
+    
+    
+      <!-- Recipe tags -->
+    <div class="flex flex-wrap mb-4">
+        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#Vegetarian</span>
+        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#Healthy</span>
+        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#LowCarb</span>
+        <!-- Add more tags as needed -->
+    </div>
 
 
-  <!-- Recipe Image -->
-  <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl" src="<%= Image%>" alt="Recipe" class="mb-8" width="400px">
+    <!-- Recipe Image -->
+    <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl" src="<%= Image%>" alt="Recipe" class="mb-8" width="400px">
 
-  <!-- Box 1: Needed Tools and Dietary Restrictions -->
-  <div class="flex flex-col md:flex-row mb-8">
-    <div class="md:w-1/2 mr-8 border rounded-lg p-4 bg-beige-100 mb-4">
-      <h2 class="text-xl font-bold mb-4">Needed Tools</h2>
-      <div class="flex flex-wrap">
-        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Stove</span>
-        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Oven</span>
-        <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Blender</span>
+    <!-- Box 1: Needed Tools and Dietary Restrictions -->
+    <div class="flex flex-col md:flex-row mb-8">
+      <div class="md:w-1/2 mr-8 border rounded-lg p-4 bg-beige-100 mb-4">
+        <h2 class="text-xl font-bold mb-4">Needed Tools</h2>
+        <div class="flex flex-wrap">
+          <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Stove</span>
+          <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Oven</span>
+          <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">Blender</span>
+        </div>
+      </div>
+      <div class="md:w-1/2 border rounded-lg p-4 bg-beige-100 mb-4">
+        <h2 class="text-xl font-bold mb-4">Search Terms</h2>
+        <div class="flex flex-wrap">
+          <% for (var i = 0; i < searchterms.length; i++) {%>
+              <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2"><%= searchterms[i] %></span>
+          <% } %>
+        </div>
       </div>
     </div>
-    <div class="md:w-1/2 border rounded-lg p-4 bg-beige-100 mb-4">
-      <h2 class="text-xl font-bold mb-4">Search Terms</h2>
-      <div class="flex flex-wrap">
-        <% for (var i = 0; i < searchterms.length; i++) {%>
-            <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2"><%= searchterms[i] %></span>
+    
+
+
+    <!-- Box 2: Ingredients -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold mb-4">Ingredients</h2>
+      <ul>
+          <% for (var i = 0; i < ingredients.length; i++) { %>
+          <li class="mb-2"><%= ingredients[i] %></li>
+          <% }%>
+      </ul>
+    </div>
+
+    <!-- Box 3: Instructions -->
+    <div>
+      <h2 class="text-xl font-bold mb-4">Instructions</h2>
+          <% for (var j = 0; j < steps.length; j++) { %>
+        <p class="mb-4"><strong><%= j+1 %> </strong><%= steps[j] %></p>
         <% } %>
-      </div>
     </div>
+
+  <!-- Box 4: Ai Button -->
+  <%if(locals.authenticated){%>
+    <div class="my-4 justify-center items-center flex">
+    <form action="ai-substitute">
+      <input type="hidden" name="generate" value="true">
+      <button name="recipeID" value="<%=id%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
+        Use AI to substitute ingredients
+      </button>
+      <div class="flex items-center justify-center">
+        <div id="loading" class="w-12 h-12 rounded-full animate-spin
+        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+      </div>
+    </form>
+  </div>  
+
+  <%}%>
+
+
   </div>
-  
-
-
-  <!-- Box 2: Ingredients -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold mb-4">Ingredients</h2>
-    <ul>
-        <% for (var i = 0; i < ingredients.length; i++) { %>
-        <li class="mb-2"><%= ingredients[i] %></li>
-        <% }%>
-    </ul>
-  </div>
-
-  <!-- Box 3: Instructions -->
-  <div>
-    <h2 class="text-xl font-bold mb-4">Instructions</h2>
-        <% for (var j = 0; j < steps.length; j++) { %>
-      <p class="mb-4"><strong><%= j+1 %> </strong><%= steps[j] %></p>
-      <% } %>
-  </div>
-
-<!-- Box 4: Ai Button -->
-<%if(locals.authenticated){%>
-<form action="ai-substitute">
-  <input type="hidden" name="generate" value="true">
-  <button name="recipeID" value="<%=id%>" onclick="showLoading() "class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-    Use AI to substitute ingredients
-  </button>
-  <img id="loading" src="https://i.gifer.com/origin/34/34338d26023e5515f6cc8969aa027bca_w200.gif" alt="Loading..." hidden/>
-</form>
-<%}%>
-
-
-</div>
 </div>
 
 <script>
