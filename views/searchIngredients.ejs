@@ -87,7 +87,7 @@
                 <form action="/searchIngredients?search=" method="get" id="submitForm" >
                 <div class="mt-4">
                   <!-- Ingredient item -->
-                  <div class="flex items-center mb-2" id="ingList">
+                  <div class="flex items-center mb-2 flex-wrap" id="ingList">
                     <% if (current != undefined) { %>
                     <% for (var i = 0; i < current.length; i++) { %>
                     <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
