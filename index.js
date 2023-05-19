@@ -480,6 +480,7 @@ app.post("/signup-submit", async (req, res) => {
   req.session.email = email;
   req.session.easterEgg = false;
   req.session.cookie.maxAge = sessionExpireTime;
+  req.session.useDiet = true;
 
   res.redirect("/");
 
@@ -529,6 +530,7 @@ app.post("/login-submit", async (req, res) => {
     req.session.email = findUser.email;
     req.session.easterEgg = findUser.easterEgg;
     req.session.cookie.maxAge = sessionExpireTime;
+    req.session.useDiet = true;
     res.redirect("/");
     return;
   } else {
@@ -581,12 +583,12 @@ app.get("/search", async (req, res) => {
           search_terms: {$regex: new RegExp(diet, "i")}
           })
         }
-      if (Array.isArray(profileDiet)) {
+      if (Array.isArray(profileDiet) && req.session.useDiet) {
         connection.$and.push({ $and: profileDiet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
         }))
       })
-      } else if (profileDiet){
+      } else if (profileDiet && req.session.useDiet){
           connection.$and.push({
           search_terms: {$regex: new RegExp(profileDiet, "i")}
           })
@@ -698,12 +700,12 @@ app.get("/searchIngredients", async (req, res) => {
           search_terms: {$regex: new RegExp(diet, "i")}
           })
         }
-      if (Array.isArray(profileDiet)) {
+      if (Array.isArray(profileDiet) && req.session.useDiet) {
         connection.$and.push({ $and: profileDiet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
         }))
       })
-      } else if (profileDiet){
+      } else if (profileDiet && req.session.useDiet){
           connection.$and.push({
           search_terms: {$regex: new RegExp(profileDiet, "i")}
           })
@@ -836,6 +838,22 @@ console.log(connection);
     images: images,
     profileDiet: profileDiet
   });
+});
+
+//turns using the profile diets on and off in the search pages
+app.get("/useDiet", urlencodedParser, async (req, res) => {
+  console.log(req.query);
+  if (req.query.type == "off") {
+    req.session.useDiet = false;
+  } else {
+    req.session.useDiet = true;
+    console.log(req.session.useDiet);
+  }
+  if (req.query.return == "regular") {
+  res.redirect("/search");
+  } else {
+    res.redirect("/searchIngredients");
+  }
 });
 
 //Profile

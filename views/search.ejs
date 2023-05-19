@@ -60,7 +60,10 @@
               low-carb
             </label>
             <!-- Add more checkboxes placeholders here -->
-            <% if (profileDiet) { %>
+            <script>
+                console.log('<%= profileDiet %>, <%= session%>');
+                </script>
+            <% if (profileDiet && session.useDiet) { %>
                 <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
                 <ul>
                 <% if (Array.isArray(profileDiet)) { %>
@@ -72,6 +75,15 @@
                 <% } %>
                 </ul>
                 <% } %>
+            <% if (session.useDiet) { %>
+                <div class="py-3">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off">Turn profile diet off</a>
+               </div>
+            <% } else { %>
+                <div class="py-3">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on">Turn profile diet on</a>
+                </div>
+            <% } %>
           </div>
           </div>
           </div>
