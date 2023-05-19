@@ -627,7 +627,21 @@
             <% if (recipes) { %>
               <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
 
-              <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with  </h3>
+              <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with
+
+              
+              <!-- <% if(current != undefined) { %>
+                <% console.log(current) %>
+                <% for (let=0; i < current.length; i++) { %>
+                  <span class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">
+                <% var current = current[i] %>
+                <%= current %>
+                </span>
+                <% } %>
+              <% } else { %>
+                <% } %> -->
+                
+              </h3>
               <!--Recipe List-->
               <div class="min-h-screen flex justify-center items-center py-20">
                 <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
@@ -645,7 +659,7 @@
 
             
                   
-            <script type="module" src="/scripts/Ingredientsearch.js"></script>
+            <!-- new results layout ends here -->
             <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 
             <script>
