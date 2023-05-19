@@ -55,6 +55,10 @@ const node_session_secret = process.env.NODE_SESSION_SECRET;
 const apiKey = process.env.G_API_KEY;
 const searchEngineId = process.env.SEARCH_ENGINE_ID;
 
+//ChatGPT Variables
+const chatgpt_key = process.env.CHATGPT_KEY;
+const chatgpt_url = process.env.CHATGPT_URL;
+
 //Session Store for Mongo
 var mongoStore = MongoStore.create({
   mongoUrl: `mongodb+srv://${mongodb_user}:${mongodb_password}@${mongodb_host}/sessions`,
@@ -181,6 +185,213 @@ app.get("/", async (req, res) => {
     time: time,
   });
 });
+
+
+//ChatGPT
+app.get("/ai-substitute", async (req, res) => {
+  console.log(req.query.recipeID);
+  //Only allow access if user is logged in
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  //throw error if no recipe is specified
+  if (req.query.recipeID == undefined) {
+    res.redirect("/");
+    return;
+  }
+
+  try {
+    new ObjectId(req.query.recipeID);
+  } catch{
+    res.render("pageNotFound");
+    return;
+  }
+
+  //Get recipe from database
+  let originalRecipe = await recipeCollection.findOne({
+    _id: new ObjectId(req.query.recipeID)
+  });
+  let user = await userCollection.findOne({
+    email: req.session.email
+  });
+
+  if(originalRecipe == null){
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
+    return;
+  }
+  
+  orName = originalRecipe.name;
+  orIngredients = originalRecipe.ingredientArray;
+  orSteps = [];
+  //Parse steps into array
+  parsingSteps = originalRecipe.steps;
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  orSteps = parsingSteps.split("', '");
+  for (var i = 0; i < orSteps.length; i++) {
+    orSteps[i] = orSteps[i].replaceAll("'", "");
+  }
+
+  //Create dietary restrictions string===================
+  let restrictionsArray = []
+  let dietaryRestrictions = "that meets dietary restrictions:";
+  if (user.diet) {
+    restrictionsArray = user.diet;
+
+    //If only one restriction, make it an array
+    if(!Array.isArray(restrictionsArray)){
+      restrictionsArray = [restrictionsArray];
+    }
+
+    //Add each restriction to the string
+    if (Array.isArray(restrictionsArray)) {
+      for (let i = 0; i < restrictionsArray.length; i++) {
+        dietaryRestrictions += ` ${restrictionsArray[i]},`;
+      }
+    } else {
+      dietaryRestrictions += ` ${restrictionsArray},`;
+    }
+  } else {
+    //If no restrictions, add none
+    dietaryRestrictions += ` none`;
+  }
+
+  //Create request string===============================
+
+  // Only uses title of recipe
+  //   let recipeName = "<%=//locals.originalRecipe.name%>";
+  //   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
+  // formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
+  // `;
+
+  //Uses full original recipe
+  let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
+  for (let i = 0; i < orIngredients.length; i++) {
+    request += ` ${orIngredients[i]},`;
+  }
+  request += ` and the following steps:`;
+  for (let i = 0; i < orSteps.length; i++) {
+    request += ` ${orSteps[i]},`;
+  }
+  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).`;
+
+  //Send request to ChatGPT============================
+  try {
+    const response = await fetch(chatgpt_url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${chatgpt_key}`
+      },
+      body: JSON.stringify({
+        "model": "gpt-3.5-turbo",
+        "messages": [{
+          "role": "user",
+          "content": request
+        }]
+      })
+    });
+    const data = await response.json();
+    let aiString = data.choices[0].message.content;
+    console.log(aiString);
+    let aiObject = JSON.parse(aiString);
+    req.session.aiRecipe = aiObject;
+    console.log("Recipe in session",req.session.aiRecipe);
+
+    //Generate image
+    var imageURL = "";
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(aiObject.name)}&searchType=image`;
+    await fetch(apiUrl).then((response) => response.json()).then((data) => {
+        if (data.items && data.items.length > 0) {
+          const imageFullURL = encodeURIComponent(data.items[0].link);
+          imageURL =  decodeURIComponent((imageFullURL));
+        } else {
+          console.log("No images found.");
+        }
+      })
+      .catch((error) => {
+        console.error("An error occurred:", error);
+      });
+
+    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL, recipeID: req.query.recipeID});
+    return;
+  } catch (error) {
+
+    //bookmarked: isBookmarked,
+    console.error("Error:", error);
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID})
+
+  }
+});
+
+app.get("/ai-recipe", async (req, res) => {
+  var isBookmarked = false;
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  if (user.aibookmarks) {
+    for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
+      if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
+        isBookmarked = true;
+      }
+    }
+  }
+
+  res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
+});
+
+//Ai Recipe save
+app.post("/airecipe-save", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  //Get the user's bookmarks
+  var aibookmarks;
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user){
+    res.redirect("/login");
+    return;
+  }
+  if (!user.aibookmarks) {
+    aibookmarks = [];
+  } else {
+    aibookmarks = user.bookmarks;
+  }
+
+  //Save the recipe
+  var aiRecipe = req.session.aiRecipe;
+  aibookmarks.push(aiRecipe);
+ 
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      aibookmarks: aibookmarks
+    }
+  });
+
+
+  res.redirect("/ai-recipe?id=" + req.body.id);
+
+});
+
+//Ai Recipe unsave TODO: Does nothing
+app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  res.redirect("/ai-recipe?id=" + req.body.id);
+});
+
+
+
 
 //Sign Up
 app.get("/signup", (req, res) => {
@@ -822,6 +1033,8 @@ if (req.session.authenticated) {
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
 
+
+
   res.render("recipe", {
     id: req.query.id,
     bookmarked: isBookmarked,
@@ -832,7 +1045,8 @@ if (req.session.authenticated) {
     searchterms: recipeTerms,
     size: recipeSize,
     time: recipeTime,
-    Image: recipeImg
+    Image: recipeImg,
+    authenticated: req.session.authenticated,
   });
 });
 
@@ -1054,7 +1268,7 @@ fetch(apiUrl)
 
 //404
 app.get("/*", (req, res) => {
-  res.send("404, page not found");
+  res.render("pageNotFound");
 });
 
 
