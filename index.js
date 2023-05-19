@@ -265,14 +265,15 @@ app.get("/ai-substitute", async (req, res) => {
   if(user.diet){
     restrictionsArray = user.diet;
   }
-  res.render("ai-frame", {originalRecipe: originalRecipe, restrictionsArray: restrictionsArray});
+  res.render("ai-frame", {originalRecipe: originalRecipe,
+     restrictionsArray: restrictionsArray,
+
+    });
 
   });
 
 app.post("/ai-recipe", async (req, res) => {
-
-  console.log(req.body);
-  return res.send("what's happening");
+  return;
   try{
     const response = await fetch(chatgpt_url,{
       method: 'POST',

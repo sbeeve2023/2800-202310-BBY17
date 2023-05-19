@@ -101,17 +101,33 @@
       request += ` ${originalRecipe.steps[i]},`;
     }
 
-    //send request to server
-    let response = await fetch("/ai-recipe", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ request }),
-    });
-    //response = await response.json();
-    console.log("response :D",response);
-    
+    requestObject = {request: request};
+ 
+      fetch("/ai-recipe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ request }),
+      })
+        .then((res) => {
+          console.log("here");
+          window.location.href = `/ai-recipe`
+        }
+        );
+
+           //send request to server
+    // let response = await fetch("/ai-recipe", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ request }),
+    // });
+    // var xhr = new XMLHttpRequest();
+    // xhr.open("POST", "/ai-recipe", true);
+    // xhr.setRequestHeader('Content-Type', 'application/json');
+    // xhr.send(JSON.stringify({ request }));
     
 
     }
