@@ -749,6 +749,10 @@ app.get("/searchIngredients", async (req, res) => {
                 $and: [
                   // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
                   { ingredientArray: { $in: search } }
+                  // {
+                  //     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
+                  //     $options: 'i'
+                  //   }
                 ]
               }
             ]

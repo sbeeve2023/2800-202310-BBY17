@@ -128,9 +128,9 @@
                           var item = initialList[i].children[0].value;
                           var url = document.getElementById("submitForm");
                         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item;
+                            url.action += item.toLowerCase();
                         } else {
-                            url.action += "&search=" + item;
+                            url.action += "&search=" + item.toLowerCase();
                         }
                       }
                     });
@@ -147,7 +147,7 @@
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item);
+                        newBox.setAttribute("value", item.toLowerCase());
                         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;
@@ -195,7 +195,7 @@
                         var newBox = document.createElement("input");
                         newBox.setAttribute("type", "text");
                         newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item);
+                        newBox.setAttribute("value", item.toLowerCase());
                         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
                         // newBox.setAttribute("disabled", true);
                         // newBox.innerHTML += item;
