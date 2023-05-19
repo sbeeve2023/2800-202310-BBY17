@@ -682,6 +682,7 @@ app.get("/searchIngredients", async (req, res) => {
     const database = await client.db(mongodb_database).collection("recipes");
     var filter = 1;
     if (filter == 1){
+      //CG CODE
       var connection = {};
       connection.$and = [];
       if (!(time == 0) && time) {
@@ -707,28 +708,80 @@ app.get("/searchIngredients", async (req, res) => {
           search_terms: {$regex: new RegExp(profileDiet, "i")}
           })
         }
-      connection.$and.push({ $and: search.map(ingredient => ({
-        ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
-      }))
+      connection.$and.push({
+        $or: [
+          { ingredientArray: { $all: search } },
+          {
+            $and: [
+              { ingredientArray: { $in: search } }
+            ]
+          }
+        ]
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
-      recipes = await database.find(connection).limit(10).toArray();
-    }else {
-      recipes = await database.find({
-        $or: [
-          {ingredientArray: {$all: search}},
-          {$and: [
-            { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-            {ingredientArray: {$in: search}}
-        ]}
-      ]
+      recipes = await database.find(connection).project({ tags: 1,
+        name: 1,
+        ingredientArray: 1,
+        servings: 1,
+        score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
+        .sort({ score: -1 }).limit(10).toArray();
+        console.log('Recipes:', recipes);
+    // }else {
+    //   recipes = await database.find({
+    //     $or: [
+    //       {ingredientArray: {$all: search}},
+    //       {$and: [
+    //         { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
+    //         {ingredientArray: {$in: search}}
+    //     ]}
+    //   ]
+      //BK CODE
+
+    } else {
+      try {
+        recipes = await database
+          .find({
+            $or: [
+              { ingredientArray: { $all: search } },
+              {
+                $and: [
+                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
+                  { ingredientArray: { $in: search } }
+                ]
+              }
+            ]
+          })
+          .project({ tags: 1,
+                    name: 1,
+                    ingredientArray: 1,
+                    servings: 1,
+            score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
+          .sort({ score: -1 })
+          .limit(10)
+          .toArray();
       
+        console.log('Recipes:', recipes);
+      } catch (error) {
+        console.log('Error occurred while executing the query:', error);
+      }
+      
+    // for (var i = 0; i < search.length; i++){
+    //   recipes.sort(search[i]);
+    // }
+    // recipes.project({ score: { $size: { $setIntersection: ["$ingredientArray", search] } } }).sort({ score: -1 });
+    // ingredientArray: {
+      //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
+      //   $options: 'i'
+      // }
       // ingredientArray: {$regex: new RegExp(search)}
-    }).limit(10).toArray();
     }
   }
+  recipes.sort((a, b) => b.score - a.score);
+  recipes = recipes.slice(0, 10);
+  console.log('Filtered:', recipes);
+  //CG CODE
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
     let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
@@ -738,13 +791,16 @@ app.get("/searchIngredients", async (req, res) => {
               images.push(imageUrl);
             } else {
               console.log("No images found.");
-              images.push(encodedURIcontent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
+              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
             }
           })
           .catch((error) => {
             console.error("An error occurred:", error);
           });
   }
+  //BK CODE
+
+  console.log("res" + recipes);
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
