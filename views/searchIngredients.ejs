@@ -663,6 +663,36 @@
               function closeModal() {
                 document.getElementById("modal").classList.add("hidden");
               }
+
+              window.addEventListener('load', function() {
+                var egg = 'egg';
+                var easter = '/easter-egg';
+                var body = document.querySelector('body');
+                
+                replaceTextWithLink(body, egg, easter);
+              });
+
+              function replaceTextWithLink(element, keyword, linkURL) {
+                if (element.nodeType === Node.TEXT_NODE) {
+                  var content = element.textContent;
+                  var regex = new RegExp(keyword, 'gi');
+                  if (regex.test(content)) {
+                    var newContent = content.replace(regex, '<a href="' + linkURL + '">$&</a>');
+                    var span = document.createElement('span');
+                    span.innerHTML = newContent;
+                    element.parentNode.replaceChild(span, element);
+                  }
+                } else {
+                  var childNodes = element.childNodes;
+                  for (var i = 0; i < childNodes.length; i++) {
+                    replaceTextWithLink(childNodes[i], keyword, linkURL);
+                  }
+                }
+              }
+
+
+
+
             </script>
 
 
