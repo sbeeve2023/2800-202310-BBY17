@@ -164,11 +164,27 @@ app.get("/", async (req, res) => {
     }
   }
 
+  let time = [];
+  for (let i = 0; i < recipes.length; i++) {
+    timeCurrent = recipes[i].tags;
+    timeCurrent = timeCurrent.replaceAll("'", "");
+    timeCurrent = timeCurrent.replaceAll("[", "");
+    timeCurrent = timeCurrent.replaceAll("]", "");
+    timeCurrent = timeCurrent.split(",");
+    for (let i = timeCurrent.length - 1; i >= 0; i--) {
+      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+        timeCurrent.splice(i, 1);
+      }
+    }
+    time.push(timeCurrent);
+  }
+
 
   res.render("landing-loggedin", {
     username: req.session.username,
     recipes: recipes,
-    images: images
+    images: images,
+    time: time,
   });
 });
 
@@ -414,6 +430,7 @@ app.get("/search", async (req, res) => {
     profile: profile
   });
 });
+
 //Required for home page search
 app.post("/search", async (req, res) => {
   let search = req.body.search;
@@ -496,11 +513,13 @@ app.get("/profile", async (req, res) => {
   let images = [];
   
   let bookmarks = [];
+  
   if (user.bookmarks != undefined) {
     var bookmarkIds = user.bookmarks;
+    let recipe =[] ;
     
     for (let i = 0; i < bookmarkIds.length; i++) {
-      let recipe = await recipeCollection.findOne({
+      recipe = await recipeCollection.findOne({
         _id: bookmarkIds[i]
       });
       bookmarks.push(recipe);
@@ -518,12 +537,35 @@ app.get("/profile", async (req, res) => {
           console.error("An error occurred:", error);
         });
     }
+
   }
+
+
+  let time = [];
+  for (let i = 0; i < bookmarks.length; i++) {
+    console.log(bookmarks[i]);
+    timeCurrent = bookmarks[i].tags;
+    timeCurrent = timeCurrent.replaceAll("'", "");
+    timeCurrent = timeCurrent.replaceAll("[", "");
+    timeCurrent = timeCurrent.replaceAll("]", "");
+    timeCurrent = timeCurrent.split(",");
+    for (let i = timeCurrent.length - 1; i >= 0; i--) {
+      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+        timeCurrent.splice(i, 1);
+      }
+    }
+    time.push(timeCurrent);
+  }
+
+
+
+
 console.log(bookmarks);
   res.render("profile", {
     session: req.session,
     bookmarks: bookmarks,
-    images: images
+    images: images,
+    time: time,
   });
 });
 

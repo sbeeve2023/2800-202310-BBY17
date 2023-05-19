@@ -6,7 +6,10 @@
     <div class="grid grid-cols-1 md:grid-cols-3">
       <div class="grid grid-cols-3 text-center order-last md:order-first mt-20 md:mt-0">
         <div>
-          <p class="font-bold text-gray-700 text-xl">20</p>
+          <p class="font-bold text-gray-700 text-xl">
+            <% if(bookmarks != undefined) { %>
+            <%= bookmarks.length %> <% } else { %> 0 <% } %>
+          </p>
           <p class="text-gray-400">Saved Recipes</p>
         </div>
         <div>
@@ -97,17 +100,19 @@
 
 
  <!-- Saved Recipes Area -->
-<div id="recent-recipes" class="bg-gray-700">
+<div id="recent-recipes" class="bg-green-950">
   <label class="text-white" for="recipe-scroll">Bookmarked Recipes</label>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
     <%if (bookmarks != undefined) {
       for (let i = 0; i < bookmarks.length; i++) {%>
+        <div class="flex-shrink-0 min-w-[300px] mx-4">
         <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
+        </div>
       <%}}%>
   </div>
   <!-- More Button -->
   <%if (bookmarks.length > 10){console.log("Hello");%>
-  <button id="more-recipes" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
+  <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
   <%}%>
 </div>
 
@@ -131,7 +136,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
               <%if (bookmarks != undefined && bookmarks.length > 10) {
                 for (let i = 0; i < bookmarks.length; i++) {%>
-                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
+                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: time[i], image: images[i]}) -%>
                 <%}}%>
             </div>
             <!-- Modal footer -->

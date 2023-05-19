@@ -2,7 +2,7 @@
 
 
 <!--Search Bar -->
-<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded">
+<div class="container bg-mmfo border border-mmpr rounded">
 <h3 class="text-4xl font-bold text-green-950 flex items-center justify-center pt-6 font-title">Search by recipe</h3>
 <form type="text" name="search" class="mb-7 mt-6">
     <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search for a recipe</label>
@@ -14,14 +14,15 @@
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
-        <select name="time">
+        <div class="flex items-center mb-4 mr-5">
+          <select class="p-2 rounded border bg-mmth mr-5" name="time">
             <option name="time" value="0">Prep Time</option>
             <option name="time" value="15">15 Minutes</option>
             <option name="time" value="30">30 Minutes</option>
             <option name="time" value="60">60 Minutes</option>
             <option name="time" value="4">60+ Minutes</option>
-        </select>
-        <select name="diet">
+          </select>
+          <select name="diet" class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded">
             <option name="diet" value="0">Diet</option>
             <option name="diet" value="vegan">Vegan</option>
             <option name="diet" value="vegetarian">Vegetarian</option>
@@ -33,6 +34,26 @@
             <option name="diet" value="low-sodium">Low Sodium</option>
             <option name="diet" value="low-carb">Low Carb</option>
         </select>
+        </div>
+        <!-- <select name="time">
+            <option name="time" value="0">Prep Time</option>
+            <option name="time" value="15">15 Minutes</option>
+            <option name="time" value="30">30 Minutes</option>
+            <option name="time" value="60">60 Minutes</option>
+            <option name="time" value="4">60+ Minutes</option>
+        </select> -->
+        <!-- <select name="diet">
+            <option name="diet" value="0">Diet</option>
+            <option name="diet" value="vegan">Vegan</option>
+            <option name="diet" value="vegetarian">Vegetarian</option>
+            <option name="diet" value="dairy-free">Dairy Free</option>
+            <option name="diet" value="healthy">Healthy</option>
+            <option name="diet" value="gluten-free">Gluten Free</option>
+            <option name="diet" value="keto">Keto</option>
+            <option name="diet" value="low-fat">Low Fat</option>
+            <option name="diet" value="low-sodium">Low Sodium</option>
+            <option name="diet" value="low-carb">Low Carb</option>
+        </select> -->
         <input name="search" type="search" id="default-search"
             class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Search for a recipe" required>
@@ -41,9 +62,12 @@
     </div>
 </form>
 
+</div>
+
 <hr/>
 
 <!-- Search Results -->
+<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded">
 <% if (recipes) { %>
     <h3 class="text-4xl font-bold text-gray-950 items-center flex justify-center font-title mt-5">Recipes for <%= search %>   </h3>
     <!--Recipe List-->
