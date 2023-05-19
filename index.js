@@ -154,6 +154,7 @@ app.get("/", async (req, res) => {
               const imageUrl = encodeURIComponent(data.items[0].link);
               images.push(imageUrl);
             } else {
+              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
               console.log("No images found.");
             }
           })
@@ -391,6 +392,7 @@ app.get("/search", async (req, res) => {
               images.push(imageUrl);
             } else {
               console.log("No images found.");
+              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
             }
           })
           .catch((error) => {
@@ -508,6 +510,7 @@ app.get("/profile", async (req, res) => {
             images.push(imageUrl);
           } else {
             console.log("No images found.");
+            images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
           }
         })
         .catch((error) => {
