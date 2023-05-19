@@ -78,7 +78,8 @@
                   
                   </div>
                 </div>
-                
+              </form>
+
                 <!-- Search Bar with Add Button -->
                 <div class="relative mt-4">
                     <form id="thisForm">
@@ -116,7 +117,6 @@
 
                 <!-- Find Recipe Button -->
                 <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
-                </form>
                 <script>
                     window.addEventListener("load", function () {
                       var initialList = document.getElementsByClassName("Initial");
@@ -126,14 +126,11 @@
                               this.remove();
                           });
                           var item = initialList[i].children[0].value;
-                          console.log(item);
                           var url = document.getElementById("submitForm");
                         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
                             url.action += item;
-                            console.log("help1");
                         } else {
                             url.action += "&search=" + item;
-                            console.log("help2");
                         }
                       }
                     });
@@ -231,7 +228,6 @@
                         } else {
                             url.action += "," + item;
                         }   
-                        console.log("help");
                     });
                 </script>
                 
