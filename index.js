@@ -451,7 +451,10 @@ app.get("/searchIngredients", async (req, res) => {
             {ingredientArray: {$in: search}}
         ]}
       ]
-      
+      // ingredientArray: {
+      //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
+      //   $options: 'i'
+      // }
       // ingredientArray: {$regex: new RegExp(search)}
     }).limit(10).toArray();
     }
