@@ -175,78 +175,10 @@ app.get("/", async (req, res) => {
   });
 });
 
-//AI Test
-app.get("/ai", async (req, res) => {
-
-
-//Temporary Query-less-page
-
-
-  if(req.query.chat == undefined){
-    res.render("ai-frame", {recipe: undefined, restrictions: ["none"]});
-    console.log(req.query.chat)
-    return;
-  }
-
-  let dietaryRestrictions = "that meets dietary restrictions:";
-  let restrictionsArray = [];
-
-  //Check if user is logged in
-  if (req.session.authenticated) {
-    user = await userCollection.findOne({
-      email: req.session.email
-    });
-    if (user.diet) {
-      if (Array.isArray(user.diet)) {
-        for (let i = 0; i < user.diet.length; i++) {
-          dietaryRestrictions += ` ${user.diet[i]},`;
-          restrictionsArray.push(user.diet[i]);
-        }
-      } else {
-        dietaryRestrictions += ` ${user.diet},`;
-        restrictionsArray.push(user.diet);
-      }
-    } else {
-      dietaryRestrictions += ` none`;
-    }
-  }
-
-  let recipeName= req.query.chat;
-
-  let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
-  formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
-  `;
-
-  try{
-    const response = await fetch(chatgpt_url,{
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${chatgpt_key}`
-      },
-      body: JSON.stringify({"model": "gpt-3.5-turbo",
-      "messages": [{"role": "user", "content": request}]
-    })
-    });
-
-
-
-    const data = await response.json();
-   
-
-    let aiString = data.choices[0].message.content;
-    console.log(aiString);
-    let aiObject = JSON.parse(aiString);
-    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray});
-    return;
-  } catch (error) {console.error("Error:", error);}
-
-  res.render("ai-frame", {recipe: undefined, restrictions: ["none"]});
- 
-});
 
 //ChatGPT
 app.get("/ai-substitute", async (req, res) => {
+  console.log(req.query.recipeID);
   //Only allow access if user is logged in
   if (!req.session.authenticated) {
     res.redirect("/login");
@@ -258,6 +190,13 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   }
 
+  try {
+    new ObjectId(req.query.recipeID);
+  } catch{
+    res.render("pageNotFound");
+    return;
+  }
+
   //Get recipe from database
   let originalRecipe = await recipeCollection.findOne({
     _id: new ObjectId(req.query.recipeID)
@@ -266,6 +205,11 @@ app.get("/ai-substitute", async (req, res) => {
     email: req.session.email
   });
 
+  if(originalRecipe == null){
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
+    return;
+  }
+  
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
   orSteps = [];
@@ -342,7 +286,8 @@ app.get("/ai-substitute", async (req, res) => {
     let aiString = data.choices[0].message.content;
     console.log(aiString);
     let aiObject = JSON.parse(aiString);
-    console.log(aiObject);
+    req.session.aiRecipe = aiObject;
+    console.log("Recipe in session",req.session.aiRecipe);
 
     //Generate image
     var imageURL = "";
@@ -359,13 +304,81 @@ app.get("/ai-substitute", async (req, res) => {
         console.error("An error occurred:", error);
       });
 
-
-    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL});
+    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL, recipeID: req.query.recipeID});
     return;
   } catch (error) {
+
+    //bookmarked: isBookmarked,
     console.error("Error:", error);
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID})
+
   }
 });
+
+app.get("/ai-recipe", async (req, res) => {
+  var isBookmarked = false;
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  if (user.aibookmarks) {
+    for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
+      if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
+        isBookmarked = true;
+      }
+    }
+  }
+
+  res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
+});
+
+//Ai Recipe save
+app.post("/airecipe-save", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+
+  //Get the user's bookmarks
+  var aibookmarks;
+  var user = await userCollection.findOne({ email: req.session.email });
+  if(!user){
+    res.redirect("/login");
+    return;
+  }
+  if (!user.aibookmarks) {
+    aibookmarks = [];
+  } else {
+    aibookmarks = user.bookmarks;
+  }
+
+  //Save the recipe
+  var aiRecipe = req.session.aiRecipe;
+  aibookmarks.push(aiRecipe);
+ 
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      aibookmarks: aibookmarks
+    }
+  });
+
+
+  res.redirect("/ai-recipe?id=" + req.body.id);
+
+});
+
+//Ai Recipe unsave TODO: Does nothing
+app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  res.redirect("/ai-recipe?id=" + req.body.id);
+});
+
 
 
 
@@ -933,6 +946,8 @@ if (req.session.authenticated) {
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
 
+
+
   res.render("recipe", {
     id: req.query.id,
     bookmarked: isBookmarked,
@@ -943,7 +958,8 @@ if (req.session.authenticated) {
     searchterms: recipeTerms,
     size: recipeSize,
     time: recipeTime,
-    Image: recipeImg
+    Image: recipeImg,
+    authenticated: req.session.authenticated,
   });
 });
 
@@ -1165,7 +1181,7 @@ fetch(apiUrl)
 
 //404
 app.get("/*", (req, res) => {
-  res.send("404, page not found");
+  res.render("pageNotFound");
 });
 
 
