@@ -442,23 +442,46 @@ app.get("/searchIngredients", async (req, res) => {
       ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
     }));
     recipes = await database.find(connection).limit(10).toArray();
-    }else {
-      recipes = await database.find({
-        $or: [
-          {ingredientArray: {$all: search}},
-          {$and: [
-            { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-            {ingredientArray: {$in: search}}
-        ]}
-      ]
-      // ingredientArray: {
+    } else {
+      try {
+        recipes = await database
+          .find({
+            $or: [
+              { ingredientArray: { $all: search } },
+              {
+                $and: [
+                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
+                  { ingredientArray: { $in: search } }
+                ]
+              }
+            ]
+          })
+          .project({ tags: 1,
+                    name: 1,
+                    ingredientArray: 1,
+                    servings: 1,
+            score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
+          .sort({ score: -1 })
+          .limit(10)
+          .toArray();
+      
+        console.log('Recipes:', recipes);
+      } catch (error) {
+        console.log('Error occurred while executing the query:', error);
+      }
+      
+    // for (var i = 0; i < search.length; i++){
+    //   recipes.sort(search[i]);
+    // }
+    // recipes.project({ score: { $size: { $setIntersection: ["$ingredientArray", search] } } }).sort({ score: -1 });
+    // ingredientArray: {
       //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
       //   $options: 'i'
       // }
       // ingredientArray: {$regex: new RegExp(search)}
-    }).limit(10).toArray();
     }
   }
+  recipes.sort((a, b) => b.score - a.score);
 
   console.log("res" + recipes);
   let times = [];
