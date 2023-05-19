@@ -91,14 +91,7 @@ connectToDatabase();
 const database = client.db(mongodb_database);
 const userCollection = database.collection("users");
 const recipeCollection = database.collection('recipes');
-const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "nut-free",
- "kosher", "halal", "pescatarian", "paleo", "low-sodium", "low-carb", "low-fat",
-  "low-sugar", "organic", "raw", "whole30", "keto", "mediterranean", "south-beach",
-   "weight-watchers", "fodmap-friendly", "anti-inflammatory",
-    "egg-free", "fish-free", "low-fodmap", "pork-free", "red-meat-free",
-     "sesame-free", "shellfish-free", "soy-free", "sugar-conscious", "treenut-free",
-      "wheat-free", "alcohol-free", "immuno-supportive", "celery-free",
-       "crustacean-free", "lupine-free"]
+const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "low-sodium", "low-carb", "low-fat"]
 
 
 //Enables Cookies in Express
@@ -156,6 +149,7 @@ app.get("/", async (req, res) => {
             } else {
               images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
               console.log("No images found.");
+              images.push(encodedURIcontent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
             }
           })
           .catch((error) => {
@@ -358,41 +352,36 @@ app.get("/search", async (req, res) => {
       $regex: new RegExp(search, "i")
     }
   }
-  if (Array.isArray(profileDiet) && !(diet == 0)) {
-    profileDiet.push(diet);
-    connection.$and = profileDiet.map(restriction => ({
-      search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
-    }))
-  } else if (!(diet == 0) && profileDiet) {
-    let dietArray = [profileDiet, diet];
-    connection.$and = dietArray.map(restriction => ({
-      search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
-    }))
-  } else {
-      if (!(diet == 0)) {
-        connection.search_terms = {
-        $regex: new RegExp(diet, "i")
-        } 
-      }
-      if (Array.isArray(profileDiet)) {
-        connection.$and = profileDiet.map(restriction => ({
-        search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
-        }))
-      } else if (profileDiet){
-          connection.search_terms = {
-          $regex: new RegExp(profileDiet, "i")
-          }
+  connection.$and = [];
+      if (!(time == 0) && time) {
+        connection.tags = {
+          $regex: new RegExp(time, "i")
         }
-    }
-  if (!(time == 0)) {
-    connection.tags = {
-      $regex: new RegExp(time, "i")
-    }
-  }
+      }
+      if (Array.isArray(diet)) {
+        connection.$and.push({ $and: diet.map(restriction => ({
+          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
+        } else if (diet){
+          connection.$and.push({
+          search_terms: {$regex: new RegExp(diet, "i")}
+          })
+        }
+      if (Array.isArray(profileDiet)) {
+        connection.$and.push({ $and: profileDiet.map(restriction => ({
+          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
+        }))
+      })
+      } else if (profileDiet){
+          connection.$and.push({
+          search_terms: {$regex: new RegExp(profileDiet, "i")}
+          })
+        }
   console.log(connection);
+  if (search) {
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
+  }
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -427,7 +416,8 @@ app.get("/search", async (req, res) => {
     session: req.session,
     times: times,
     images: images,
-    profile: profile
+    profile: profile,
+    profileDiet: profileDiet
   });
 });
 
@@ -441,27 +431,64 @@ app.post("/search", async (req, res) => {
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
   let search = req.query.search;
-  console.log(req.query);
+  let time = req.query.time;
+  let diet = req.query.diet;
+  let images = [];
+  if (!time) {
+    time = 0;
+  }
+  if (req.session.authenticated) {
+    await client.connect();
+    let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+    var profileDiet = profile.diet;
+  } else {
+    var profile = false;
+    var profileDiet = false;
+  }
   let recipes = false;
   if (search != undefined) {
     // search = search.toLowerCase();
     // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     if (typeof search === "string"){
-      search = search.split(',').map(search => search.trim());
+      search = search.split(',');
     }
-    console.log("Search: " + typeof search);
     for (var i = 0; i < search.length; i++){
       search[i].toLowerCase;
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    var filter = 0;
+    var filter = 1;
     if (filter == 1){
-    var connection = {};
-    connection.$and = search.map(ingredient => ({
-      ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
-    }));
-    recipes = await database.find(connection).limit(10).toArray();
+      var connection = {};
+      connection.$and = [];
+      if (!(time == 0) && time) {
+        connection.tags = {
+          $regex: new RegExp(time, "i")
+        }
+      }
+      if (Array.isArray(diet)) {
+        connection.$and.push({ $and: diet.map(restriction => ({
+          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
+        } else if (diet){
+          connection.$and.push({
+          search_terms: {$regex: new RegExp(diet, "i")}
+          })
+        }
+      if (Array.isArray(profileDiet)) {
+        connection.$and.push({ $and: profileDiet.map(restriction => ({
+          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
+        }))
+      })
+      } else if (profileDiet){
+          connection.$and.push({
+          search_terms: {$regex: new RegExp(profileDiet, "i")}
+          })
+        }
+      connection.$and.push({ $and: search.map(ingredient => ({
+        ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
+      }))
+      });
+      recipes = await database.find(connection).limit(10).toArray();
     }else {
       recipes = await database.find({
         $or: [
@@ -476,8 +503,22 @@ app.get("/searchIngredients", async (req, res) => {
     }).limit(10).toArray();
     }
   }
-
-  console.log("res" + recipes);
+  for (let i = 0; i < recipes.length; i++) {
+    recipes[i].name = he.decode(recipes[i].name);
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
+        await fetch(apiUrl).then((response) => response.json()).then((data) => {
+            if (data.items && data.items.length > 0) {
+              const imageUrl = encodeURIComponent(data.items[0].link);
+              images.push(imageUrl);
+            } else {
+              console.log("No images found.");
+              images.push(encodedURIcontent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
+            }
+          })
+          .catch((error) => {
+            console.error("An error occurred:", error);
+          });
+  }
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -492,14 +533,15 @@ app.get("/searchIngredients", async (req, res) => {
     }
     times.push(timeCurrent);
   }
+console.log(connection);
 
-
-  console.log(search);
   res.render("searchIngredients", {
     recipes: recipes,
     session: req.session,
     times: times,
-    current: search
+    current: search,
+    images: images,
+    profileDiet: profileDiet
   });
 });
 
