@@ -441,7 +441,7 @@ app.get("/searchIngredients", async (req, res) => {
     connection.$and = search.map(ingredient => ({
       ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
     }));
-    recipes = await database.find(connection);
+    recipes = await database.find(connection).limit(10).toArray();
     }else {
       recipes = await database.find({
         $or: [
@@ -456,6 +456,7 @@ app.get("/searchIngredients", async (req, res) => {
     }).limit(10).toArray();
     }
   }
+
   console.log("res" + recipes);
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
@@ -694,21 +695,23 @@ if (req.session.authenticated) {
   recipeName = read[0].name;
   //IngredientsArray
   var recipeIngList = read[0].ingredients_raw_str;
-  recipeIngList = recipeIngList.replaceAll("'", "");
   recipeIngList = recipeIngList.replaceAll("[", "");
   recipeIngList = recipeIngList.replaceAll("]", "");
-  recipeIngList = recipeIngList.replaceAll("\"", "");
-  recipeIngList = recipeIngList.split(",");
-
+  recipeIngList = recipeIngList.split("\",\"");
+  for (var i = 0; i < recipeIngList.length; i++){
+    recipeIngList[i] = recipeIngList[i].replaceAll("\"", "");
+  }
   var recipeServings = read[0].servings;
   var recipeSize = read[0].serving_size;
   //Instructions Array
   parsingSteps = read[0].steps;
-  parsingSteps = parsingSteps.replaceAll("'", "");
   parsingSteps = parsingSteps.replaceAll("[", "");
   parsingSteps = parsingSteps.replaceAll("]", "");
   parsingSteps = parsingSteps.replaceAll("\"", "");
-  var recipeSteps = parsingSteps.split(".,");
+  var recipeSteps = parsingSteps.split("', '");
+  for (var i = 0; i < recipeSteps.length; i++){
+    recipeSteps[i] = recipeSteps[i].replaceAll("'", "");
+  }
   //Search Terms Array
   var parsingTerms = read[0].search_terms;
   parsingTerms = parsingTerms.replaceAll("'", "");
