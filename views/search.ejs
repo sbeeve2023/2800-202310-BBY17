@@ -2,10 +2,80 @@
 
 
 <!--Search Bar -->
-<div class="container bg-mmfo border border-mmpr rounded">
-<h3 class="text-4xl font-bold text-green-950 flex items-center justify-center pt-6 font-title">Search by recipe</h3>
-<form type="text" name="search" class="mb-7 mt-6">
-    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search for a recipe</label>
+<form type="text" name="search" class="h-[30vmin] mt-6">
+    <!-- Dropdown Menu and Advanced Filters Button -->
+    <div class="flex justify-between items-center mb-4">
+        <select class="p-2 rounded border bg-mmth" name="time">
+          <option name="time" value="0">Prep Time</option>
+          <option name="time" value="15">15 Minutes</option>
+          <option name="time" value="30">30 Minutes</option>
+          <option name="time" value="60">60 Minutes</option>
+          <option name="time" value="4">60+ Minutes</option>
+        </select>
+        <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+      </div>
+
+       <!-- Modal -->
+       <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
+          <div class="flex justify-end">
+            <button class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
+          <div class="mb-4">
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
+              vegan
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
+              vegetarian
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
+              dairy-free
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
+              healthy
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
+              gluten-free
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
+              low-fat
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
+              low-sodium
+            </label>
+            <label class="flex items-center">
+              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
+              low-carb
+            </label>
+            <!-- Add more checkboxes placeholders here -->
+            <% if (profileDiet) { %>
+                <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
+                <ul>
+                <% if (Array.isArray(profileDiet)) { %>
+                <% for (var i = 0; i < profileDiet.length; i++) { %>
+                <li><%= profileDiet[i] %></li>
+                <% } %>
+                <% } else { %>
+                <li><%= profileDiet %></li>
+                <% } %>
+                </ul>
+                <% } %>
+          </div>
+          </div>
+          </div>
+    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
     <div id="search-area" class="relative">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -14,46 +84,6 @@
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
-        <div class="flex items-center mb-4 mr-5">
-          <select class="p-2 rounded border bg-mmth mr-5" name="time">
-            <option name="time" value="0">Prep Time</option>
-            <option name="time" value="15">15 Minutes</option>
-            <option name="time" value="30">30 Minutes</option>
-            <option name="time" value="60">60 Minutes</option>
-            <option name="time" value="4">60+ Minutes</option>
-          </select>
-          <select name="diet" class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded">
-            <option name="diet" value="0">Diet</option>
-            <option name="diet" value="vegan">Vegan</option>
-            <option name="diet" value="vegetarian">Vegetarian</option>
-            <option name="diet" value="dairy-free">Dairy Free</option>
-            <option name="diet" value="healthy">Healthy</option>
-            <option name="diet" value="gluten-free">Gluten Free</option>
-            <option name="diet" value="keto">Keto</option>
-            <option name="diet" value="low-fat">Low Fat</option>
-            <option name="diet" value="low-sodium">Low Sodium</option>
-            <option name="diet" value="low-carb">Low Carb</option>
-        </select>
-        </div>
-        <!-- <select name="time">
-            <option name="time" value="0">Prep Time</option>
-            <option name="time" value="15">15 Minutes</option>
-            <option name="time" value="30">30 Minutes</option>
-            <option name="time" value="60">60 Minutes</option>
-            <option name="time" value="4">60+ Minutes</option>
-        </select> -->
-        <!-- <select name="diet">
-            <option name="diet" value="0">Diet</option>
-            <option name="diet" value="vegan">Vegan</option>
-            <option name="diet" value="vegetarian">Vegetarian</option>
-            <option name="diet" value="dairy-free">Dairy Free</option>
-            <option name="diet" value="healthy">Healthy</option>
-            <option name="diet" value="gluten-free">Gluten Free</option>
-            <option name="diet" value="keto">Keto</option>
-            <option name="diet" value="low-fat">Low Fat</option>
-            <option name="diet" value="low-sodium">Low Sodium</option>
-            <option name="diet" value="low-carb">Low Carb</option>
-        </select> -->
         <input name="search" type="search" id="default-search"
             class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Search for a recipe" required>
@@ -91,6 +121,13 @@
   //   var regex = new RegExp(egg, 'gi');
   //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
   // });
+
+  function openModal() {
+                document.getElementById("modal").classList.remove("hidden");
+              }
+              function closeModal() {
+                document.getElementById("modal").classList.add("hidden");
+              }
 
   window.addEventListener('load', function() {
   var egg = 'egg';
