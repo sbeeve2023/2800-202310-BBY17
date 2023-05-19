@@ -768,7 +768,7 @@ app.get("/searchIngredients", async (req, res) => {
           .limit(10)
           .toArray();
       
-        console.log('Recipes:', recipes);
+        // console.log('Recipes:', recipes);
       } catch (error) {
         console.log('Error occurred while executing the query:', error);
       }
@@ -788,7 +788,7 @@ app.get("/searchIngredients", async (req, res) => {
     recipes.sort((a, b) => b.score - a.score);
     recipes = recipes.slice(0, 10);
   }
-  console.log('Filtered:', recipes);
+  // console.log('Filtered:', recipes);
   //CG CODE
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
@@ -808,7 +808,7 @@ app.get("/searchIngredients", async (req, res) => {
   }
   //BK CODE
 
-  console.log("res" + recipes);
+  // console.log("res" + recipes);
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -828,7 +828,7 @@ app.get("/searchIngredients", async (req, res) => {
       times[i].push("N/A");
     }
   }
-console.log(connection);
+console.log(search);
 
   res.render("searchIngredients", {
     recipes: recipes,
