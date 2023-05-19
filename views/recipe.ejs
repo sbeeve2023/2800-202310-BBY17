@@ -6,6 +6,8 @@
   <div class="mb-4">
     <h1 class="text-3xl font-bold"><%= name %></h1>
     <form <%if(bookmarked){%>action="recipe-unsave"<%}else{%>action="recipe-save"<%}%> method="post">
+      <input type="text" id="img" name="img" value="<%=Image%>" hidden/>
+      <input type="text" id="time" name="time" value="<%=time%>" hidden/>
       <button name="id" value="<%=id%>" type="submit" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"><%if(bookmarked){%>Remove From Bookmarks<%}else{%>Bookmark<%}%></button>
     </form>
     <div class="border-b-2 my-4"></div>

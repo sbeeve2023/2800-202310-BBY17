@@ -172,6 +172,11 @@ app.get("/", async (req, res) => {
     }
     time.push(timeCurrent);
   }
+  for(let i = 0; i < time.length; i++){
+    if (time[i].length == 0){
+      time[i].push("N/A");
+    }
+  }
 
 
   res.render("landing-loggedin", {
@@ -410,6 +415,11 @@ app.get("/search", async (req, res) => {
     }
     times.push(timeCurrent);
   }
+  for(let i = 0; i < times.length; i++){
+    if (times[i].length == 0){
+      times[i].push("N/A");
+    }
+  }
   res.render("search", {
     search: search,
     recipes: recipes,
@@ -533,6 +543,11 @@ app.get("/searchIngredients", async (req, res) => {
     }
     times.push(timeCurrent);
   }
+  for(let i = 0; i < times.length; i++){
+    if (times[i].length == 0){
+      times[i].push("N/A");
+    }
+  }
 console.log(connection);
 
   res.render("searchIngredients", {
@@ -597,6 +612,11 @@ app.get("/profile", async (req, res) => {
       }
     }
     time.push(timeCurrent);
+  }
+  for(let i = 0; i < time.length; i++){
+    if (time[i].length == 0){
+      time[i].push("N/A");
+    }
   }
 
 
@@ -879,7 +899,7 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
   });
 
 
-  res.redirect("/recipe?id=" + req.body.id);
+  res.redirect("/recipe?id=" + req.body.id + "&time=" + req.body.time + "&img=" + encodeURIcomponent(req.body.img));
 
 });
 
@@ -919,7 +939,7 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
       bookmarks: newBookmarks
     }
   });
-  res.redirect("/recipe?id=" + req.body.id);
+  res.redirect("/recipe?id=" + req.body.id + "&time=" + req.body.time + "&img=" + encodeURIcomponent(req.body.img));
 
 });
 
