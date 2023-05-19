@@ -25,7 +25,13 @@
 
 
   <!-- Recipe Image -->
-  <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl" src="/public/chorizo-mozarella-gnocchi-bake-cropped-9ab73a3.jpg" alt="Recipe" class="mb-8">
+  <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl"
+  <%if (locals.imageURL) { %> 
+    src="<%=decodeURIComponent(imageURL)%>"
+  <% } else { %>
+    src="https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ="
+  <% } %>
+   alt="Error Loading Image" class="mb-8">
 
   <!-- Box 2: Ingredients -->
   <div class="mb-8">

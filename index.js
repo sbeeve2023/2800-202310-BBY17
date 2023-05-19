@@ -258,48 +258,116 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   }
 
-  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
-  let user = await userCollection.findOne({email: req.session.email});
-  
-  let restrictionsArray = []
-  if(user.diet){
-    restrictionsArray = user.diet;
-  }
-  res.render("ai-frame", {originalRecipe: originalRecipe,
-     restrictionsArray: restrictionsArray,
-
-    });
-
+  //Get recipe from database
+  let originalRecipe = await recipeCollection.findOne({
+    _id: new ObjectId(req.query.recipeID)
+  });
+  let user = await userCollection.findOne({
+    email: req.session.email
   });
 
-app.post("/ai-recipe", async (req, res) => {
-  return;
-  try{
-    const response = await fetch(chatgpt_url,{
+  orName = originalRecipe.name;
+  orIngredients = originalRecipe.ingredientArray;
+  orSteps = [];
+  //Parse steps into array
+  parsingSteps = originalRecipe.steps;
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  orSteps = parsingSteps.split("', '");
+  for (var i = 0; i < orSteps.length; i++) {
+    orSteps[i] = orSteps[i].replaceAll("'", "");
+  }
+
+  //Create dietary restrictions string===================
+  let restrictionsArray = []
+  let dietaryRestrictions = "that meets dietary restrictions:";
+  if (user.diet) {
+    restrictionsArray = user.diet;
+
+    //If only one restriction, make it an array
+    if(!Array.isArray(restrictionsArray)){
+      restrictionsArray = [restrictionsArray];
+    }
+
+    //Add each restriction to the string
+    if (Array.isArray(restrictionsArray)) {
+      for (let i = 0; i < restrictionsArray.length; i++) {
+        dietaryRestrictions += ` ${restrictionsArray[i]},`;
+      }
+    } else {
+      dietaryRestrictions += ` ${restrictionsArray},`;
+    }
+  } else {
+    //If no restrictions, add none
+    dietaryRestrictions += ` none`;
+  }
+
+  //Create request string===============================
+
+  // Only uses title of recipe
+  //   let recipeName = "<%=//locals.originalRecipe.name%>";
+  //   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
+  // formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
+  // `;
+
+  //Uses full original recipe
+  let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
+  for (let i = 0; i < orIngredients.length; i++) {
+    request += ` ${orIngredients[i]},`;
+  }
+  request += ` and the following steps:`;
+  for (let i = 0; i < orSteps.length; i++) {
+    request += ` ${orSteps[i]},`;
+  }
+  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).`;
+
+  //Send request to ChatGPT============================
+  try {
+    const response = await fetch(chatgpt_url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${chatgpt_key}`
       },
-      body: JSON.stringify({"model": "gpt-3.5-turbo",
-      "messages": [{"role": "user", "content": request}]
-    })
+      body: JSON.stringify({
+        "model": "gpt-3.5-turbo",
+        "messages": [{
+          "role": "user",
+          "content": request
+        }]
+      })
     });
-
-
-
     const data = await response.json();
-   
-
     let aiString = data.choices[0].message.content;
     console.log(aiString);
     let aiObject = JSON.parse(aiString);
-    //res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray});
     console.log(aiObject);
+
+    //Generate image
+    var imageURL = "";
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(aiObject.name)}&searchType=image`;
+    await fetch(apiUrl).then((response) => response.json()).then((data) => {
+        if (data.items && data.items.length > 0) {
+          const imageFullURL = encodeURIComponent(data.items[0].link);
+          imageURL =  decodeURIComponent((imageFullURL));
+        } else {
+          console.log("No images found.");
+        }
+      })
+      .catch((error) => {
+        console.error("An error occurred:", error);
+      });
+
+
+    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL});
     return;
-  } catch (error) {console.error("Error:", error);}
-  return;
+  } catch (error) {
+    console.error("Error:", error);
+  }
 });
+
+
 
 //Sign Up
 app.get("/signup", (req, res) => {
