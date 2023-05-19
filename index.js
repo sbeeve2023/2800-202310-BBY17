@@ -533,6 +533,7 @@ app.get("/search", async (req, res) => {
     times.push(timeCurrent);
   }
   res.render("search", {
+    search: search,
     recipes: recipes,
     session: req.session,
     times: times,
