@@ -104,7 +104,7 @@
   <label class="text-white" for="recipe-scroll">Bookmarked Recipes</label>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
     <%if (bookmarks != undefined) {
-      for (let i = 0; i < bookmarks.length; i++) {%>
+      for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
         <div class="flex-shrink-0 min-w-[300px] mx-4">
         <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
         </div>
@@ -135,7 +135,7 @@
             <!-- Modal body -->
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
               <%if (bookmarks != undefined && bookmarks.length > 10) {
-                for (let i = 0; i < bookmarks.length; i++) {%>
+                for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
                   <%- include('templates/recipe-card', {recipe: bookmarks[i], time: time[i], image: images[i]}) -%>
                 <%}}%>
             </div>
