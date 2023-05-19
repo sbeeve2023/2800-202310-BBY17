@@ -373,9 +373,11 @@ app.get("/search", async (req, res) => {
     }
   }
   console.log(connection);
+  if (search) {
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
+  }
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -421,27 +423,55 @@ app.post("/search", async (req, res) => {
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
   let search = req.query.search;
-  console.log(req.query);
+  let time = req.query.time;
+  let images = [];
+  if (!time) {
+    time = 0;
+  }
+  if (req.session.authenticated) {
+    await client.connect();
+    let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+    var profileDiet = profile.diet;
+  } else {
+    var profile = false;
+    var profileDiet = false;
+  }
   let recipes = false;
   if (search != undefined) {
     // search = search.toLowerCase();
     // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     if (typeof search === "string"){
-      search = search.split(',').map(search => search.trim());
+      search = search.split(',');
     }
-    console.log("Search: " + typeof search);
+    console.log("Search: " + Array.isArray(search));
     for (var i = 0; i < search.length; i++){
       search[i].toLowerCase;
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    var filter = 0;
+    var filter = 1;
     if (filter == 1){
-    var connection = {};
-    connection.$and = search.map(ingredient => ({
-      ingredientArray: { $regex: `\\b${ingredient}\\b`, $options: 'i' }
-    }));
-    recipes = await database.find(connection);
+      var connection = {};
+      connection.$and = [];
+      if (!(time == 0)) {
+        connection.tags = {
+          $regex: new RegExp(time, "i")
+        }
+      }
+      if (Array.isArray(profileDiet)) {
+        connection.$and.push({
+          search_terms: { $in: profileDiet.map(restriction => new RegExp(restriction, 'i')) }
+        })
+      } else if (profileDiet){
+          connection.search_terms = {
+          $regex: new RegExp(profileDiet, "i")
+          }
+        }
+      connection.$and.push({
+        ingredientsArray: { $in: search.map(ingredient => new RegExp(ingredient, 'i')) }
+      });
+      console.log(connection);
+      recipes = await database.find(connection).limit(10).toArray();
     }else {
       recipes = await database.find({
         $or: [
@@ -456,7 +486,21 @@ app.get("/searchIngredients", async (req, res) => {
     }).limit(10).toArray();
     }
   }
-  console.log("res" + recipes);
+  for (let i = 0; i < recipes.length; i++) {
+    recipes[i].name = he.decode(recipes[i].name);
+    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
+        await fetch(apiUrl).then((response) => response.json()).then((data) => {
+            if (data.items && data.items.length > 0) {
+              const imageUrl = encodeURIComponent(data.items[0].link);
+              images.push(imageUrl);
+            } else {
+              console.log("No images found.");
+            }
+          })
+          .catch((error) => {
+            console.error("An error occurred:", error);
+          });
+  }
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -478,7 +522,8 @@ app.get("/searchIngredients", async (req, res) => {
     recipes: recipes,
     session: req.session,
     times: times,
-    current: search
+    current: search,
+    images: images
   });
 });
 
