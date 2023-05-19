@@ -102,7 +102,7 @@
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
     <%if (bookmarks != undefined) {
       for (let i = 0; i < bookmarks.length; i++) {%>
-        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: ""}) -%>
+        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
       <%}}%>
   </div>
   <!-- More Button -->
@@ -131,7 +131,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
               <%if (bookmarks != undefined && bookmarks.length > 10) {
                 for (let i = 0; i < bookmarks.length; i++) {%>
-                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: ""}) -%>
+                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
                 <%}}%>
             </div>
             <!-- Modal footer -->

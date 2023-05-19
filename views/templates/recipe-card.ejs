@@ -1,7 +1,9 @@
 
 
 <div class=" flex-none text-center bg-white border border-gray-200 rounded-lg w-96">
+  <%if (locals.image){%>
     <img class="rounded-t-lg w-[100%] object-contain " src="<%= decodeURIComponent(image)%>" alt="" />
+  <%}else{var image=""}%>
     <div class=" p-5 ">
       <a href="#">
         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900"><%= decodeURIComponent(recipe.name)%></h5>
