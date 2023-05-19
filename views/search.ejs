@@ -52,10 +52,10 @@
     <% for (let i=0; i < recipes.length; i++) { %>
         <%var recipe = recipes[i] %>
         <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
-    <% }
+    <% } %>
     </div>
     </div>
-} %>
+<% } %>
 </div>
 
 <script>
