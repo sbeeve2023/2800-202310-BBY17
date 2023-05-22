@@ -192,6 +192,25 @@ app.get("/", async (req, res) => {
 
 
 //ChatGPT
+
+app.get("/generate", async (req, res) => {
+  if (!req.session.authenticated) {
+    res.redirect("/login");
+    return;
+  }
+  if(req.session.aiRecipe){
+    req.session.aiRecipe = undefined;
+  }
+
+  //Redirect if no recipe is specified
+  if (req.query.recipeID == undefined) {
+    res.redirect("/");
+    return;
+  }
+
+  res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
+});
+
 app.get("/ai-substitute", async (req, res) => {
   console.log(req.query.recipeID);
   //Only allow access if user is logged in
@@ -199,7 +218,7 @@ app.get("/ai-substitute", async (req, res) => {
     res.redirect("/login");
     return;
   }
-  //throw error if no recipe is specified
+  //Redirect if no recipe is specified
   if (req.query.recipeID == undefined) {
     res.redirect("/");
     return;
@@ -208,6 +227,7 @@ app.get("/ai-substitute", async (req, res) => {
   try {
     new ObjectId(req.query.recipeID);
   } catch{
+    console.log("Invalid recipe ID");
     res.render("pageNotFound");
     return;
   }
@@ -220,10 +240,21 @@ app.get("/ai-substitute", async (req, res) => {
     email: req.session.email
   });
 
+  //throw error if recipe doesn't exist
   if(originalRecipe == null){
     res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
     return;
   }
+  //throw error if user doesn't exist
+  if(req.session.aiRecipe){
+
+
+
+    res.render("ai-frame", {recipe: req.session.aiRecipe});
+    return;
+    
+  }
+
   
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
@@ -264,12 +295,6 @@ app.get("/ai-substitute", async (req, res) => {
 
   //Create request string===============================
 
-  // Only uses title of recipe
-  //   let recipeName = "<%=//locals.originalRecipe.name%>";
-  //   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
-  // formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
-  // `;
-
   //Uses full original recipe
   let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
   for (let i = 0; i < orIngredients.length; i++) {
@@ -283,7 +308,6 @@ app.get("/ai-substitute", async (req, res) => {
 
   //Send request to ChatGPT============================
   try {
-    hello = hi;
     const response = await fetch(chatgpt_url, {
       method: 'POST',
       headers: {
@@ -302,25 +326,20 @@ app.get("/ai-substitute", async (req, res) => {
     let aiString = data.choices[0].message.content;
     console.log(aiString);
     let aiObject = JSON.parse(aiString);
+
+    //Generate image
+    var imageURL = await getGoogleImage(aiObject.name);
+
+    //Add more data to object
+    aiObject.restrictions = restrictionsArray;
+    aiObject.recipeId = req.query.recipeID;
+    aiObject.imageURL = imageURL;
     req.session.aiRecipe = aiObject;
     console.log("Recipe in session",req.session.aiRecipe);
 
-    //Generate image
-    var imageURL = "";
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(aiObject.name)}&searchType=image`;
-    await fetch(apiUrl).then((response) => response.json()).then((data) => {
-        if (data.items && data.items.length > 0) {
-          const imageFullURL = encodeURIComponent(data.items[0].link);
-          imageURL =  decodeURIComponent((imageFullURL));
-        } else {
-          console.log("No images found.");
-        }
-      })
-      .catch((error) => {
-        console.error("An error occurred:", error);
-      });
+    
 
-    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL, recipeID: req.query.recipeID});
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL});
     return;
   } catch (error) {
 
@@ -331,6 +350,8 @@ app.get("/ai-substitute", async (req, res) => {
 
   }
 });
+
+
 
 app.get("/ai-recipe", async (req, res) => {
   var isBookmarked = false;
@@ -878,21 +899,12 @@ app.get("/profile", async (req, res) => {
         _id: bookmarkIds[i]
       });
       bookmarks.push(recipe);
-      let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipe.name)}&searchType=image`;
-      await fetch(apiUrl).then((response) => response.json()).then((data) => {
-          if (data.items && data.items.length > 0) {
-            const imageUrl = encodeURIComponent(data.items[0].link);
-            images.push(imageUrl);
-          } else {
-            console.log("No images found.");
-            images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-          }
-        })
-        .catch((error) => {
-          console.error("An error occurred:", error);
-        });
+      imageURL = await getGoogleImage(recipe.name);
+      if(imageURL == ""){
+        imageURL = encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ=');
+      }
+      images.push(imageURL);
     }
-
   }
 
 
@@ -1117,19 +1129,7 @@ if (req.session.authenticated) {
   recipeName = read[0].name;
 
   //Generate image
-  var imageURL = "";
-     apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipeName)}&searchType=image`;
-  await fetch(apiUrl).then((response) => response.json()).then((data) => {
-    if (data.items && data.items.length > 0) {
-      const imageFullURL = encodeURIComponent(data.items[0].link);
-      imageURL =  decodeURIComponent((imageFullURL));
-    } else {
-      console.log("No images found.");
-    }
-  })
-  .catch((error) => {
-    console.error("An error occurred:", error);
-  });
+  var imageURL = await getGoogleImage(recipeName);
   let recipeImg = req.query.img || imageURL;
 
   //IngredientsArray
@@ -1402,3 +1402,26 @@ app.get("/*", (req, res) => {
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
+
+
+////////////////////////////////////////////////////////////////
+// Support Functions ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+//Get image from Google Custom Search API
+async function getGoogleImage(searchTerm) {
+  var imageURL = "";
+  let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
+  await fetch(apiUrl).then((response) => response.json()).then((data) => {
+      if (data.items && data.items.length > 0) {
+        const imageFullURL = encodeURIComponent(data.items[0].link);
+        imageURL = decodeURIComponent((imageFullURL));
+      } else {
+        console.log("No images found.");
+      }
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+    });
+  return imageURL;
+}

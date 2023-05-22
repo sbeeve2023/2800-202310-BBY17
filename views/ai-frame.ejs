@@ -7,7 +7,8 @@
     servings: recipe.serving_size || "Error",
     steps: recipe.steps || ["Error"],
     time: recipe.cook_time || "Error",
-    restrictions: restrictions || ["Error"]}) %>
+    restrictions: recipe.restrictions || ["Error"],
+    imageURL: recipe.imageURL || "https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ="}) %>
   <%}else{%>
     <img class="h-36 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/2048px-ChatGPT_logo.svg.png"/>
   
@@ -18,16 +19,15 @@
 
 
   <div class="flex justify-center mb-4 mt-3">
-    <form action="/ai-substitute?recipeID=<%=recipeID%>">
-      <input type="hidden" name="generate" value="true">
-      <button type="submit" class="mb-4 px-6 py-2 leading-5 text-mmfo transition-colors duration-200 transform bg-mmpr rounded-md hover:bg-mmse focus:outline-none focus:bg-mmse" name="recipeID" value="<%=recipeID%>" onclick="showLoading()">
+    <form action="generate">
+      <button name="recipeID" value="<%=recipe.recipeId%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
         Regenerate
       </button>
       <div class="flex items-center justify-center">
         <div id="loading" class="w-12 h-12 rounded-full animate-spin
         border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
       </div>
-      </form>
+    </form>
   </div>
   <script>
     function showLoading(){
