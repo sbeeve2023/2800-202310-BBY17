@@ -1,5 +1,5 @@
 <%- include('templates/header') %>
-<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Welcome back, <%- firstname %> ! </h1>
+<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Welcome, <%- firstname %> ! </h1>
 
 <!-- Search Area -->
 <form type="text" action="/search"  class="h-[30vmin]">   
@@ -17,21 +17,25 @@
 
 
 <!-- Recent Recipes Area -->
+
+<%if (recipes.length > 0){%>
 <div id="recent-recipes" class="bg-green-950">
   <label class="text-mmfo" for="recipe-scroll">Recent Recipes</label>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
     
-    <%if (recipes.length > 0){%>
+    
     <%for (let i = recipes.length-1; i >= 0; i--) {%>
       <div class="flex-shrink-0 min-w-[300px] mx-4">
       <%- include('templates/recipe-card', {recipe: recipes[i], time: time[i], image: images[i]}) -%>
       </div>
-      <%}}%>
+      <%}%>
   </div>
   <!-- More Button -->
   <%if (recipes.length > 10){%>
   <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
   <%}%>
+<%}%>
+
   
 </div>
 
