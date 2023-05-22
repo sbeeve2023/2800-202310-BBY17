@@ -1314,6 +1314,15 @@ app.post("/remove-egg", async (req, res) => {
   res.redirect("/profile");
 }});
 
+
+app.get("/aboutus", async (req, res) => {
+  res.render("aboutus", {session: req.session});
+});
+
+app.get("/privacypolicy", async (req, res) => {
+  res.render("privacypolicy", {session: req.session});
+});
+
 app.get("/test", async (req, res) => {
   res.render("test", {session: req.session});
 });

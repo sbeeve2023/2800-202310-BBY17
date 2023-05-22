@@ -100,21 +100,24 @@
 
 
  <!-- Saved Recipes Area -->
+
+ <%if (bookmarks != undefined) { %>
 <div id="recent-recipes" class="bg-green-950 -mx-8 md:mx-0">
   <label class="text-mmfo" for="recipe-scroll">Bookmarked Recipes</label>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2 -ml-3 md:mx-3">
-    <%if (bookmarks != undefined) {
-      for (let i = 0; i < bookmarks.length; i++) {%>
+    
+      <% for (let i = 0; i < bookmarks.length; i++) {%>
         <div class="flex-shrink-0 min-w-[270px] mx-4">
         <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
         </div>
-      <%}}%>
+      <%}%>
   </div>
   <!-- More Button -->
   <%if (bookmarks.length > 10){console.log("Hello");%>
   <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
   <%}%>
 </div>
+<%}%>
 
 <div id="recipe-modal" tabindex="-1" class="hidden fixed top-0 left-0 right-0 z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative w-full max-w-max max-h-full">
