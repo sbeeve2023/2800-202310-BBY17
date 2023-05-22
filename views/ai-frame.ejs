@@ -10,7 +10,10 @@
     restrictions: restrictions || ["Error"]}) %>
   <%}else{%>
     <img class="h-36 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/2048px-ChatGPT_logo.svg.png"/>
+  
     <h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Something went wrong.</h1>
+    <h2>Attempted to make <%=orName%></h2>
+    <h2>with dietary restrictions: <%for (let i = 0; i < restrictions.length; i++){%><%=restrictions[i]%>, <%}%></h2>
     <%}%>
 
 

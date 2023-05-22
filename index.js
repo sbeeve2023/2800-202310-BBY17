@@ -283,6 +283,7 @@ app.get("/ai-substitute", async (req, res) => {
 
   //Send request to ChatGPT============================
   try {
+    hello = hi;
     const response = await fetch(chatgpt_url, {
       method: 'POST',
       headers: {
@@ -323,9 +324,10 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   } catch (error) {
 
-    //bookmarked: isBookmarked,
+    
     console.error("Error:", error);
-    res.render("ai-frame", {error: true, recipeID: req.query.recipeID})
+    console.log(restrictionsArray);
+    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
 
   }
 });
