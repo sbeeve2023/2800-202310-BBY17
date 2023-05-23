@@ -733,13 +733,19 @@ app.get("/searchIngredients", async (req, res) => {
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
-      recipes = await database.find(connection).project({ tags: 1,
-        name: 1,
-        ingredientArray: 1,
-        servings: 1,
-        score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-        .sort({ "score": 1/*{ "$meta": "textScore" }*/ }).limit(50000).toArray();
-        console.log('Recipes:', recipes);
+      // recipes = await database.find(connection).project({ tags: 1,
+      //   name: 1,
+      //   ingredientArray: 1,
+      //   servings: 1,
+      //   score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
+      //   .sort({ "score": 1/*{ "$meta": "textScore" }*/ }).limit(50000).toArray();
+      //   console.log('Recipes:', recipes);
+      //Test
+      database.createIndex({ "ingredients_raw_str": "text" });
+      recipes = await database.find({"$text": { "$search": "egg" } },
+          { "score": { "$meta": "textScore" }}
+          ).sort({ "score": { "$meta": "textScore" } }).limit(10000).toArray();
+
     // }else {
     //   recipes = await database.find({
     //     $or: [
