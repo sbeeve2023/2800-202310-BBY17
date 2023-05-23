@@ -546,7 +546,7 @@ app.get("/search", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   if (!diet) {
-    diet = 0;
+    diet = "null";
   }
   if (!time) {
     time = 0;
@@ -578,7 +578,7 @@ app.get("/search", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -642,7 +642,10 @@ app.get("/search", async (req, res) => {
     times: times,
     images: images,
     profile: profile,
-    profileDiet: profileDiet
+    profileDiet: profileDiet,
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
@@ -659,6 +662,9 @@ app.get("/searchIngredients", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   let images = [];
+  if (!diet) {
+    diet = "null";
+  }
   if (!time) {
     time = 0;
   }
@@ -695,7 +701,7 @@ app.get("/searchIngredients", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -836,24 +842,23 @@ console.log(search);
     times: times,
     current: search,
     images: images,
-    profileDiet: profileDiet
+    profileDiet: profileDiet,
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
-//turns using the profile diets on and off in the search pages
-app.get("/useDiet", urlencodedParser, async (req, res) => {
-  console.log(req.query);
-  if (req.query.type == "off") {
-    req.session.useDiet = false;
-  } else {
+//turns using the profile diets on
+app.post("/useDiet", urlencodedParser, async (req, res) => {
     req.session.useDiet = true;
-    console.log(req.session.useDiet);
-  }
-  if (req.query.return == "regular") {
-  res.redirect("/search");
-  } else {
-    res.redirect("/searchIngredients");
-  }
+    res.send("success");
+});
+
+//turns the profile diets off
+app.post("/dontUseDiet", urlencodedParser, async (req, res) => {
+    req.session.useDiet = false;
+    res.send("success");
 });
 
 //Profile

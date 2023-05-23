@@ -7,10 +7,10 @@
     <div class="flex justify-between items-center mb-4">
         <select class="p-2 rounded border bg-mmth" name="time">
           <option name="time" value="0">Prep Time</option>
-          <option name="time" value="15">15 Minutes</option>
-          <option name="time" value="30">30 Minutes</option>
-          <option name="time" value="60">60 Minutes</option>
-          <option name="time" value="4">60+ Minutes</option>
+          <option name="time" value="15" <% if (time == 15) {%> selected="selected"<%}%> >15 Minutes</option>
+          <option name="time" value="30" <% if (time == 30) {%> selected="selected"<%}%>>30 Minutes</option>
+          <option name="time" value="60" <% if (time == 60) {%> selected="selected"<%}%>>60 Minutes</option>
+          <option name="time" value="4" <% if (time == 4) {%> selected="selected"<%}%>>60+ Minutes</option>
         </select>
         <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
       </div>
@@ -27,39 +27,14 @@
           </div>
           <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
           <div class="mb-4">
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
-              vegan
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
-              vegetarian
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
-              dairy-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
-              healthy
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
-              gluten-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
-              low-fat
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
-              low-sodium
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
-              low-carb
-            </label>
-            <!-- Add more checkboxes placeholders here -->
+            <%for (let i = 0; i < restrictions.length; i++) {%>
+              <label class="flex items-center">
+                  <input type="checkbox" name="diet" value=<%=restrictions[i]%> <% if(diet.includes(restrictions[i])) { %>checked<% } %>>
+                   <%=restrictions[i]%>
+              </label>
+              <% } %>
+          </div>
+          <div id="dietOfProfile">
             <% if (profileDiet && session.useDiet) { %>
                 <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
                 <ul>
@@ -72,18 +47,20 @@
                 <% } %>
                 </ul>
                 <% } %>
+              </div>
             <% if (session.useDiet) { %>
-                <div class="py-3">
-               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=regular">Turn profile diet off</a>
+                <div class="py-3" id="button">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>
                </div>
             <% } else { %>
-                <div class="py-3">
-                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=regular">Turn profile diet on</a>
+                <div class="py-3" id="button">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>
                 </div>
             <% } %>
           </div>
           </div>
           </div>
+
     <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
     <div id="search-area" class="relative">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -130,6 +107,22 @@
   //   var regex = new RegExp(egg, 'gi');
   //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
   // });
+
+  function useDiet() {
+    $.post('/useDiet', function(data) {
+      console.log(data);
+    });
+    document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
+    document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+  }
+
+  function dontUseDiet() {
+    $.post('/dontUseDiet', function(data) {
+      console.log(data);
+    });
+    document.getElementById('dietOfProfile').innerHTML = '';
+    document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+  }
 
   function openModal() {
                 document.getElementById("modal").classList.remove("hidden");
