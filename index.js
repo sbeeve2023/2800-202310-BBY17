@@ -710,15 +710,25 @@ app.get("/searchIngredients", async (req, res) => {
           search_terms: {$regex: new RegExp(profileDiet, "i")}
           })
         }
+      // database.createIndex({ "ingredientArray": -1 });
       connection.$and.push({
-        $or: [
-          { ingredientArray: { $all: search } },
-          {
-            $and: [
-              { ingredientArray: { $in: search } }
-            ]
-          }
-        ]
+        // $or: [
+        //   { ingredientArray: { $all: search } },
+        //   {
+        //     $and: [
+        //       { ingredientArray: { $in: search } }
+        //     ]
+        //   }
+        // ]
+        
+          "$text": { "$search": "ingredients_raw_str"
+          // {$reduce : {
+          //   input: "$ingredientArray",
+          //   initialValue: "",
+          //   in: { $concat : ["$$value", "$$this"] }
+          // } } 
+        }},
+          { "score": { "$meta": "textScore" }
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
@@ -728,7 +738,7 @@ app.get("/searchIngredients", async (req, res) => {
         ingredientArray: 1,
         servings: 1,
         score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-        .sort({ score: -1 }).limit(10).toArray();
+        .sort({ "score": 1/*{ "$meta": "textScore" }*/ }).limit(50000).toArray();
         console.log('Recipes:', recipes);
     // }else {
     //   recipes = await database.find({
@@ -749,12 +759,7 @@ app.get("/searchIngredients", async (req, res) => {
               { ingredientArray: { $all: search } },
               {
                 $and: [
-                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
-                  { ingredientArray: { $in: search } }
-                  // {
-                  //     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-                  //     $options: 'i'
-                  //   }
+                  { ingredientArray: { $in: search } } 
                 ]
               }
             ]
@@ -767,7 +772,11 @@ app.get("/searchIngredients", async (req, res) => {
           .sort({ score: -1 })
           .limit(10)
           .toArray();
-      
+// { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
+// {
+//     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
+//     $options: 'i'
+//   }
         // console.log('Recipes:', recipes);
       } catch (error) {
         console.log('Error occurred while executing the query:', error);
