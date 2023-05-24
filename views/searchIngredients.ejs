@@ -885,9 +885,11 @@
       <script>
         var categories = document.getElementsByTagName("button");
         for (var i = 0; i < categories.length; i++){
-          categories[i].addEventListener("click", function (e) {
-            e.preventDefault();
-          })
+          if(categories[i].getAttribute("type") != "submit"){
+            categories[i].addEventListener("click", function (e) {
+              e.preventDefault();
+            })
+          }
         }
         //Adds the ingredients from the categories into the search list.
         function addIngredient(ingredientName){
