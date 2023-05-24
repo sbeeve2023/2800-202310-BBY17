@@ -80,6 +80,9 @@
                 <input id="email" type="email" name="email" placeholder="Email" value="<%=session.email%>"
                   class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
+              <% if(error) { %>
+              <p class="text-red-500 text-xs italic"> <%=error%> </p>
+              <% } %>
             </div>
 
             <div class="flex justify-center mt-6">
@@ -111,7 +114,7 @@
     
       <% for (let i = bookmarks.length-1; i >= 0; i--) {%>
         <div class="flex-shrink-0 min-w-[270px] mx-4">
-        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
+        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: times[i], image: images[i]}) -%>
         </div>
       <%}%>
   </div>
@@ -142,7 +145,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
               <%if (bookmarks != undefined && bookmarks.length > 10) {
                 for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
-                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: time[i], image: images[i]}) -%>
+                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: times[i], image: images[i]}) -%>
                 <%}}%>
             </div>
             <!-- Modal footer -->

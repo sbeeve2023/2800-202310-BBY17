@@ -29,7 +29,7 @@
     
     <%for (let i = recipes.length-1; i >= 0; i--) {%>
       <div class="flex-shrink-0 min-w-[300px] mx-4">
-      <%- include('templates/recipe-card', {recipe: recipes[i], time: time[i], image: images[i]}) -%>
+      <%- include('templates/recipe-card', {recipe: recipes[i], time: times[i], image: images[i]}) -%>
       </div>
       <%}%>
   </div>
@@ -60,7 +60,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around bg-green-950 border-b-2 border-l-2 border-r-2 border-mmpr">
               <%if (recipes.length > 10){%>
               <%for (let i = recipes.length-1; i >= 0; i--) {%>
-                <%- include('templates/recipe-card', {recipe: recipes[i], time: time[i], image: images[i]}) -%>
+                <%- include('templates/recipe-card', {recipe: recipes[i], time: times[i], image: images[i]}) -%>
               <%}}%>
             </div>
             <!-- Modal footer -->
