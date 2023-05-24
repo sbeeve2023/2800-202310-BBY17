@@ -126,14 +126,11 @@ app.use(sessionValidation);
 
 //Landing Page
 app.get("/", async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (user == null) {
     res.render("landing-loggedout");
     return;
   }
-
-  var user = await userCollection.findOne({
-    username: req.session.username
-  });
 
   let recipes = [];
   let images = [];
@@ -169,7 +166,8 @@ app.get("/", async (req, res) => {
 
 //ChatGPT
 app.get("/generate", async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
     res.redirect("/login");
     return;
   }
@@ -303,7 +301,8 @@ app.get("/ai-substitute", async (req, res) => {
 
 //Ai Recipe save
 app.post("/airecipe-save", urlencodedParser, async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
     res.redirect("/login");
     return;
   }
@@ -320,12 +319,6 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   let aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
 
   //Get the user's bookmarks
- 
-  var user = await userCollection.findOne({ email: req.session.email });
-  if(!user){
-    res.redirect("/login");
-    return;
-  }
   var bookmarks = [];
   if (user.bookmarks) {bookmarks = user.bookmarks;}
   bookmarks.push(aiRecipeGet._id);
@@ -346,12 +339,11 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 
 //Ai Recipe unsave
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
+    res.render("landing-loggedout");
     return;
   }
-
-  var user = await userCollection.findOne({ email: req.session.email });
  
   //Return if recipe is already removed
   var newBookmarks = arrayWithout(user.bookmarks, req.body.id);
@@ -494,7 +486,7 @@ app.post("/login-submit", async (req, res) => {
   const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (user == null) {
+  if (isValid(user)) {
     res.redirect("/login?error=true");
     return;
   }
@@ -955,6 +947,7 @@ app.get("/recipe", async (req, res) => {
 var bookmarked = false;
 
 if (req.session.authenticated) {
+  
  bookmarked = await isBookmarked(req, req.query.id);
  addToRecents(req, req.query.id);
 }
@@ -1334,7 +1327,7 @@ async function isBookmarked(req, id){
   var bookmarked = false;
     var user = await userCollection.findOne({email: req.session.email});
     //Check if bookmarked
-    if (user.bookmarks != undefined) {
+    if (user && user.bookmarks && user.bookmarks != undefined) {
       for (let i = 0; i < user.bookmarks.length && bookmarked == false; i++) {
         if (user.bookmarks[i].toString() == id) {
           bookmarked = true;
@@ -1344,12 +1337,13 @@ async function isBookmarked(req, id){
     return bookmarked;
 }
 
-//add to recents
+//add to recent
 async function addToRecents(req, recipeId){
   
 //Add to recent recipes
 let recents = [];
-var user = await userCollection.findOne({email: req.session.email});
+var user = getValidUser(req)
+if(user){
 if (user.recents) {
   recents = user.recents;
   //Remove from recents if already there
@@ -1366,7 +1360,9 @@ if (user.recents) {
 //Add to recents
 recents.push(recipeId);
 await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
-return isBookmarked;
+return isBookmarked(req, recipeId);
+}
+
 }
 
 //remove an item from an array
@@ -1410,4 +1406,20 @@ function getRecipeTimes(recipeArray){
   }
   console.log(times);
   return times;
+}
+
+//Get a valid user from a request
+async function getValidUser(req) {
+  if (isValid(req.session) && req.session.authenticated && req.session.email) {
+    return await userCollection.findOne({email: req.session.email});
+  }
+  return null;
+}
+
+//Check if a thing is defined
+function isValid(thing){
+  if(thing == undefined || thing == null){
+    return false;
+  }
+  return true;
 }
