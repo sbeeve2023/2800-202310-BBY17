@@ -238,11 +238,15 @@ app.get("/ai-recipe", async (req, res) => {
     await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
   }
   
+    try{
     var recipeId = new ObjectId(req.query.id);
+    }catch{
+      res.redirect("/404");
+      return;
+    }
   
     //Query and parse parts of the recipe
     var recipe = await airecipeCollection.findOne({_id: recipeId});
-    console.log(recipeId)
 
     //Check if recipe exists
     if (recipe == null){
@@ -258,7 +262,13 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   }
   //Get recipe from database
-  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  try{
+    var originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  }catch{
+    res.redirect("/404");
+    return;
+  }
+  
 
   //Get user from database
   let user = await userCollection.findOne({email: req.session.email});
@@ -353,7 +363,7 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
     return;
   }
   await airecipeCollection.insertOne(aiRecipe);
-  aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
+  let aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
 
   //Get the user's bookmarks
  
@@ -364,9 +374,6 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   }
   var bookmarks = [];
   if (user.bookmarks) {bookmarks = user.bookmarks;}
-  console.log(aiRecipeGet._id);
-  console.log(bookmarks);
-  console.log("HELLO");
   bookmarks.push(aiRecipeGet._id);
  
   await userCollection.findOneAndUpdate({
@@ -378,7 +385,7 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   });
 
 
-  res.redirect("/ai-recipe?id=" + req.body.id);
+  res.redirect("/ai-recipe?id=" + aiRecipeGet._id);
 
 });
 
@@ -1089,17 +1096,25 @@ if (req.session.authenticated) {
     }    
   }
   //Add to recents
+  try{
   recents.push(new ObjectId(req.query.id));
+  }catch{
+    res.redirect("/404");
+    return;
+  }
   await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
 }
 
 
 
-
+try{
   var recipeId = new ObjectId(req.query.id);
+}catch{
+  res.redirect("/404");
+  return;
+}
   var recipeTime = req.query.time;
 
-  // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
   console.log(recipeId);
   var read = await recipeCollection.find({
@@ -1193,7 +1208,13 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
 
 
   //Save the recipe
+  try{
   var recipeId = new ObjectId(req.body.id);
+  }
+  catch{
+    res.redirect("/404");
+    return;
+  }
   bookmarks.push(recipeId);
  
   console.log(req.session);
@@ -1407,21 +1428,19 @@ async function validateAI_Substitute(req, res){
    return false;
  }
 
- try {
-   new ObjectId(req.query.recipeID);
- } catch{
-   console.log("Invalid recipe ID");
-   res.render("pageNotFound");
-   return false;
- }
-
  //Don't regenerate if recipe is already loaded
  if(req.session.aiRecipe){
    res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID});
    return false;
  }
   //Get recipe from database
-  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  try{
+  var originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  } catch{
+    res.render("pageNotFound");
+    return false;
+  }
+    
   if(originalRecipe == null){ //throw error if recipe doesn't exist
     res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
     return;
