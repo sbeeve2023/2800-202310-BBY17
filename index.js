@@ -95,6 +95,7 @@ connectToDatabase();
 const database = client.db(mongodb_database);
 const userCollection = database.collection("users");
 const recipeCollection = database.collection('recipes');
+const airecipeCollection = database.collection('ai-recipes');
 const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "low-sodium", "low-carb", "low-fat"]
 
 
@@ -144,20 +145,10 @@ app.get("/", async (req, res) => {
       let recipe = await recipeCollection.findOne({
         _id: new ObjectId(recents[i])
       });
-      recipes.push(recipe);
-      let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipe.name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-              console.log("No images found.");
-            }
-          })
-          .catch((error) => {
-            console.error("An error occurred:", error);
-          });
+      if(recipe){
+        recipes.push(recipe);
+        images.push(await getGoogleImage(recipe.name));
+      }
     }
   }
 
@@ -192,12 +183,13 @@ app.get("/", async (req, res) => {
 
 
 //ChatGPT
-
 app.get("/generate", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+
+  //Remove any previous recipe from session
   if(req.session.aiRecipe){
     req.session.aiRecipe = undefined;
   }
@@ -212,88 +204,34 @@ app.get("/generate", async (req, res) => {
 });
 
 app.get("/ai-substitute", async (req, res) => {
-  console.log(req.query.recipeID);
-  //Only allow access if user is logged in
-  if (!req.session.authenticated) {
-    res.redirect("/login");
+  if(! await validateAI_Substitute(req, res)){
     return;
   }
-  //Redirect if no recipe is specified
-  if (req.query.recipeID == undefined) {
-    res.redirect("/");
-    return;
-  }
-
-  try {
-    new ObjectId(req.query.recipeID);
-  } catch{
-    console.log("Invalid recipe ID");
-    res.render("pageNotFound");
-    return;
-  }
-
   //Get recipe from database
-  let originalRecipe = await recipeCollection.findOne({
-    _id: new ObjectId(req.query.recipeID)
-  });
-  let user = await userCollection.findOne({
-    email: req.session.email
-  });
+  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
 
-  //throw error if recipe doesn't exist
-  if(originalRecipe == null){
-    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
-    return;
-  }
-  //throw error if user doesn't exist
-  if(req.session.aiRecipe){
+  //Get user from database
+  let user = await userCollection.findOne({email: req.session.email});
 
-
-
-    res.render("ai-frame", {recipe: req.session.aiRecipe});
-    return;
-    
-  }
-
-  
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
-  orSteps = [];
-  //Parse steps into array
-  parsingSteps = originalRecipe.steps;
-  parsingSteps = parsingSteps.replaceAll("[", "");
-  parsingSteps = parsingSteps.replaceAll("]", "");
-  parsingSteps = parsingSteps.replaceAll("\"", "");
-  orSteps = parsingSteps.split("', '");
-  for (var i = 0; i < orSteps.length; i++) {
-    orSteps[i] = orSteps[i].replaceAll("'", "");
-  }
+  let orSteps = parseSteps(originalRecipe.steps);
 
   //Create dietary restrictions string===================
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
   if (user.diet) {
-    restrictionsArray = user.diet;
-
-    //If only one restriction, make it an array
-    if(!Array.isArray(restrictionsArray)){
-      restrictionsArray = [restrictionsArray];
-    }
-
+    restrictionsArray = stringToArrayItem(user.diet);
     //Add each restriction to the string
-    if (Array.isArray(restrictionsArray)) {
-      for (let i = 0; i < restrictionsArray.length; i++) {
-        dietaryRestrictions += ` ${restrictionsArray[i]},`;
-      }
-    } else {
-      dietaryRestrictions += ` ${restrictionsArray},`;
+    for (let i = 0; i < restrictionsArray.length; i++) {
+      dietaryRestrictions += ` ${restrictionsArray[i]},`;
     }
   } else {
     //If no restrictions, add none
     dietaryRestrictions += ` none`;
   }
 
-  //Create request string===============================
+  //Create request string
 
   //Uses full original recipe
   let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
@@ -304,9 +242,9 @@ app.get("/ai-substitute", async (req, res) => {
   for (let i = 0; i < orSteps.length; i++) {
     request += ` ${orSteps[i]},`;
   }
-  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).`;
+  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), make_time (string).`;
 
-  //Send request to ChatGPT============================
+  //Send request to ChatGPT
   try {
     const response = await fetch(chatgpt_url, {
       method: 'POST',
@@ -332,44 +270,22 @@ app.get("/ai-substitute", async (req, res) => {
 
     //Add more data to object
     aiObject.restrictions = restrictionsArray;
-    aiObject.recipeId = req.query.recipeID;
     aiObject.imageURL = imageURL;
+    aiObject.originalRecipeID = req.query.recipeID;
+    aiObject.ownerId =  req.session.userId;
     req.session.aiRecipe = aiObject;
     console.log("Recipe in session",req.session.aiRecipe);
 
-    
-
-    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL});
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
     return;
-  } catch (error) {
 
-    
+  } catch (error) { //If error, render error page
     console.error("Error:", error);
     console.log(restrictionsArray);
     res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
-
   }
 });
 
-
-
-app.get("/ai-recipe", async (req, res) => {
-  var isBookmarked = false;
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
-
-  // if (user.aibookmarks) {
-  //   for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
-  //     if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
-  //       isBookmarked = true;
-  //     }
-  //   }
-  // }
-
-  res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
-});
 
 //Ai Recipe save
 app.post("/airecipe-save", urlencodedParser, async (req, res) => {
@@ -378,28 +294,35 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
     return;
   }
 
+  //Save to databse first
+  var aiRecipe = req.session.aiRecipe;
+  recipeAlreadySaved = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
+  if(recipeAlreadySaved){
+    res.redirect("/ai-substitute?recipeID=" + aiRecipe.originalRecipeID);
+    return;
+  }
+  await airecipeCollection.insertOne(aiRecipe);
+  aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
+
   //Get the user's bookmarks
-  var aibookmarks;
+ 
   var user = await userCollection.findOne({ email: req.session.email });
   if(!user){
     res.redirect("/login");
     return;
   }
-  if (!user.aibookmarks) {
-    aibookmarks = [];
-  } else {
-    aibookmarks = user.bookmarks;
-  }
-
-  //Save the recipe
-  var aiRecipe = req.session.aiRecipe;
-  aibookmarks.push(aiRecipe);
+  var bookmarks = [];
+  if (user.bookmarks) {bookmarks = user.bookmarks;}
+  console.log(aiRecipeGet._id);
+  console.log(bookmarks);
+  console.log("HELLO");
+  bookmarks.push(aiRecipeGet._id);
  
   await userCollection.findOneAndUpdate({
     email: req.session.email
   }, {
     "$set": {
-      aibookmarks: aibookmarks
+      bookmarks: bookmarks
     }
   });
 
@@ -407,6 +330,7 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   res.redirect("/ai-recipe?id=" + req.body.id);
 
 });
+
 
 //Ai Recipe unsave TODO: Does nothing
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
@@ -495,8 +419,11 @@ app.post("/signup-submit", async (req, res) => {
     password: hashedPassword
   });
 
+  var user = await userCollection.findOne({email: email });
+
   //Make a cookie
   req.session.authenticated = true;
+  req.session.userId = user._id;
   req.session.firstname = fname;
   req.session.lastname = lname;
   req.session.username = username;
@@ -534,24 +461,25 @@ app.post("/login-submit", async (req, res) => {
     return;
   }
   //Check if user exists
-  const findUser = await userCollection.findOne({
+  const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (findUser == null) {
+  if (user == null) {
     res.redirect("/login?error=true");
     return;
   }
 
   //Check if password is correct
-  if (await bcrypt.compare(password, findUser.password)) {
+  if (await bcrypt.compare(password, user.password)) {
     //Make a cookie
-    console.log(findUser);
+    console.log(user);
     req.session.authenticated = true;
-    req.session.firstname = findUser.firstname;
-    req.session.lastname = findUser.lastname;
-    req.session.username = findUser.username;
-    req.session.email = findUser.email;
-    req.session.easterEgg = findUser.easterEgg;
+    req.session.userId = user._id;
+    req.session.firstname = user.firstname;
+    req.session.lastname = user.lastname;
+    req.session.username = user.username;
+    req.session.email = user.email;
+    req.session.easterEgg = user.easterEgg;
     req.session.cookie.maxAge = sessionExpireTime;
     req.session.useDiet = true;
     res.redirect("/");
@@ -633,19 +561,8 @@ app.get("/search", async (req, res) => {
     timeCurrent = timeCurrent.replaceAll("]", "");
     timeCurrent = timeCurrent.split(",");
     recipes[i].name = he.decode(recipes[i].name);
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-              console.log("No images found.");
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-            }
-          })
-          .catch((error) => {
-            console.error("An error occurred:", error);
-          });
+    let imageToPush = await getGoogleImage(recipes[i].name);
+    images.push(imageToPush)
     for (let i = timeCurrent.length - 1; i >= 0; i--) {
       if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
         timeCurrent.splice(i, 1);
@@ -898,36 +815,48 @@ app.get("/profile", async (req, res) => {
       recipe = await recipeCollection.findOne({
         _id: bookmarkIds[i]
       });
+      if (recipe == null) {
+        recipe = await airecipeCollection.findOne({
+          _id: bookmarkIds[i]
+        });
+      }
+      if(recipe){
       bookmarks.push(recipe);
       imageURL = await getGoogleImage(recipe.name);
       if(imageURL == ""){
         imageURL = encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ=');
       }
       images.push(imageURL);
+      }
     }
   }
 
 
   let time = [];
-  for (let i = 0; i < bookmarks.length; i++) {
-    console.log(bookmarks[i]);
-    timeCurrent = bookmarks[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
+
+    for (let i = 0; i < bookmarks.length; i++) {
+      if (bookmarks[i].tags) {
+        console.log(bookmarks[i]);
+        timeCurrent = bookmarks[i].tags;
+        timeCurrent = timeCurrent.replaceAll("'", "");
+        timeCurrent = timeCurrent.replaceAll("[", "");
+        timeCurrent = timeCurrent.replaceAll("]", "");
+        timeCurrent = timeCurrent.split(",");
+        for (let i = timeCurrent.length - 1; i >= 0; i--) {
+          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+            timeCurrent.splice(i, 1);
+          }
+        }
+        time.push(timeCurrent);
+      } else if (bookmarks[i].make_time) {
+        time.push([bookmarks[i].make_time]);
       }
     }
-    time.push(timeCurrent);
-  }
-  for(let i = 0; i < time.length; i++){
-    if (time[i].length == 0){
-      time[i].push("N/A");
+    for (let i = 0; i < time.length; i++) {
+      if (time[i].length == 0) {
+        time[i].push("N/A");
+      }
     }
-  }
 
 
 
@@ -1123,6 +1052,7 @@ if (req.session.authenticated) {
 
   // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
+  console.log(recipeId);
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
@@ -1143,14 +1073,7 @@ if (req.session.authenticated) {
   var recipeServings = read[0].servings;
   var recipeSize = read[0].serving_size;
   //Instructions Array
-  parsingSteps = read[0].steps;
-  parsingSteps = parsingSteps.replaceAll("[", "");
-  parsingSteps = parsingSteps.replaceAll("]", "");
-  parsingSteps = parsingSteps.replaceAll("\"", "");
-  var recipeSteps = parsingSteps.split("', '");
-  for (var i = 0; i < recipeSteps.length; i++){
-    recipeSteps[i] = recipeSteps[i].replaceAll("'", "");
-  }
+  var recipeSteps = parseSteps(read[0].steps);
   //Search Terms Array
   var parsingTerms = read[0].search_terms;
   parsingTerms = parsingTerms.replaceAll("'", "");
@@ -1403,6 +1326,45 @@ app.listen(port, () => {
   console.log("Server running on port " + port);
 });
 
+////////////////////////////////////////////////////////////////
+// Routing Functions ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+//Validate /ai-substitute
+async function validateAI_Substitute(req, res){
+  //Only allow access if user is logged in
+  if (!req.session.authenticated) {
+   res.redirect("/login");
+   return false;
+ }
+ //Redirect if no recipe is specified
+ if (req.query.recipeID == undefined) {
+   res.redirect("/");
+   return false;
+ }
+
+ try {
+   new ObjectId(req.query.recipeID);
+ } catch{
+   console.log("Invalid recipe ID");
+   res.render("pageNotFound");
+   return false;
+ }
+
+ //Don't regenerate if recipe is already loaded
+ if(req.session.aiRecipe){
+   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID});
+   return false;
+ }
+  //Get recipe from database
+  let originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  if(originalRecipe == null){ //throw error if recipe doesn't exist
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
+    return;
+  }
+
+ return true;
+}
 
 ////////////////////////////////////////////////////////////////
 // Support Functions ///////////////////////////////////////////
@@ -1410,18 +1372,40 @@ app.listen(port, () => {
 
 //Get image from Google Custom Search API
 async function getGoogleImage(searchTerm) {
-  var imageURL = "";
+  var imageFullURL = "";
   let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
   await fetch(apiUrl).then((response) => response.json()).then((data) => {
       if (data.items && data.items.length > 0) {
-        const imageFullURL = encodeURIComponent(data.items[0].link);
-        imageURL = decodeURIComponent((imageFullURL));
+        imageFullURL = encodeURIComponent(data.items[0].link);
       } else {
-        console.log("No images found.");
+        imageFullURL= encodeURIComponent("https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ=");
       }
     })
     .catch((error) => {
       console.error("An error occurred:", error);
+      
     });
-  return imageURL;
+  return decodeURIComponent(imageFullURL);
 }
+
+//Parse steps from our beautiful dataset
+function parseSteps(stepsToParse){
+  let parsingSteps = stepsToParse;
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  steps = parsingSteps.split("', '");
+  for (var i = 0; i < steps.length; i++) {
+    steps[i] = steps[i].replaceAll("'", "");
+  }
+  return steps;
+}
+
+//fix an array that might be a string
+function stringToArrayItem(potentialString){
+  if(!Array.isArray(potentialString)){
+    return [potentialString];
+  }
+  return potentialString;
+}
+
