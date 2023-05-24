@@ -923,21 +923,44 @@ app.get("/profile", async (req, res) => {
 
 
 
-console.log(bookmarks);
   res.render("profile", {
     session: req.session,
     bookmarks: bookmarks,
     images: images,
     time: time,
+    error: req.query.error
   });
 });
 
 //Update Profile
 app.post("/profileUpdate", urlencodedParser, async (req, res) => {
+  //gets the inputted email and username
   let email = req.body.email;
   let username = req.body.username;
+  //sets up connection to database
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
+  //checks if the email or username is already taken
+  let emailList = await database.find({ email: email }).toArray();
+  let usernameList = await database.find({ username: username }).toArray();
+  //gets the current user
+  let curUser = await database.find({ email: req.session.email, username: req.session.username}).toArray();
+  //if the email or username is already taken, redirect to profile with error
+  if (emailList.length > 0 ) {
+    console.log("email" + emailList[0]._id, curUser[0]._id);
+    if (!(emailList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  if (usernameList.length > 0) {
+    console.log("username" + usernameList[0]._id, curUser[0]._id);
+    if (!(usernameList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  //updates the user's email and username if they are not taken
   database.updateMany({
     email: req.session.email,
     username: req.session.username
@@ -947,6 +970,7 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
       email: email
     }
   });
+  //updates the session variables
   req.session.username = username;
   req.session.email = email;
   res.send("Profile Updated <a href='/profile'>Go Back</a>")
