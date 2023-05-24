@@ -86,7 +86,6 @@ async function connectToDatabase() {
     client.db(mongodb_database).command({
       ping: 1
     });
-    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB: " + error);
   }
@@ -300,7 +299,6 @@ app.get("/ai-substitute", async (req, res) => {
     });
     const data = await response.json();
     let aiString = data.choices[0].message.content;
-    console.log(aiString);
     let aiObject = JSON.parse(aiString);
 
     //Generate image
@@ -313,7 +311,6 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.ownerId =  req.session.userId;
     aiObject.ai = true;
     req.session.aiRecipe = aiObject;
-    console.log("Recipe in session",req.session.aiRecipe);
 
     res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
     return;
@@ -440,7 +437,6 @@ app.post("/signup-submit", async (req, res) => {
     passwordConfirm,
   });
   if (result.error != null) {
-    console.log(result.error);
     res.redirect("/signup?error=invalid-input");
     return;
   }
@@ -461,7 +457,6 @@ app.post("/signup-submit", async (req, res) => {
 
   //Check if new passwords match
   if (password != passwordConfirm) {
-    console.log(password + " | " + passwordConfirm)
     res.redirect("/signup?error=passwords-dont-match");
     return;
   }
@@ -529,7 +524,6 @@ app.post("/login-submit", async (req, res) => {
   //Check if password is correct
   if (await bcrypt.compare(password, user.password)) {
     //Make a cookie
-    console.log(user);
     req.session.authenticated = true;
     req.session.userId = user._id;
     req.session.firstname = user.firstname;
@@ -604,12 +598,12 @@ app.get("/search", async (req, res) => {
   if (connection.$and.length == 0) {
     delete connection.$and;
   }
-  console.log(connection);
   if (search) {
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
   }
+    //Find the time tag for each recipe and add it to the times array to be displayed.
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -669,8 +663,6 @@ app.get("/searchIngredients", async (req, res) => {
   }
   let recipes = false;
   if (search != undefined) {
-    // search = search.toLowerCase();
-    // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     if (typeof search === "string"){
       search = search.split(',');
     }
@@ -679,9 +671,6 @@ app.get("/searchIngredients", async (req, res) => {
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    var filter = 1;
-    if (filter == 1){
-      //CG CODE
       var connection = {};
       connection.$and = [];
       if (!(time == 0) && time) {
@@ -708,85 +697,40 @@ app.get("/searchIngredients", async (req, res) => {
           })
         }
       connection.$and.push({
-        $or: [
-          { ingredientArray: { $all: search } },
-          {
-            $and: [
-              { ingredientArray: { $in: search } }
-            ]
-          }
-        ]
+        ingredients_raw_str: {  $regex: new RegExp(`\\b(${search.map(term => `\\b${term}\\b`).join('|')})\\b`, 'i')} 
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
+      //Final query, scores recipes by number of matching ingredients, then sorts by score.
       recipes = await database.find(connection).project({ tags: 1,
         name: 1,
         ingredientArray: 1,
         servings: 1,
-        score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-        .sort({ score: -1 }).limit(10).toArray();
-        console.log('Recipes:', recipes);
-    // }else {
-    //   recipes = await database.find({
-    //     $or: [
-    //       {ingredientArray: {$all: search}},
-    //       {$and: [
-    //         { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-    //         {ingredientArray: {$in: search}}
-    //     ]}
-    //   ]
-      //BK CODE
-
-    } else {
-      try {
-        recipes = await database
-          .find({
-            $or: [
-              { ingredientArray: { $all: search } },
-              {
-                $and: [
-                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
-                  { ingredientArray: { $in: search } }
-                  // {
-                  //     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-                  //     $options: 'i'
-                  //   }
-                ]
+        score: {
+          $reduce: {
+            input: {
+              $map: {
+                input: search, as: "term", in: {
+                  $cond: {
+                    if: { $regexMatch: { input: "$ingredients_raw_str", regex: `${"$" + "$term"}`, options: "i" } }, then: 1, else: 0
+                  }
+                }
               }
-            ]
-          })
-          .project({ tags: 1,
-                    name: 1,
-                    ingredientArray: 1,
-                    servings: 1,
-            score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-          .sort({ score: -1 })
-          .limit(10)
-          .toArray();
-      
-        // console.log('Recipes:', recipes);
-      } catch (error) {
-        console.log('Error occurred while executing the query:', error);
-      }
-      
-    // for (var i = 0; i < search.length; i++){
-    //   recipes.sort(search[i]);
-    // }
-    // recipes.project({ score: { $size: { $setIntersection: ["$ingredientArray", search] } } }).sort({ score: -1 });
-    // ingredientArray: {
-      //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-      //   $options: 'i'
-      // }
-      // ingredientArray: {$regex: new RegExp(search)}
-    }
+            },
+            initialValue: 0, in: { $add: ["$$value", "$$this"] }
+          }
+        }
+      })
+        .sort({ "score": -1 })
+        .limit(50000).toArray();
   }
+  //Sorts the recipes by score after it has been set to an array
   if (search) {
     recipes.sort((a, b) => b.score - a.score);
     recipes = recipes.slice(0, 10);
   }
-  // console.log('Filtered:', recipes);
-  //CG CODE
+  //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
     let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
@@ -803,9 +747,7 @@ app.get("/searchIngredients", async (req, res) => {
             console.error("An error occurred:", error);
           });
   }
-  //BK CODE
-
-  // console.log("res" + recipes);
+  //Find the time tag for each recipe and add it to the times array to be displayed.
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -825,7 +767,6 @@ app.get("/searchIngredients", async (req, res) => {
       times[i].push("N/A");
     }
   }
-console.log(search);
 
   res.render("searchIngredients", {
     recipes: recipes,
@@ -839,12 +780,10 @@ console.log(search);
 
 //turns using the profile diets on and off in the search pages
 app.get("/useDiet", urlencodedParser, async (req, res) => {
-  console.log(req.query);
   if (req.query.type == "off") {
     req.session.useDiet = false;
   } else {
     req.session.useDiet = true;
-    console.log(req.session.useDiet);
   }
   if (req.query.return == "regular") {
   res.redirect("/search");
@@ -922,7 +861,6 @@ app.get("/profile", async (req, res) => {
 
 
 
-console.log(bookmarks);
   res.render("profile", {
     session: req.session,
     bookmarks: bookmarks,
@@ -1046,7 +984,6 @@ app.get("/dietEdit", async (req, res) => {
 //Update the dietary restrictions
 app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   let diet = req.body.diet;
-  console.log(diet, req.session.email, req.session.username);
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
   database.findOneAndUpdate({
@@ -1184,7 +1121,6 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
   }
   bookmarks.push(recipeId);
  
-  console.log(req.session);
   await userCollection.findOneAndUpdate({
     email: req.session.email
   }, {
@@ -1308,7 +1244,6 @@ app.get("/test", async (req, res) => {
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
-  // console.log(read);
 
   for (let i = 0; i < read.length; i++) {
     html += "<p>" + read[i].name + "<ul>";
@@ -1345,7 +1280,6 @@ app.get("/querytest", async (req, res) => {
       $all: ["sugar", "eggs"]
     }
   }).limit(5).toArray();
-  console.log(read);
   html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
