@@ -8,7 +8,7 @@
     <h1 class="text-3xl font-bold"><%= recipe.name %></h1>
    
     <form <%if(locals.bookmarked && bookmarked){%>action="airecipe-unsave"<%}else{%>action="airecipe-save"<%}%> method="post">
-      <button <%if (locals.id){%>name="id" value="<%=id%>"<%}%> type="submit" <%if(locals.bookmarked && bookmarked){%>class=" my-3 px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-red-700 rounded-md hover:bg-red-500 focus:outline-none focus:bg-red-600"<%}else{%>class="my-3 px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"<%}%>><%if(locals.bookmarked && bookmarked){%>Delete<%}else{%>Save<%}%></button>
+      <button  <%if (locals.id){%>name="id" value="<%=id%>"<%}%> type="submit" <%if(locals.bookmarked && bookmarked){%>onclick="return confirm('Are you sure? it will be deleted forever.')" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-red-700 rounded-md hover:bg-red-500 focus:outline-none focus:bg-red-600"<%}else{%>class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"<%}%>><%if(locals.bookmarked && bookmarked){%>Delete<%}else{%>Save<%}%></button>
     </form>
    
     <div class="border-b-2 my-4"></div>

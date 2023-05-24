@@ -86,7 +86,6 @@ async function connectToDatabase() {
     client.db(mongodb_database).command({
       ping: 1
     });
-    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB: " + error);
   }
@@ -166,35 +165,13 @@ app.get("/", async (req, res) => {
     }
   }
 
-  let time = [];
-  for (let i = 0; i < recipes.length; i++) {
-    if(recipes[i].tags){
-      timeCurrent = recipes[i].tags;
-      timeCurrent = timeCurrent.replaceAll("'", "");
-      timeCurrent = timeCurrent.replaceAll("[", "");
-      timeCurrent = timeCurrent.replaceAll("]", "");
-      timeCurrent = timeCurrent.split(",");
-      for (let i = timeCurrent.length - 1; i >= 0; i--) {
-        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-          timeCurrent.splice(i, 1);
-        }
-      }
-    } else if (recipes[i].make_time){
-      time.push(timeCurrent);
-    }
-  }
-  for(let i = 0; i < time.length; i++){
-    if (time[i].length == 0){
-      time[i].push("N/A");
-    }
-  }
-
-
+  let times = getRecipeTimes(recipes);
+  
   res.render("landing-loggedin", {
     username: req.session.username,
     recipes: recipes,
     images: images,
-    time: time,
+    times: times
   });
 });
 
@@ -309,7 +286,6 @@ app.get("/ai-substitute", async (req, res) => {
     });
     const data = await response.json();
     let aiString = data.choices[0].message.content;
-    console.log(aiString);
     let aiObject = JSON.parse(aiString);
 
     //Generate image
@@ -322,17 +298,16 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.ownerId =  req.session.userId;
     aiObject.ai = true;
     req.session.aiRecipe = aiObject;
-    console.log("Recipe in session",req.session.aiRecipe);
 
     res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
     return;
 
   } catch (error) { //If error, render error page
     console.error("Error:", error);
-    console.log(restrictionsArray);
     res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
   }
 });
+
 
 
 //Ai Recipe save
@@ -344,9 +319,10 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 
   //Save to databse first
   var aiRecipe = req.session.aiRecipe;
+
   recipeAlreadySaved = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
   if(recipeAlreadySaved){
-    res.redirect("/ai-substitute?recipeID=" + aiRecipe.originalRecipeID);
+    res.redirect("/recipe?id=" + recipeAlreadySaved._id);
     return;
   }
   await airecipeCollection.insertOne(aiRecipe);
@@ -448,7 +424,6 @@ app.post("/signup-submit", async (req, res) => {
     passwordConfirm,
   });
   if (result.error != null) {
-    console.log(result.error);
     res.redirect("/signup?error=invalid-input");
     return;
   }
@@ -469,7 +444,6 @@ app.post("/signup-submit", async (req, res) => {
 
   //Check if new passwords match
   if (password != passwordConfirm) {
-    console.log(password + " | " + passwordConfirm)
     res.redirect("/signup?error=passwords-dont-match");
     return;
   }
@@ -537,7 +511,6 @@ app.post("/login-submit", async (req, res) => {
   //Check if password is correct
   if (await bcrypt.compare(password, user.password)) {
     //Make a cookie
-    console.log(user);
     req.session.authenticated = true;
     req.session.userId = user._id;
     req.session.firstname = user.firstname;
@@ -562,7 +535,7 @@ app.get("/search", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   if (!diet) {
-    diet = 0;
+    diet = "null";
   }
   if (!time) {
     time = 0;
@@ -594,7 +567,7 @@ app.get("/search", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -612,34 +585,17 @@ app.get("/search", async (req, res) => {
   if (connection.$and.length == 0) {
     delete connection.$and;
   }
-  console.log(connection);
   if (search) {
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
   }
-  let times = [];
+  let times = getRecipeTimes(recipes);
   for (let i = 0; i < recipes.length; i++) {
-    timeCurrent = recipes[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    recipes[i].name = he.decode(recipes[i].name);
-    let imageToPush = await getGoogleImage(recipes[i].name);
-    images.push(imageToPush)
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
-      }
-    }
-    times.push(timeCurrent);
+    images.push(await getGoogleImage(recipes[i].name));
   }
-  for(let i = 0; i < times.length; i++){
-    if (times[i].length == 0){
-      times[i].push("N/A");
-    }
-  }
+  
+
   res.render("search", {
     search: search,
     recipes: recipes,
@@ -647,7 +603,10 @@ app.get("/search", async (req, res) => {
     times: times,
     images: images,
     profile: profile,
-    profileDiet: profileDiet
+    profileDiet: profileDiet,
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
@@ -664,6 +623,9 @@ app.get("/searchIngredients", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   let images = [];
+  if (!diet) {
+    diet = "null";
+  }
   if (!time) {
     time = 0;
   }
@@ -677,8 +639,6 @@ app.get("/searchIngredients", async (req, res) => {
   }
   let recipes = false;
   if (search != undefined) {
-    // search = search.toLowerCase();
-    // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     if (typeof search === "string"){
       search = search.split(',');
     }
@@ -687,9 +647,6 @@ app.get("/searchIngredients", async (req, res) => {
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    var filter = 1;
-    if (filter == 1){
-      //CG CODE
       var connection = {};
       connection.$and = [];
       if (!(time == 0) && time) {
@@ -700,7 +657,7 @@ app.get("/searchIngredients", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -716,125 +673,46 @@ app.get("/searchIngredients", async (req, res) => {
           })
         }
       connection.$and.push({
-        $or: [
-          { ingredientArray: { $all: search } },
-          {
-            $and: [
-              { ingredientArray: { $in: search } }
-            ]
-          }
-        ]
+        ingredients_raw_str: {  $regex: new RegExp(`\\b(${search.map(term => `\\b${term}\\b`).join('|')})\\b`, 'i')} 
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
+      //Final query, scores recipes by number of matching ingredients, then sorts by score.
       recipes = await database.find(connection).project({ tags: 1,
         name: 1,
         ingredientArray: 1,
         servings: 1,
-        score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-        .sort({ score: -1 }).limit(10).toArray();
-        console.log('Recipes:', recipes);
-    // }else {
-    //   recipes = await database.find({
-    //     $or: [
-    //       {ingredientArray: {$all: search}},
-    //       {$and: [
-    //         { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-    //         {ingredientArray: {$in: search}}
-    //     ]}
-    //   ]
-      //BK CODE
-
-    } else {
-      try {
-        recipes = await database
-          .find({
-            $or: [
-              { ingredientArray: { $all: search } },
-              {
-                $and: [
-                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
-                  { ingredientArray: { $in: search } }
-                  // {
-                  //     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-                  //     $options: 'i'
-                  //   }
-                ]
+        score: {
+          $reduce: {
+            input: {
+              $map: {
+                input: search, as: "term", in: {
+                  $cond: {
+                    if: { $regexMatch: { input: "$ingredients_raw_str", regex: `${"$" + "$term"}`, options: "i" } }, then: 1, else: 0
+                  }
+                }
               }
-            ]
-          })
-          .project({ tags: 1,
-                    name: 1,
-                    ingredientArray: 1,
-                    servings: 1,
-            score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-          .sort({ score: -1 })
-          .limit(10)
-          .toArray();
-      
-        // console.log('Recipes:', recipes);
-      } catch (error) {
-        console.log('Error occurred while executing the query:', error);
-      }
-      
-    // for (var i = 0; i < search.length; i++){
-    //   recipes.sort(search[i]);
-    // }
-    // recipes.project({ score: { $size: { $setIntersection: ["$ingredientArray", search] } } }).sort({ score: -1 });
-    // ingredientArray: {
-      //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-      //   $options: 'i'
-      // }
-      // ingredientArray: {$regex: new RegExp(search)}
-    }
+            },
+            initialValue: 0, in: { $add: ["$$value", "$$this"] }
+          }
+        }
+      })
+        .sort({ "score": -1 })
+        .limit(50000).toArray();
   }
+  //Sorts the recipes by score after it has been set to an array
   if (search) {
     recipes.sort((a, b) => b.score - a.score);
     recipes = recipes.slice(0, 10);
   }
-  // console.log('Filtered:', recipes);
-  //CG CODE
+  //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-              console.log("No images found.");
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-            }
-          })
-          .catch((error) => {
-            console.error("An error occurred:", error);
-          });
+    images.push(await getGoogleImage(recipes[i].name));
   }
   //BK CODE
-
-  // console.log("res" + recipes);
-  let times = [];
-  for (let i = 0; i < recipes.length; i++) {
-    timeCurrent = recipes[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
-      }
-    }
-    times.push(timeCurrent);
-  }
-  for(let i = 0; i < times.length; i++){
-    if (times[i].length == 0){
-      times[i].push("N/A");
-    }
-  }
-console.log(search);
-
+  let times = getRecipeTimes(recipes);
   res.render("searchIngredients", {
     recipes: recipes,
     session: req.session,
@@ -851,23 +729,22 @@ console.log(search);
     condCat: condCat,
     sweetCat: sweetCat,
     otherCat: otherCat
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
-//turns using the profile diets on and off in the search pages
-app.get("/useDiet", urlencodedParser, async (req, res) => {
-  console.log(req.query);
-  if (req.query.type == "off") {
-    req.session.useDiet = false;
-  } else {
+//turns using the profile diets on
+app.post("/useDiet", urlencodedParser, async (req, res) => {
     req.session.useDiet = true;
-    console.log(req.session.useDiet);
-  }
-  if (req.query.return == "regular") {
-  res.redirect("/search");
-  } else {
-    res.redirect("/searchIngredients");
-  }
+    res.send("success");
+});
+
+//turns the profile diets off
+app.post("/dontUseDiet", urlencodedParser, async (req, res) => {
+    req.session.useDiet = false;
+    res.send("success");
 });
 
 //Profile
@@ -910,51 +787,47 @@ app.get("/profile", async (req, res) => {
   }
 
 
-  let time = [];
+  let times = getRecipeTimes(bookmarks);
 
-    for (let i = 0; i < bookmarks.length; i++) {
-      if (bookmarks[i].tags) {
-        console.log(bookmarks[i]);
-        timeCurrent = bookmarks[i].tags;
-        timeCurrent = timeCurrent.replaceAll("'", "");
-        timeCurrent = timeCurrent.replaceAll("[", "");
-        timeCurrent = timeCurrent.replaceAll("]", "");
-        timeCurrent = timeCurrent.split(",");
-        for (let i = timeCurrent.length - 1; i >= 0; i--) {
-          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-            timeCurrent.splice(i, 1);
-          }
-        }
-        time.push(timeCurrent);
-      } else if (bookmarks[i].make_time) {
-        time.push([bookmarks[i].make_time]);
-      }
-    }
-    for (let i = 0; i < time.length; i++) {
-      if (time[i].length == 0) {
-        time[i].push("N/A");
-      }
-    }
-
-
-
-
-console.log(bookmarks);
   res.render("profile", {
     session: req.session,
     bookmarks: bookmarks,
     images: images,
-    time: time,
-    aiCount: aiBookmarksCount
+    times: times,
+    aiCount: aiBookmarksCount,
+    error: req.query.error
   });
 });
 
 //Update Profile
 app.post("/profileUpdate", urlencodedParser, async (req, res) => {
+  //gets the inputted email and username
   let email = req.body.email;
   let username = req.body.username;
+  //sets up connection to database
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
+  //checks if the email or username is already taken
+  let emailList = await database.find({ email: email }).toArray();
+  let usernameList = await database.find({ username: username }).toArray();
+  //gets the current user
+  let curUser = await database.find({ email: req.session.email, username: req.session.username}).toArray();
+  //if the email or username is already taken, redirect to profile with error
+  if (emailList.length > 0 ) {
+    console.log("email" + emailList[0]._id, curUser[0]._id);
+    if (!(emailList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  if (usernameList.length > 0) {
+    console.log("username" + usernameList[0]._id, curUser[0]._id);
+    if (!(usernameList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  //updates the user's email and username if they are not taken
   database.updateMany({
     email: req.session.email,
     username: req.session.username
@@ -964,6 +837,7 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
       email: email
     }
   });
+  //updates the session variables
   req.session.username = username;
   req.session.email = email;
   res.send("Profile Updated <a href='/profile'>Go Back</a>")
@@ -1063,7 +937,6 @@ app.get("/dietEdit", async (req, res) => {
 //Update the dietary restrictions
 app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   let diet = req.body.diet;
-  console.log(diet, req.session.email, req.session.username);
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
   database.findOneAndUpdate({
@@ -1091,6 +964,7 @@ app.get("/recipe", async (req, res) => {
   try{
     var recipeId = new ObjectId(req.query.id);
   }catch{
+
     res.redirect("/404");
     return;
   }
@@ -1107,7 +981,6 @@ if (req.session.authenticated) {
   var recipeTime = req.query.time;
 
   //Query and parse parts of the recipe
-  console.log(recipeId);
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
@@ -1151,8 +1024,6 @@ if (req.session.authenticated) {
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
 
-  console.log(bookmarked)
-
   res.render("recipe", {
     id: req.query.id,
     bookmarked: bookmarked,
@@ -1177,7 +1048,6 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
   var user = await userCollection.findOne({ email: req.session.email });
   //Get the user's bookmarks
   var bookmarked = await isBookmarked(req, req.body.id);
-  console.log(bookmarked);
   var bookmarks = [];
   if (user.bookmarks) {
     bookmarks = user.bookmarks;
@@ -1199,7 +1069,6 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
   }
   bookmarks.push(recipeId);
  
-  console.log(req.session);
   await userCollection.findOneAndUpdate({
     email: req.session.email
   }, {
@@ -1323,7 +1192,6 @@ app.get("/test", async (req, res) => {
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
-  // console.log(read);
 
   for (let i = 0; i < read.length; i++) {
     html += "<p>" + read[i].name + "<ul>";
@@ -1360,7 +1228,6 @@ app.get("/querytest", async (req, res) => {
       $all: ["sugar", "eggs"]
     }
   }).limit(5).toArray();
-  console.log(read);
   html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
@@ -1378,10 +1245,8 @@ fetch(apiUrl)
   .then(data => {
     if (data.items && data.items.length > 0) {
       const imageUrl = data.items[0].link;
-      console.log('Image URL:', imageUrl);
       res.render("test", { url: imageUrl });
     } else {
-      console.log('No images found.');
     }
   })
   .catch(error => {
@@ -1497,6 +1362,7 @@ async function isBookmarked(req, id){
     return bookmarked;
 }
 
+//add to recents
 async function addToRecents(req, recipeId){
   
 //Add to recent recipes
@@ -1514,7 +1380,6 @@ if (user.recents) {
   while (user.recents.length >= 20) {
     recents.shift();
   }    
-  console.log("Adding to recents");
 }
 //Add to recents
 recents.push(recipeId);
@@ -1531,4 +1396,36 @@ function arrayWithout(array, string){
     }
   }
   return newArray;
+}
+
+function getRecipeTimes(recipeArray){
+  let times = [];
+    for (let i = 0; i < recipeArray.length; i++) {
+      if (recipeArray[i].tags) {
+        timeCurrent = recipeArray[i].tags;
+        timeCurrent = timeCurrent.replaceAll("'", "");
+        timeCurrent = timeCurrent.replaceAll("[", "");
+        timeCurrent = timeCurrent.replaceAll("]", "");
+        timeCurrent = timeCurrent.split(",");
+        for (let i = timeCurrent.length - 1; i >= 0; i--) {
+          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+            timeCurrent.splice(i, 1);
+          }
+        }
+        times.push(timeCurrent);
+      } else if (recipeArray[i].make_time) {
+        times.push(recipeArray[i].make_time);
+      }else {
+        times.push([]);
+      }
+
+    }
+
+  for (let i = 0; i < times.length; i++) {
+    if (times[i].length == 0) {
+      times[i].push("N/A");
+    }
+  }
+  console.log(times);
+  return times;
 }
