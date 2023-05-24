@@ -1382,19 +1382,25 @@ function arrayWithout(array, string){
 
 function getRecipeTimes(recipeArray){
   let times = [];
-  for (let i = 0; i < recipeArray.length; i++) {
-      timeCurrent = recipeArray[i].tags;
-      timeCurrent = timeCurrent.replaceAll("'", "");
-      timeCurrent = timeCurrent.replaceAll("[", "");
-      timeCurrent = timeCurrent.replaceAll("]", "");
-      timeCurrent = timeCurrent.split(",");
-      for (let i = timeCurrent.length - 1; i >= 0; i--) {
-        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-          timeCurrent.splice(i, 1);
+    for (let i = 0; i < recipeArray.length; i++) {
+      if (recipeArray[i].tags) {
+        timeCurrent = recipeArray[i].tags;
+        timeCurrent = timeCurrent.replaceAll("'", "");
+        timeCurrent = timeCurrent.replaceAll("[", "");
+        timeCurrent = timeCurrent.replaceAll("]", "");
+        timeCurrent = timeCurrent.split(",");
+        for (let i = timeCurrent.length - 1; i >= 0; i--) {
+          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+            timeCurrent.splice(i, 1);
+          }
         }
+        times.push(timeCurrent);
+      } else if (recipeArray[i].time) {
+        times.push(recipeArray[i].time);
       }
-      times.push(timeCurrent);
-  }
+
+    }
+
   for (let i = 0; i < times.length; i++) {
     if (times[i].length == 0) {
       times[i].push("N/A");
