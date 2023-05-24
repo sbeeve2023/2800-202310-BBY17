@@ -739,17 +739,36 @@ app.get("/searchIngredients", async (req, res) => {
         ingredientArray: 1,
         servings: 1,
         // score: { $size: { $setIntersection: ["$ingredientArray", search] } } 
+        // score: {
+        //   $sum: {
+        //     $cond: {
+        //       if: { $regexMatch: { input: "$ingredients_raw_str", regex: `(${search.join('|')})`, options: "i" } },
+        //       then: 1,
+        //       else: 0
+        //     }
+        //   }
+        // }
         score: {
-          $sum: {
-            $cond: {
-              if: { $regexMatch: { input: "$ingredients_raw_str", regex: `(${search.join('|')})`, options: "i" } },
-              then: 1,
-              else: 0
-            }
+          $reduce: {
+            input: {
+              $map: {
+                input: search,
+                as: "term",
+                in: {
+                  $cond: {
+                    if: { $regexMatch: { input: "$ingredients_raw_str", regex: `${"$" + "$term"}`, options: "i" } },
+                    then: 1,
+                    else: 0
+                  }
+                }
+              }
+            },
+            initialValue: 0,
+            in: { $add: ["$$value", "$$this"] }
           }
         }
       })
-        .sort({ "score": 1 })
+        .sort({ "score": -1 })
         .limit(50000).toArray();
         console.log('Recipes:', recipes);
     // }else {
