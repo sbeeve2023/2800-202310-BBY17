@@ -728,7 +728,7 @@ app.get("/searchIngredients", async (req, res) => {
     nutCat: nutCat,
     condCat: condCat,
     sweetCat: sweetCat,
-    otherCat: otherCat
+    otherCat: otherCat,
     restrictions: restrictionsArray,
     diet: diet,
     time: time
