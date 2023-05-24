@@ -7,8 +7,8 @@
   <div class="max-w-sm bg-mmfo px-6 pt-6 pb-2 rounded-xl shadow-lg transform hover:scale-105 transition duration-250">
     <!-- <h3 class="mb-3 text-xl font-bold text-mmpr">Avg review: 4/5</h3> -->
     <div class="relative">
-      <img class="w-full rounded-xl" src="<%= decodeURIComponent(image)%>" alt="Colors" />
-      <p class="absolute top-0 bg-yellow-300 text-gray-800 font-semibold py-1 px-3 rounded-br-lg rounded-tl-lg <%if(!recipe.ai){%>hidden<%}%>">AI</p>
+      <img class="w-full rounded-xl object-cover max-h-60" src="<%= decodeURIComponent(image)%>" alt="Colors" />
+      <p id="ai-gen" class="absolute top-0 bg-mmfo text-mmpr font-semibold py-1 px-3 rounded-br-lg rounded-tl-lg <%if(!recipe.ai){%>hidden<%}%>">AI Generated</p>
     </div>
     <h1 class="mt-4 text-mmpr text-2xl font-bold cursor-pointer"><%= decodeURIComponent(recipe.name)%></h1>
     <div class="my-4">

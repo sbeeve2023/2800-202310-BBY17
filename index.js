@@ -145,6 +145,11 @@ app.get("/", async (req, res) => {
       let recipe = await recipeCollection.findOne({
         _id: new ObjectId(recents[i])
       });
+      if (recipe == null) {
+        recipe = await airecipeCollection.findOne({
+          _id: new ObjectId(recents[i])
+        });
+      }
       if(recipe){
         recipes.push(recipe);
         images.push(await getGoogleImage(recipe.name));
@@ -154,17 +159,20 @@ app.get("/", async (req, res) => {
 
   let time = [];
   for (let i = 0; i < recipes.length; i++) {
-    timeCurrent = recipes[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
+    if(recipes[i].tags){
+      timeCurrent = recipes[i].tags;
+      timeCurrent = timeCurrent.replaceAll("'", "");
+      timeCurrent = timeCurrent.replaceAll("[", "");
+      timeCurrent = timeCurrent.replaceAll("]", "");
+      timeCurrent = timeCurrent.split(",");
+      for (let i = timeCurrent.length - 1; i >= 0; i--) {
+        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+          timeCurrent.splice(i, 1);
+        }
       }
+    } else if (recipes[i].make_time){
+      time.push(timeCurrent);
     }
-    time.push(timeCurrent);
   }
   for(let i = 0; i < time.length; i++){
     if (time[i].length == 0){
@@ -204,8 +212,6 @@ app.get("/generate", async (req, res) => {
 });
 
 app.get("/ai-recipe", async (req, res) => {
-  console.log(req.query.id);
-
     try {
       var recipeId = new ObjectId(req.query.id);
     } catch {
@@ -215,7 +221,6 @@ app.get("/ai-recipe", async (req, res) => {
 
     //Check if user is logged in and if the recipe is already bookmarked
     var bookmarked = await isBookmarked(req, recipeId);
-    console.log(bookmarked);
     addToRecents(req, recipeId);
 
     //Query and parse parts of the recipe
@@ -1277,6 +1282,15 @@ app.post("/remove-egg", async (req, res) => {
   res.redirect("/profile");
 }});
 
+
+app.get("/aboutus", async (req, res) => {
+  res.render("aboutus", {session: req.session});
+});
+
+app.get("/privacypolicy", async (req, res) => {
+  res.render("privacypolicy", {session: req.session});
+});
+
 app.get("/test", async (req, res) => {
   res.render("test", {session: req.session});
 });
@@ -1461,6 +1475,7 @@ async function isBookmarked(req, id){
 }
 
 async function addToRecents(req, recipeId){
+  
 //Add to recent recipes
 let recents = [];
 var user = await userCollection.findOne({email: req.session.email});
@@ -1476,10 +1491,10 @@ if (user.recents) {
   while (user.recents.length >= 20) {
     recents.shift();
   }    
+  console.log("Adding to recents");
 }
 //Add to recents
 recents.push(recipeId);
-console.log("it happened");
 await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
 return isBookmarked;
 }
