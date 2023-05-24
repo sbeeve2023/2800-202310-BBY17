@@ -16,6 +16,8 @@
           <div>
               <label class="text-mmpr" for="username">Username <span class="text-red-600 italic text-sm" >(*required)</span></label>
               <input id="username" name="username" type="text" placeholder="Username" required class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring">
+              
+              <!-- Error 1: Username already in use -->
               <p class="text-xs italic text-red-500 warning-transition">
                 <%if(error == "username-taken"){%>
                   Username already in use
@@ -26,6 +28,8 @@
           <div>
               <label class="text-mmpr" for="emailAddress">Email Address <span class="text-red-600 italic text-sm" >(*required)</span></label>
               <input id="emailAddress" name="email" type="email" placeholder="email" required class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 ocus:outline-none focus:ring">
+              
+              <!-- Error 2: Email already in use -->
               <p class="text-xs italic text-red-500 warning-transition">
                 <%if(error == "email-taken"){%>
                   Email has already been used
@@ -41,6 +45,8 @@
           <div>
               <label class="text-mmpr" for="passwordConfirm">Confirm Password <span class="text-red-600 italic text-sm" >(*required)</span></label>
               <input id="passwordConfirm" name="passwordConfirm" type="password" required placeholder="Confirm password" class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring">
+              
+              <!-- Error 3: Passwords do not match -->
               <p class="text-xs italic text-red-500 warning-transition">
                 <%if(error == "passwords-dont-match"){%>
                     Passwords do not match

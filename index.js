@@ -96,6 +96,15 @@ const userCollection = database.collection("users");
 const recipeCollection = database.collection('recipes');
 const airecipeCollection = database.collection('ai-recipes');
 const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "low-sodium", "low-carb", "low-fat"]
+const spiceCat = ["salt", "black pepper", "garlic", "cinnamon", "paprika", "parsley", "chili powder", "nutmeg", "cumin", "cayenne pepper", "oregano", "kosher salt", "cilantro", "ginger"]
+const fruitCat = ["lemon juice", "raisins", "orange juice", "lime juice", "lemon", "banana", "avocado", "apple", "coconut", "pineapple", "dried cranberry", "blueberry", "lime", "strawberry"]
+const meatCat = ["bacon", "ground beef", "chicken breast", "ham", "shrimp", "chicken drumstick"]
+const veggieCat = [ "onion", "tomato", "celery", "carrot", "green onion", "green pepper", "red bell pepper", "potato", "zucchini", "mushroom", "black beans", "cucumber", "shallot", "lettuce"]
+const dairyCat = [ "butter", "egg", "milk", "parmesan cheese", "sour cream", "cheddar cheese", "cream", "cream cheese", "mozzarella cheese", "margarine", "buttermilk", "condensed milk"]
+const nutCat = [ "flour", "pecans", "walnuts", "nuts", "peanut butter", "sesame seeds", "almonds", "tortillas", "rice", "pine nuts", "oats"]
+const condCat = [ "olive oil", "baking powder", "baking soda", "vegetable oil", "soy sauce", "mayonnaise", "worcestershire sauce", "dijon mustard", "tomato sauce", "ketchup", "vinegar", "tabasco sauce"]
+const sweetCat = [ "sugar", "brown sugar", "honey", "powdered sugar", "chocolate chips", "caster sugar", "molasses"]
+const otherCat = [ "chicken broth", "vanilla", "cornstarch", "chicken stock", "breadcrumbs", "white wine", "shortening", "cream of mushroom soup", "black olives", "beef broth", "cream of chicken soup", "vegetable broth"]
 
 
 //Enables Cookies in Express
@@ -723,6 +732,15 @@ app.get("/searchIngredients", async (req, res) => {
     current: search,
     images: images,
     profileDiet: profileDiet,
+    spiceCat: spiceCat,
+    fruitCat: fruitCat,
+    veggieCat: veggieCat,
+    meatCat: meatCat,
+    dairyCat: dairyCat,
+    nutCat: nutCat,
+    condCat: condCat,
+    sweetCat: sweetCat,
+    otherCat: otherCat,
     restrictions: restrictionsArray,
     diet: diet,
     time: time
@@ -1375,23 +1393,28 @@ function arrayWithout(array, string){
 function getRecipeTimes(recipeArray){
   //sets up the array
   let times = [];
-
   //loops through the times and turns them into arrays, then removes the ones that arent times
   for (let i = 0; i < recipeArray.length; i++) {
-      timeCurrent = recipeArray[i].tags;
-      timeCurrent = timeCurrent.replaceAll("'", "");
-      timeCurrent = timeCurrent.replaceAll("[", "");
-      timeCurrent = timeCurrent.replaceAll("]", "");
-      timeCurrent = timeCurrent.split(",");
-      for (let i = timeCurrent.length - 1; i >= 0; i--) {
-        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-          timeCurrent.splice(i, 1);
+      if (recipeArray[i].tags) {
+        timeCurrent = recipeArray[i].tags;
+        timeCurrent = timeCurrent.replaceAll("'", "");
+        timeCurrent = timeCurrent.replaceAll("[", "");
+        timeCurrent = timeCurrent.replaceAll("]", "");
+        timeCurrent = timeCurrent.split(",");
+        for (let i = timeCurrent.length - 1; i >= 0; i--) {
+          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+            timeCurrent.splice(i, 1);
+          }
         }
+        times.push(timeCurrent);
+      } else if (recipeArray[i].make_time) {
+        times.push(recipeArray[i].make_time);
+      }else {
+        times.push([]);
       }
-      times.push(timeCurrent);
-  }
 
-  //puts N/A if there are no times
+    }
+  //loops through the times and adds N/A if there are no times
   for (let i = 0; i < times.length; i++) {
     if (times[i].length == 0) {
       times[i].push("N/A");

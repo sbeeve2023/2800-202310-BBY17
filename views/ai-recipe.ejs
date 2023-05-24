@@ -32,7 +32,7 @@
   <!-- Recipe Image -->
   <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl"
   <%if (locals.recipe.imageURL) { %> 
-    src="<%=recipe.imageURL%>"
+    src="<%= decodeURIComponent(recipe.imageURL)%>"
   <% } else { %>
     src="https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ="
   <% } %>

@@ -5,13 +5,16 @@
   <!-- new card -->
 
   <div class="max-w-sm bg-mmfo px-6 pt-6 pb-2 rounded-xl shadow-lg transform hover:scale-105 transition duration-250">
-    <!-- <h3 class="mb-3 text-xl font-bold text-mmpr">Avg review: 4/5</h3> -->
+    <!-- image -->
     <div class="relative">
       <img class="w-full rounded-xl object-cover max-h-60" src="<%= decodeURIComponent(image)%>" alt="Colors" />
       <p id="ai-gen" class="absolute top-0 bg-mmfo text-mmpr font-semibold py-1 px-3 rounded-br-lg rounded-tl-lg <%if(!recipe.ai){%>hidden<%}%>">AI Generated</p>
     </div>
     <h1 class="mt-4 text-mmpr text-2xl font-bold cursor-pointer"><%= decodeURIComponent(recipe.name)%></h1>
+    
+    <!-- items on card -->
     <div class="my-4">
+      <!-- Prep time -->
       <div class="flex space-x-1 items-center">
         <span>
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-mmse mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -20,6 +23,7 @@
         </span>
         <p class="text-mmpr"><%=time%></p>
       </div>
+      <!-- Servings -->
       <div class="flex space-x-1 items-center">
         <span>
                 <svg class="h-6 w-6 text-mmse mb-1.5" fill="#6CBD4F" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
@@ -36,6 +40,7 @@
         </span>
         <p class="text-mmpr"><%= recipe.servings %> Servings</p>
       </div>
+      <!-- ingredients -->
       <div class="flex space-x-1 items-center">
         <span>
                 <svg fill="#6CBD4F" class="h-6 w-6 text-mmse mb-1.5" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -61,6 +66,8 @@
           <% }} %>
       </p>
       </div>
+
+      <!-- view recipe button -->
       <a href="/recipe?id=<%= recipe._id %>&time=<%= time %>&img=<%= image %>"
         class="imt-4 text-xl w-full text-mmfo bg-mmpr py-2 rounded-xl shadow-lg inline-flex items-center justify-center">
         View Recipe
