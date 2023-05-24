@@ -33,7 +33,7 @@
       </div>
       <%}%>
   </div>
-  <!-- More Button -->
+  <!-- More Button that opens modal -->
   <%if (recipes.length > 10){%>
   <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
   <%}%>
@@ -42,6 +42,7 @@
   
 </div>
 
+<!-- Modal with recent recipes -->
 <div id="recipe-modal" tabindex="-1" class="hidden fixed z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative w-full max-w-max max-h-full">
         <!-- Modal content -->

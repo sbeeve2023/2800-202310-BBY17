@@ -1,112 +1,127 @@
 <%- include('templates/header') -%>
 
 
-<!--Search Bar -->
-<form type="text" name="search" class="h-[30vmin] mt-6">
-    <!-- Dropdown Menu and Advanced Filters Button -->
-    <div class="flex justify-between items-center mb-4">
-        <select class="p-2 rounded border bg-mmth" name="time">
-          <option name="time" value="0">Prep Time</option>
-          <option name="time" value="15">15 Minutes</option>
-          <option name="time" value="30">30 Minutes</option>
-          <option name="time" value="60">60 Minutes</option>
-          <option name="time" value="4">60+ Minutes</option>
-        </select>
-        <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
-      </div>
+<div class="container mx-auto p-4">
+  <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center my-4">Search by Recipe</h1>
 
-       <!-- Modal -->
-       <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-        <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
-          <div class="flex justify-end">
-            <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </a>
-          </div>
-          <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
-          <div class="mb-4">
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
-              vegan
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
-              vegetarian
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
-              dairy-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
-              healthy
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
-              gluten-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
-              low-fat
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
-              low-sodium
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
-              low-carb
-            </label>
-            <!-- Add more checkboxes placeholders here -->
-            <% if (profileDiet && session.useDiet) { %>
-                <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
-                <ul>
-                <% if (Array.isArray(profileDiet)) { %>
-                <% for (var i = 0; i < profileDiet.length; i++) { %>
-                <li><%= profileDiet[i] %></li>
-                <% } %>
-                <% } else { %>
-                <li><%= profileDiet %></li>
-                <% } %>
-                </ul>
-                <% } %>
-            <% if (session.useDiet) { %>
-                <div class="py-3">
-               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=regular">Turn profile diet off</a>
-               </div>
-            <% } else { %>
-                <div class="py-3">
-                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=regular">Turn profile diet on</a>
-                </div>
+
+  <!--Search Bar -->
+  <form type="text" name="search" class="h-[30vmin] mt-6 mb-4">
+      <!-- Dropdown Menu and Advanced Filters Button -->
+      <div class="flex justify-between items-center mb-4">
+          <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
+            <option name="time" value="0">Prep Time</option>
+            <option name="time" value="15">15 Minutes</option>
+            <option name="time" value="30">30 Minutes</option>
+            <option name="time" value="60">60 Minutes</option>
+            <option name="time" value="4">60+ Minutes</option>
+          </select>
+          <div>
+            <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+            <% if(session.useDiet) { %>
+              <br/>
+              <br/>
+              <a 
+              href="/useDiet?type=off&return=regular" 
+              class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
             <% } %>
           </div>
-          </div>
-          </div>
-    <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
-    <div id="search-area" class="relative">
-        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
         </div>
-        <input name="search" type="search" id="default-search"
-            class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search for a recipe" required>
-        <button type="submit"
-            class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
-    </div>
-</form>
+
+        <!-- Modal -->
+        <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
+            <div class="flex justify-end">
+              <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </a>
+            </div>
+            <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
+            <div class="mb-4">
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
+                vegan
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
+                vegetarian
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
+                dairy-free
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
+                healthy
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
+                gluten-free
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
+                low-fat
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
+                low-sodium
+              </label>
+              <label class="flex items-center">
+                <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
+                low-carb
+              </label>
+              <!-- Add more checkboxes placeholders here -->
+              <% if (profileDiet && session.useDiet) { %>
+                  <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
+                  <ul>
+                  <% if (Array.isArray(profileDiet)) { %>
+                  <% for (var i = 0; i < profileDiet.length; i++) { %>
+                  <li><%= profileDiet[i] %></li>
+                  <% } %>
+                  <% } else { %>
+                  <li><%= profileDiet %></li>
+                  <% } %>
+                  </ul>
+                  <% } %>
+              <% if (session.useDiet) { %>
+                  <div class="py-3">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=regular">Turn profile diet off</a>
+                </div>
+              <% } else { %>
+                  <div class="py-3">
+                  <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=regular">Turn profile diet on</a>
+                  </div>
+              <% } %>
+            </div>
+            </div>
+            </div>
+      <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
+      <div id="search-area" class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+          </div>
+          <input name="search" type="search" id="default-search"
+              class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Search for a recipe" required>
+          <button type="submit"
+              class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
+      </div>
+  </form>
+
+  </div>
 
 </div>
 
 <hr/>
 
 <!-- Search Results -->
-<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded">
+<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded mt-1">
 <% if (recipes) { %>
     <h3 class="text-4xl font-bold text-gray-950 items-center flex justify-center font-title mt-5">Recipes for <%= search %>   </h3>
     <!--Recipe List-->
@@ -122,14 +137,6 @@
 </div>
 
 <script>
-  // window.addEventListener('load', function() {
-  //   var egg = 'egg';
-  //   var easter = '/easter-egg';
-  //   var body = document.querySelector('body');
-
-  //   var regex = new RegExp(egg, 'gi');
-  //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
-  // });
 
   function openModal() {
                 document.getElementById("modal").classList.remove("hidden");
