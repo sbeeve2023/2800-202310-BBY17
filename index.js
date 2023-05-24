@@ -204,47 +204,20 @@ app.get("/generate", async (req, res) => {
 });
 
 app.get("/ai-recipe", async (req, res) => {
+  console.log(req.query.id);
 
-  //Check if user is logged in and if the recipe is already bookmarked
-  var isBookmarked = false;
-  if (req.session.authenticated) {
-    var user = await userCollection.findOne({email: req.session.email});
-    //Display Bookmarks
-    if (user.bookmarks) {
-      for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
-        if (user.bookmarks[i].toString() == req.query.id) {
-          isBookmarked = true;
-         
-        }
-      }
-    }
-    //Add to recent recipes
-    let recents = [];
-    if (user.recents) {
-      recents = user.recents;
-      //Remove from recents if already there
-      for (let i = 0; i < recents.length; i++) {
-        if (recents[i].toString() == req.query.id) {
-          recents.splice(i, 1);
-        }
-      }
-      //Make sure recents is not too long
-      while (user.recents.length >= 20) {
-        recents.shift();
-      }    
-    }
-    //Add to recents
-  //  recents.push(new ObjectId(req.query.id)); TODO FIX THIS BECAUSE IT CRASHES AI RECIPES
-    await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
-  }
-  
-    try{
-    var recipeId = new ObjectId(req.query.id);
-    }catch{
+    try {
+      var recipeId = new ObjectId(req.query.id);
+    } catch {
       res.redirect("/404");
       return;
     }
-  
+
+    //Check if user is logged in and if the recipe is already bookmarked
+    var bookmarked = await isBookmarked(req, recipeId);
+    console.log(bookmarked);
+    addToRecents(req, recipeId);
+
     //Query and parse parts of the recipe
     var recipe = await airecipeCollection.findOne({_id: recipeId});
 
@@ -254,7 +227,7 @@ app.get("/ai-recipe", async (req, res) => {
       return;
     }
   
-    res.render("ai-recipe", {recipe: recipe, enableUi: true});
+    res.render("ai-recipe", {recipe: recipe, enableUi: true, bookmarked: bookmarked, id: req.query.id});
   });
 
 app.get("/ai-substitute", async (req, res) => {
@@ -390,13 +363,36 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 });
 
 
-//Ai Recipe unsave TODO: Does nothing
+//Ai Recipe unsave
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
-  res.redirect("/ai-recipe?id=" + req.body.id);
+
+  var user = await userCollection.findOne({ email: req.session.email });
+ 
+  //Return if recipe is already removed
+  var newBookmarks = arrayWithout(user.bookmarks, req.body.id);
+  if(newBookmarks.length == user.bookmarks.length){
+    res.redirect("/recipe?id=" + req.body.id);
+    return;
+  }
+
+  //Remove from user's bookmarks
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      bookmarks: newBookmarks
+    }
+  });
+
+  //Remove from database
+  await airecipeCollection.deleteOne({_id: new ObjectId(req.body.id)});
+
+  res.redirect("/profile");
+
 });
 
 
@@ -410,7 +406,6 @@ app.get("/signup", (req, res) => {
     error: req.query.error
   });
 });
-
 
 app.post("/signup-submit", async (req, res) => {
   let fname = req.body.firstname;
@@ -1065,54 +1060,22 @@ app.get("/logout", (req, res) => {
 
 //Recipe display
 app.get("/recipe", async (req, res) => {
-
-//Check if user is logged in and if the recipe is already bookmarked
-var isBookmarked = false;
-
-if (req.session.authenticated) {
-  var user = await userCollection.findOne({email: req.session.email});
-  //Display Bookmarks
-  if (user.bookmarks) {
-    for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
-      if (user.bookmarks[i].toString() == req.query.id) {
-        isBookmarked = true;
-       
-      }
-    }
-  }
-  //Add to recent recipes
-  let recents = [];
-  if (user.recents) {
-    recents = user.recents;
-    //Remove from recents if already there
-    for (let i = 0; i < recents.length; i++) {
-      if (recents[i].toString() == req.query.id) {
-        recents.splice(i, 1);
-      }
-    }
-    //Make sure recents is not too long
-    while (user.recents.length >= 20) {
-      recents.shift();
-    }    
-  }
-  //Add to recents
   try{
-  recents.push(new ObjectId(req.query.id));
+    var recipeId = new ObjectId(req.query.id);
   }catch{
     res.redirect("/404");
     return;
   }
-  await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
+
+//Check if user is logged in and if the recipe is already bookmarked
+var bookmarked = false;
+
+if (req.session.authenticated) {
+ bookmarked = await isBookmarked(req, req.query.id);
+ addToRecents(req, req.query.id);
 }
 
 
-
-try{
-  var recipeId = new ObjectId(req.query.id);
-}catch{
-  res.redirect("/404");
-  return;
-}
   var recipeTime = req.query.time;
 
   //Query and parse parts of the recipe
@@ -1128,8 +1091,7 @@ try{
       res.redirect("/404");
       return;
     }
-    redirectURL = "/ai-recipe?id=" + req.query.id;
-    res.redirect(redirectURL);
+    res.redirect("/ai-recipe?id=" + req.query.id);
     return;
   }
 
@@ -1161,11 +1123,11 @@ try{
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
 
-
+  console.log(bookmarked)
 
   res.render("recipe", {
     id: req.query.id,
-    bookmarked: isBookmarked,
+    bookmarked: bookmarked,
     name: recipeName,
     ingredients: recipeIngList,
     servings: recipeServings,
@@ -1184,28 +1146,20 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
     res.redirect("/login");
     return;
   }
-
-  //Get the user's bookmarks
-  var bookmarks;
   var user = await userCollection.findOne({ email: req.session.email });
-  if(!user){
-    res.redirect("/login");
-    return;
-  }
-  if (!user.bookmarks) {
-    bookmarks = [];
-  } else {
+  //Get the user's bookmarks
+  var bookmarked = await isBookmarked(req, req.body.id);
+  console.log(bookmarked);
+  var bookmarks = [];
+  if (user.bookmarks) {
     bookmarks = user.bookmarks;
   }
 
   //Return if the recipe is already bookmarked
-  for (let i = 0; i < bookmarks.length; i++) {
-    if (bookmarks[i].toString() == req.body.id) {
-      res.redirect("/recipe?id=" + req.body.id);
-      return;
-    }
+  if(bookmarked){
+    res.redirect("/recipe?id=" + req.body.id);
+    return;
   }
-
 
   //Save the recipe
   try{
@@ -1239,7 +1193,6 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
   }
 
   //Get the user's bookmarks
-  var bookmarks;
   var user = await userCollection.findOne({ email: req.session.email });
   if(!user || !user.bookmarks){
     res.redirect("/login");
@@ -1247,7 +1200,7 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
   }
 
 
-  //Return if the recipe is already bookmarked
+  //Return if the recipe is already removed
   var newBookmarks = [];
   for (let i = 0; i < user.bookmarks.length; i++) {
     if (user.bookmarks[i].toString() != req.body.id) {
@@ -1492,3 +1445,52 @@ function stringToArrayItem(potentialString){
   return potentialString;
 }
 
+//Check if recipe is bookmarked
+async function isBookmarked(req, id){
+  var bookmarked = false;
+    var user = await userCollection.findOne({email: req.session.email});
+    //Check if bookmarked
+    if (user.bookmarks != undefined) {
+      for (let i = 0; i < user.bookmarks.length && bookmarked == false; i++) {
+        if (user.bookmarks[i].toString() == id) {
+          bookmarked = true;
+        }
+      }
+    }
+    return bookmarked;
+}
+
+async function addToRecents(req, recipeId){
+//Add to recent recipes
+let recents = [];
+var user = await userCollection.findOne({email: req.session.email});
+if (user.recents) {
+  recents = user.recents;
+  //Remove from recents if already there
+  for (let i = 0; i < recents.length; i++) {
+    if (recents[i].toString() == recipeId.toString()) {
+      recents.splice(i, 1);
+    }
+  }
+  //Make sure recents is not too long
+  while (user.recents.length >= 20) {
+    recents.shift();
+  }    
+}
+//Add to recents
+recents.push(recipeId);
+console.log("it happened");
+await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
+return isBookmarked;
+}
+
+//remove an item from an array
+function arrayWithout(array, string){
+  var newArray = [];
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].toString() != string) {
+      newArray.push(array[i]);
+    }
+  }
+  return newArray;
+}
