@@ -308,8 +308,6 @@ app.get("/ai-substitute", async (req, res) => {
   }
 });
 
-
-
 //Ai Recipe save
 app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   if (!req.session.authenticated) {
@@ -352,7 +350,6 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 
 });
 
-
 //Ai Recipe unsave
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
   if (!req.session.authenticated) {
@@ -384,7 +381,6 @@ app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
   res.redirect("/profile");
 
 });
-
 
 //Sign Up
 app.get("/signup", (req, res) => {
@@ -475,7 +471,6 @@ app.post("/signup-submit", async (req, res) => {
 
 });
 
-
 //Login
 app.get("/login", (req, res) => {
 
@@ -488,6 +483,7 @@ app.get("/login", (req, res) => {
     error: error
   });
 });
+
 app.post("/login-submit", async (req, res) => {
   var username = req.body.username.toLowerCase();
   var password = req.body.password;
@@ -528,74 +524,97 @@ app.post("/login-submit", async (req, res) => {
   }
 });
 
-
 //Search for recipes in the database test
 app.get("/search", async (req, res) => {
+  //gets all the search parameters from the url
   let search = req.query.search;
   let time = req.query.time;
   let diet = req.query.diet;
-  if (!diet) {
-    diet = "null";
-  }
-  if (!time) {
-    time = 0;
-  }
+
+  //gets the users profile diet if they are signed in
   if (req.session.authenticated) {
-    await client.connect(); 
-    let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
+    await client.connect();
+    let profile = await client
+      .db(mongodb_database)
+      .collection("users")
+      .findOne({ username: req.session.username });
     var profileDiet = profile.diet;
   } else {
     var profile = false;
     var profileDiet = false;
   }
+  //sets up the default values for the search
   let recipes = false;
   let images = [];
-
   let connection = {};
-  
+
+  //if there is a search term it will search for it
   if (search) {
     connection.name = {
-      $regex: new RegExp(search, "i")
-    }
+      $regex: new RegExp(search, "i"),
+    };
   }
   connection.$and = [];
-      if (!(time == 0) && time) {
-        connection.tags = {
-          $regex: new RegExp(time, "i")
-        }
-      }
-      if (Array.isArray(diet)) {
-        connection.$and.push({ $and: diet.map(restriction => ({
-          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (!(diet == "null")){
-          connection.$and.push({
-          search_terms: {$regex: new RegExp(diet, "i")}
-          })
-        }
-      if (Array.isArray(profileDiet) && req.session.useDiet) {
-        connection.$and.push({ $and: profileDiet.map(restriction => ({
-          search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
-        }))
-      })
-      } else if (profileDiet && req.session.useDiet){
-          connection.$and.push({
-          search_terms: {$regex: new RegExp(profileDiet, "i")}
-          })
-        }
+  
+  //if there is a time it will search for it
+  if (!(time == 0) && time) {
+    connection.tags = {
+      $regex: new RegExp(time, "i"),
+    };
+  }
+  
+  //if there is a diet it will search for it
+  if (Array.isArray(diet)) {
+    connection.$and.push({
+      $and: diet.map((restriction) => ({
+        search_terms: { $regex: `\\b${restriction}\\b`, $options: "i" },
+      })),
+    });
+  } else if (diet) {
+    connection.$and.push({
+      search_terms: { $regex: new RegExp(diet, "i") },
+    });
+  }
+  
+  //if there is a profile diet it will search for it
+  if (Array.isArray(profileDiet) && req.session.useDiet) {
+    connection.$and.push({
+      $and: profileDiet.map((restriction) => ({
+        search_terms: { $regex: `\\b${restriction}\\b`, $options: "i" },
+      })),
+    });
+  } else if (profileDiet && req.session.useDiet) {
+    connection.$and.push({
+      search_terms: { $regex: new RegExp(profileDiet, "i") },
+    });
+  }
+ 
+  //if there is no search term it will delete the $and
   if (connection.$and.length == 0) {
     delete connection.$and;
   }
+  
+  //if there a search term it will search for it
   if (search) {
-  await client.connect();
-  const database = await client.db(mongodb_database).collection("recipes");
-  recipes = await database.find(connection).limit(20).toArray();
+    await client.connect();
+    const database = await client.db(mongodb_database).collection("recipes");
+    recipes = await database.find(connection).limit(20).toArray();
   }
+  
+  //gets the times from the search terms in the recipes
   let times = getRecipeTimes(recipes);
+  
+  //gets the images from google for each recipe 
   for (let i = 0; i < recipes.length; i++) {
     images.push(await getGoogleImage(recipes[i].name));
   }
-  
 
+  //if the diet is null it will set it to null for the checkboxes
+  if (!diet) {
+    diet = "null";
+  }
+  
+  //renders the search page with all the information
   res.render("search", {
     search: search,
     recipes: recipes,
@@ -606,16 +625,9 @@ app.get("/search", async (req, res) => {
     profileDiet: profileDiet,
     restrictions: restrictionsArray,
     diet: diet,
-    time: time
+    time: time,
   });
 });
-
-//Required for home page search
-app.post("/search", async (req, res) => {
-  let search = req.body.search;
-  res.redirect("/search?search=" + search);
-});
-
 
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
@@ -737,13 +749,17 @@ app.get("/searchIngredients", async (req, res) => {
 
 //turns using the profile diets on
 app.post("/useDiet", urlencodedParser, async (req, res) => {
+    //sets the use diet to true so when searching it will use the profile diets
     req.session.useDiet = true;
+    //sends a success message
     res.send("success");
 });
 
 //turns the profile diets off
 app.post("/dontUseDiet", urlencodedParser, async (req, res) => {
+  //sets the use diet to false so when searching it will not use the profile diets
     req.session.useDiet = false;
+    //sends a success message
     res.send("success");
 });
 
@@ -853,6 +869,7 @@ app.get("/change-password", async (req, res) => {
     error: req.query.error
   });
 });
+
 app.post("/change-password-submit", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
@@ -914,10 +931,10 @@ app.post("/change-password-submit", async (req, res) => {
   });
 
 });
+
 app.get("/changed-password", (req, res) => {
   res.render("changed-password");
 });
-
 
 //Change the dietary restrictions
 app.get("/dietEdit", async (req, res) => {
@@ -934,6 +951,7 @@ app.get("/dietEdit", async (req, res) => {
     currentDiet: diet, restrictions: restrictionsArray
   });
 });
+
 //Update the dietary restrictions
 app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   let diet = req.body.diet;
@@ -951,7 +969,6 @@ app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   req.session.diet = diet;
   res.redirect("/profile");
 });
-
 
 //Logout
 app.get("/logout", (req, res) => {
@@ -1174,7 +1191,6 @@ app.post("/remove-egg", async (req, res) => {
   res.redirect("/profile");
 }});
 
-
 app.get("/aboutus", async (req, res) => {
   res.render("aboutus", {session: req.session});
 });
@@ -1182,11 +1198,6 @@ app.get("/aboutus", async (req, res) => {
 app.get("/privacypolicy", async (req, res) => {
   res.render("privacypolicy", {session: req.session});
 });
-
-app.get("/test", async (req, res) => {
-  res.render("test", {session: req.session});
-});
-
 
 //Databsetest path
 app.get("/dbtest", async (req, res) => {
@@ -1232,34 +1243,10 @@ app.get("/querytest", async (req, res) => {
   res.send(html);
 });
 
-//Image test for reference
-app.get("/test", async (req, res) => {
-  const apiKey = 'AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k';
-  const searchEngineId = '139666e4b509c4654';
-  const searchTerm = 'banana';
-
-  const apiUrl = `https://www.googleapis.com/customsearch/v1?key=AIzaSyAwcRjPb6XAQafnNnNF2QP5EeU4kQGRQ4k&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
-
-fetch(apiUrl)
-  .then(response => response.json())
-  .then(data => {
-    if (data.items && data.items.length > 0) {
-      const imageUrl = data.items[0].link;
-      res.render("test", { url: imageUrl });
-    } else {
-    }
-  })
-  .catch(error => {
-    console.error('An error occurred:', error);
-  });
-});
-
-
 //404
 app.get("/*", (req, res) => {
   res.render("pageNotFound");
 });
-
 
 //Start server
 app.listen(port, () => {
@@ -1310,8 +1297,11 @@ async function validateAI_Substitute(req, res){
 
 //Get image from Google Custom Search API
 async function getGoogleImage(searchTerm) {
+  //sets the visibility of variable
   var imageFullURL = "";
+  //sets the url for the api
   let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
+  //fetches the data from the api, if it cant find one it will use a default image
   await fetch(apiUrl).then((response) => response.json()).then((data) => {
       if (data.items && data.items.length > 0) {
         imageFullURL = encodeURIComponent(data.items[0].link);
@@ -1323,7 +1313,8 @@ async function getGoogleImage(searchTerm) {
       console.error("An error occurred:", error);
       
     });
-  return decodeURIComponent(imageFullURL);
+  //returns the url
+  return imageFullURL;
 }
 
 //Parse steps from our beautiful dataset
@@ -1398,9 +1389,12 @@ function arrayWithout(array, string){
   return newArray;
 }
 
+//parses the times from the tags
 function getRecipeTimes(recipeArray){
+  //sets up the array
   let times = [];
-    for (let i = 0; i < recipeArray.length; i++) {
+  //loops through the times and turns them into arrays, then removes the ones that arent times
+  for (let i = 0; i < recipeArray.length; i++) {
       if (recipeArray[i].tags) {
         timeCurrent = recipeArray[i].tags;
         timeCurrent = timeCurrent.replaceAll("'", "");
@@ -1420,12 +1414,13 @@ function getRecipeTimes(recipeArray){
       }
 
     }
-
+  //loops through the times and adds N/A if there are no times
   for (let i = 0; i < times.length; i++) {
     if (times[i].length == 0) {
       times[i].push("N/A");
     }
   }
-  console.log(times);
+ 
+  //returns the times
   return times;
 }
