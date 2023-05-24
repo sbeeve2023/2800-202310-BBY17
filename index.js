@@ -862,21 +862,25 @@ app.get("/profile", async (req, res) => {
   let images = [];
   
   let bookmarks = [];
+  let aiBookmarksCount = 0;
   
   if (user.bookmarks != undefined) {
     var bookmarkIds = user.bookmarks;
     let recipe =[] ;
     
     for (let i = 0; i < bookmarkIds.length; i++) {
+      let aiFlag = false;
       recipe = await recipeCollection.findOne({
         _id: bookmarkIds[i]
       });
       if (recipe == null) {
+        aiFlag = true;
         recipe = await airecipeCollection.findOne({
           _id: bookmarkIds[i]
         });
       }
       if(recipe){
+      if (aiFlag) {aiBookmarksCount++;}
       bookmarks.push(recipe);
       imageURL = await getGoogleImage(recipe.name);
       if(imageURL == ""){
@@ -923,6 +927,7 @@ console.log(bookmarks);
     bookmarks: bookmarks,
     images: images,
     time: time,
+    aiCount: aiBookmarksCount
   });
 });
 
