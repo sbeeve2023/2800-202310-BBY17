@@ -203,6 +203,56 @@ app.get("/generate", async (req, res) => {
   res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
 });
 
+app.get("/ai-recipe", async (req, res) => {
+
+  //Check if user is logged in and if the recipe is already bookmarked
+  var isBookmarked = false;
+  if (req.session.authenticated) {
+    var user = await userCollection.findOne({email: req.session.email});
+    //Display Bookmarks
+    if (user.bookmarks) {
+      for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
+        if (user.bookmarks[i].toString() == req.query.id) {
+          isBookmarked = true;
+         
+        }
+      }
+    }
+    //Add to recent recipes
+    let recents = [];
+    if (user.recents) {
+      recents = user.recents;
+      //Remove from recents if already there
+      for (let i = 0; i < recents.length; i++) {
+        if (recents[i].toString() == req.query.id) {
+          recents.splice(i, 1);
+        }
+      }
+      //Make sure recents is not too long
+      while (user.recents.length >= 20) {
+        recents.shift();
+      }    
+    }
+    //Add to recents
+  //  recents.push(new ObjectId(req.query.id)); TODO FIX THIS BECAUSE IT CRASHES AI RECIPES
+    await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
+  }
+  
+    var recipeId = new ObjectId(req.query.id);
+  
+    //Query and parse parts of the recipe
+    var recipe = await airecipeCollection.findOne({_id: recipeId});
+    console.log(recipeId)
+
+    //Check if recipe exists
+    if (recipe == null){
+      res.redirect("/404");
+      return;
+    }
+  
+    res.render("ai-recipe", {recipe: recipe, enableUi: true});
+  });
+
 app.get("/ai-substitute", async (req, res) => {
   if(! await validateAI_Substitute(req, res)){
     return;
@@ -273,6 +323,7 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.imageURL = imageURL;
     aiObject.originalRecipeID = req.query.recipeID;
     aiObject.ownerId =  req.session.userId;
+    aiObject.ai = true;
     req.session.aiRecipe = aiObject;
     console.log("Recipe in session",req.session.aiRecipe);
 
@@ -340,8 +391,6 @@ app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
   }
   res.redirect("/ai-recipe?id=" + req.body.id);
 });
-
-
 
 
 //Sign Up
@@ -1056,7 +1105,22 @@ if (req.session.authenticated) {
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
-  recipeName = read[0].name;
+
+  //Check if recipe is ai generated
+  if(read.length == 0){
+    aiRecipe = await airecipeCollection.findOne({_id: recipeId});
+    if (aiRecipe == null){
+      res.redirect("/404");
+      return;
+    }
+    redirectURL = "/ai-recipe?id=" + req.query.id;
+    res.redirect(redirectURL);
+    return;
+  }
+
+
+
+  let recipeName = read[0].name;
 
   //Generate image
   var imageURL = await getGoogleImage(recipeName);
