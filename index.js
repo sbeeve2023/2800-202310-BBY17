@@ -1395,8 +1395,10 @@ function getRecipeTimes(recipeArray){
           }
         }
         times.push(timeCurrent);
-      } else if (recipeArray[i].time) {
-        times.push(recipeArray[i].time);
+      } else if (recipeArray[i].make_time) {
+        times.push(recipeArray[i].make_time);
+      }else {
+        times.push([]);
       }
 
     }
