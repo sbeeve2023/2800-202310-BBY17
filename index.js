@@ -335,9 +335,10 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 
   //Save to databse first
   var aiRecipe = req.session.aiRecipe;
+
   recipeAlreadySaved = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
   if(recipeAlreadySaved){
-    res.redirect("/ai-substitute?recipeID=" + aiRecipe.originalRecipeID);
+    res.redirect("/recipe?id=" + recipeAlreadySaved._id);
     return;
   }
   await airecipeCollection.insertOne(aiRecipe);
@@ -1073,6 +1074,7 @@ app.get("/recipe", async (req, res) => {
   try{
     var recipeId = new ObjectId(req.query.id);
   }catch{
+
     res.redirect("/404");
     return;
   }
@@ -1097,6 +1099,7 @@ if (req.session.authenticated) {
   //Check if recipe is ai generated
   if(read.length == 0){
     aiRecipe = await airecipeCollection.findOne({_id: recipeId});
+    console.log(aiRecipe);
     if (aiRecipe == null){
       res.redirect("/404");
       return;
