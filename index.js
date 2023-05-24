@@ -699,7 +699,7 @@ app.get("/searchIngredients", async (req, res) => {
         }
       })
         .sort({ "score": -1 })
-        .limit(50000).toArray();
+        .limit(20000).toArray();
   }
   //Sorts the recipes by score after it has been set to an array
   if (search) {
