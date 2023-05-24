@@ -5,221 +5,213 @@
                 <!-- Dropdown Menu and Advanced Filters Button -->
               <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Mealmatch - Select your ingredients</h1>
 
-                <div class="flex justify-between items-center mb-4">
-                  <select class="p-2 rounded border bg-mmth" name="time">
-                    <option name="time" value="0">Prep Time</option>
-                    <option name="time" value="15">15 Minutes</option>
-                    <option name="time" value="30">30 Minutes</option>
-                    <option name="time" value="60">60 Minutes</option>
-                    <option name="time" value="4">60+ Minutes</option>
-                  </select>
-                  <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
-                </div>
+        <div class="flex justify-between items-center mb-4">
+          <select class="p-2 rounded border bg-mmth" name="time">
+            <option name="time" value="0">Prep Time</option>
+            <option name="time" value="15" <% if (time==15) {%> selected="selected"<%}%> >15 Minutes</option>
+            <option name="time" value="30" <% if (time==30) {%> selected="selected"<%}%>>30 Minutes</option>
+            <option name="time" value="60" <% if (time==60) {%> selected="selected"<%}%>>60 Minutes</option>
+            <option name="time" value="4" <% if (time==4) {%> selected="selected"<%}%>>60+ Minutes</option>
+          </select>
+          <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+        </div>
 
-                <!-- Modal -->
-                <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-                  <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
-                    <div class="flex justify-end">
-                      <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                      </a>
-                    </div>
-                    <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
-                    <div class="mb-4">
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
-                        vegan
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
-                        vegetarian
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
-                        dairy-free
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
-                        healthy
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
-                        gluten-free
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
-                        low-fat
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
-                        low-sodium
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
-                        low-carb
-                      </label>
-                      <!-- Add more checkboxes placeholders here -->
-                    </div>
-                    <% if (profileDiet && session.useDiet) { %>
-                    <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
-                    <ul>
-                    <% if (Array.isArray(profileDiet)) { %>
-                    <% for (var i = 0; i < profileDiet.length; i++) { %>
-                    <li><%= profileDiet[i] %></li>
+        <!-- Modal -->
+        <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
+            <div class="flex justify-end">
+              <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </a>
+            </div>
+            <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
+            <div class="mb-4">
+              <%for (let i=0; i < restrictions.length; i++) {%>
+                <label class="flex items-center">
+                  <input type="checkbox" name="diet" value=<%=restrictions[i]%>
+                  <% if(diet.includes(restrictions[i])) { %>checked<% } %>>
+                      <%=restrictions[i]%>
+                </label>
+                <% } %>
+            </div>
+            <div id="dietOfProfile">
+            <% if (profileDiet && session.useDiet) { %>
+              <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
+              <ul>
+                <% if (Array.isArray(profileDiet)) { %>
+                  <% for (var i=0; i < profileDiet.length; i++) { %>
+                    <li>
+                      <%= profileDiet[i] %>
+                    </li>
                     <% } %>
-                    <% } else { %>
-                    <li><%= profileDiet %></li>
-                    <% } %>
-                    </ul>
-                    <% } %>
-                    <% if (session.useDiet) { %>
-                      <div class="py-3">
-                     <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=nope">Turn profile diet off</a>
-                     </div>
-                  <% } else { %>
-                      <div class="py-3">
-                      <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=nope">Turn profile diet on</a>
-                      </div>
-                  <% } %>
-                  
-                  </div>
+                      <% } else { %>
+                        <li>
+                          <%= profileDiet %>
+                        </li>
+                        <% } %>
+              </ul>
+              <% } %>
+            </div>
+              <% if (session.useDiet) { %>
+                <div class="py-3" id="button">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>
+               </div>
+            <% } else { %>
+                <div class="py-3" id="button">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>
                 </div>
-              </form>
+            <% } %>
 
-                <!-- Search Bar with Add Button -->
-                <div class="relative mt-4">
-                    <form id="thisForm">
-                        <input name="search" type="text" id="ingredient"
-                        class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter an Ingredient">
-                        <button type="button" id="addBtn"
-                  class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
-                  Add
-                  </button>
-                    </form>
-                </div>
-                
-                <!-- Ingredients List -->
-                <div class="mt-4">
-                  <!-- Ingredient item -->
-                  <div class="flex items-center mb-2 flex-wrap" id="ingList">
-                    <% if (current != undefined) { %>
-                    <% for (var i = 0; i < current.length; i++) { %>
-                    <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
-                      <input type="text" class="bg-mmse hover:bg-mmpr text-mmfo outline-none pr-1 mr-1" name="search" value="<%= current[i]%>">
-                      <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
-                        <g transform="translate(1173.2 38.831)">
-                          <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
-                            <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
-                          </g>
-                        </g>
-                      </svg>
-                    </span>
-                  <% }}%>
-                    <!-- Add more ingredient items -->
-                  
-                  </div>
-                </div>
+          </div>
+        </div>
+  </form>
 
-                <!-- Find Recipe Button -->
-                <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
-                <script>
-                    //Gets the initial query parameters from the last search and adds them to the search path
-                    window.addEventListener("load", function () {
-                      var initialList = document.getElementsByClassName("Initial");
-                      for (var i = 0; i < initialList.length; i++){
-                        initialList[i].addEventListener("click", function () {
-                              this.remove();
-                          });
-                          var item = initialList[i].children[0].value;
-                          var url = document.getElementById("submitForm");
-                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item.toLowerCase();
-                        } else {
-                            url.action += "&search=" + item.toLowerCase();
-                        }
-                      }
-                    });
-                    //Inserts a new card for an ingredient if the enter button is pressed
-                    document.getElementById("ingredient").addEventListener("keypress", function (e) {
-                      if (e.keyCode == 13){
-                        e.preventDefault();
-                        var textBox = document.getElementById("ingredient");
-                        var item = textBox.value;
-                        //Make span element
-                        var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+  <!-- Search Bar with Add Button -->
+  <div class="relative mt-4">
+    <form id="thisForm">
+      <input name="search" type="text" id="ingredient"
+        class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter an Ingredient">
+      <button type="button" id="addBtn"
+        class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
+        Add
+      </button>
+    </form>
+  </div>
 
-                        //Make input element
-                        var newBox = document.createElement("input");
-                        newBox.setAttribute("type", "text");
-                        newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item.toLowerCase());
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
-                        // newBox.setAttribute("disabled", true);
-                        // newBox.innerHTML += item;
-                        newSpan.addEventListener("click", function () {
-                            this.remove();
-                        });
-                        newSpan.appendChild(newBox);
+  <!-- Ingredients List -->
+  <div class="mt-4">
+    <!-- Ingredient item -->
+    <div class="flex items-center mb-2 flex-wrap" id="ingList">
+      <% if (current !=undefined) { %>
+        <% for (var i=0; i < current.length; i++) { %>
+          <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
+            <input type="text" class="bg-mmse hover:bg-mmpr text-mmfo outline-none pr-1 mr-1" name="search"
+              value="<%= current[i]%>">
+            <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg"
+              class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
+              <g transform="translate(1173.2 38.831)">
+                <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                  <path style="fill:#b7bcc3"
+                    d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z" />
+                </g>
+              </g>
+            </svg>
+          </span>
+          <% }}%>
+            <!-- Add more ingredient items -->
 
-                        //make svg
-                        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
-                        newSVG.setAttribute("viewBox", "0 0 400 400");
-                        newSVG.setAttribute("version", "1.0");
-                        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+    </div>
+  </div>
+
+  <!-- Find Recipe Button -->
+  <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit"
+    form="submitForm">Find Recipe</button>
+  <script>
+    window.addEventListener("load", function () {
+      var initialList = document.getElementsByClassName("Initial");
+      console.log("List" + initialList);
+      for (var i = 0; i < initialList.length; i++) {
+        initialList[i].addEventListener("click", function () {
+          this.remove();
+        });
+        var item = initialList[i].children[0].value;
+        var url = document.getElementById("submitForm");
+        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
+          url.action += item.toLowerCase();
+        } else {
+          url.action += "&search=" + item.toLowerCase();
+        }
+      }
+    });
+    document.getElementById("ingredient").addEventListener("keypress", function (e) {
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        var textBox = document.getElementById("ingredient");
+        var item = textBox.value;
+        //Make span element
+        var newSpan = document.createElement("span");
+        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+
+        //Make input element
+        var newBox = document.createElement("input");
+        newBox.setAttribute("type", "text");
+        newBox.setAttribute("name", "search")
+        newBox.setAttribute("value", item.toLowerCase());
+        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
+        // newBox.setAttribute("disabled", true);
+        // newBox.innerHTML += item;
+        newSpan.addEventListener("click", function () {
+          this.remove();
+        });
+        newSpan.appendChild(newBox);
+
+        //make svg
+        // var newSVG = document.createElement("svg");
+        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
+        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+        newSVG.setAttribute("viewBox", "0 0 400 400");
+        newSVG.setAttribute("version", "1.0");
+        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
                           <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
                             <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
                           </g>
                         </g>`;
-                        newSpan.appendChild(newSVG);
-                        document.getElementById("ingList").appendChild(newSpan);
+        newSpan.appendChild(newSVG);
+        document.getElementById("ingList").appendChild(newSpan);
 
-                        // document.getElementById("submitForm").appendChild(newBox);
-                        document.getElementById("thisForm").reset();
-                        var url = document.getElementById("submitForm");
-                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item;
-                        } else {
-                            url.action += "," + item;
-                        }   
-                      }
-                    });
-                    //Inserts a new card for an ingredient if the add button is pressed
-                    document.getElementById("addBtn").addEventListener("click", 
-                    function () {
-                        var textBox = document.getElementById("ingredient");
-                        var item = textBox.value;
-                        //Make span element
-                        var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+        // document.getElementById("submitForm").appendChild(newBox);
+        document.getElementById("thisForm").reset();
+        var url = document.getElementById("submitForm");
+        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
+          url.action += item;
+        } else {
+          url.action += "," + item;
+        }
+      }
+    });
 
-                        //Make input element
-                        var newBox = document.createElement("input");
-                        newBox.setAttribute("type", "text");
-                        newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item.toLowerCase());
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
-                        newSpan.addEventListener("click", function () {
-                            this.remove();
-                        });
-                        newSpan.appendChild(newBox);
+    document.getElementById("addBtn").addEventListener("click",
+      function () {
+        var textBox = document.getElementById("ingredient");
+        var item = textBox.value;
+        //Make span element
+        var newSpan = document.createElement("span");
+        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
 
-                        //make svg
-                        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
-                        newSVG.setAttribute("viewBox", "0 0 400 400");
-                        newSVG.setAttribute("version", "1.0");
-                        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+        //Make input element
+        var newBox = document.createElement("input");
+        newBox.setAttribute("type", "text");
+        newBox.setAttribute("name", "search")
+        newBox.setAttribute("value", item.toLowerCase());
+        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
+        // newBox.setAttribute("disabled", true);
+        // newBox.innerHTML += item;
+        newSpan.addEventListener("click", function () {
+          this.remove();
+        });
+        newSpan.appendChild(newBox);
+
+        //make svg
+        // var newSVG = document.createElement("svg");
+        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
+        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+        newSVG.setAttribute("viewBox", "0 0 400 400");
+        newSVG.setAttribute("version", "1.0");
+        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
                           <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
                             <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
                           </g>
                         </g>`;
-                        newSpan.appendChild(newSVG);
-                        document.getElementById("ingList").appendChild(newSpan);
+        newSpan.appendChild(newSVG);
+        document.getElementById("ingList").appendChild(newSpan);
 
                         // document.getElementById("submitForm").appendChild(newBox);
                         document.getElementById("thisForm").reset();
@@ -426,7 +418,7 @@
                         </div>
                       </div>
 
-                      <!-- Category 4 -->
+  <!-- Category 4 -->
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
@@ -695,7 +687,7 @@
                         </div>
                       </div> 
 
-                      <!-- Category 8 -->
+  <!-- Category 8 -->
 
                       <div x-data="{ open: false }">
                         <label @click="open = !open" class="cursor-pointer flex items-center">
@@ -815,16 +807,16 @@
                     </div>
                   </div>
 
-                  
-                  
-  
-  
-                <!-- close container tag -->
-              </div>
-              
-            <!-- new layout ends here -->
 
-            <!-- <% if (recipes) { %>
+
+
+
+  <!-- close container tag -->
+  </div>
+
+  <!-- new layout ends here -->
+
+  <!-- <% if (recipes) { %>
               <h3>Recipes</h3>
               <% for (let i=0; i < recipes.length; i++) { %>
       
@@ -860,79 +852,95 @@
       
                   <% }} %> -->
 
-            <!-- new results layout start here -->
-            <% if (recipes) { %>
-              <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
+  <!-- new results layout start here -->
+  <% if (recipes) { %>
+    <div
+      class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
 
-              <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with
+      <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with
 
               
               <% if(current != undefined) { %>
                 <% for (let i= 0; i < current.length; i++) { %>
                 <%= current[i]%>
                 <% } %>
-              <% } else { %>
+                  <% } else { %>
+                    <% } %>
+
+      </h3>
+      <!--Recipe List-->
+      <div class="min-h-screen flex justify-center items-center py-20">
+        <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
+          <% for (let i=0; i < recipes.length; i++) { %>
+            <% var recipe=recipes[i] %>
+              <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
                 <% } %>
-                
-              </h3>
-              <!--Recipe List-->
-              <div class="min-h-screen flex justify-center items-center py-20">
-                <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
-              <% for (let i=0; i < recipes.length; i++) { %>
-                  <% var recipe = recipes[i] %>
-                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
-              <% } %>
-          
-            </div>
-          </div>
-          </div>
-          <% } %>
 
-            
-
-            
-                  
-            <!-- new results layout ends here -->
-            <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-
-            <script>
-              function openModal() {
-                document.getElementById("modal").classList.remove("hidden");
-              }
-              function closeModal() {
-                document.getElementById("modal").classList.add("hidden");
-              }
-
-              window.addEventListener('load', function() {
-                var egg = 'egg';
-                var easter = '/easter-egg';
-                var body = document.querySelector('body');
-                
-                replaceTextWithLink(body, egg, easter);
-              });
-
-              function replaceTextWithLink(element, keyword, linkURL) {
-                if (element.nodeType === Node.TEXT_NODE) {
-                  var content = element.textContent;
-                  var regex = new RegExp(keyword, 'gi');
-                  if (regex.test(content)) {
-                    var newContent = content.replace(regex, '<a href="' + linkURL + '">$&</a>');
-                    var span = document.createElement('span');
-                    span.innerHTML = newContent;
-                    element.parentNode.replaceChild(span, element);
-                  }
-                } else {
-                  var childNodes = element.childNodes;
-                  for (var i = 0; i < childNodes.length; i++) {
-                    replaceTextWithLink(childNodes[i], keyword, linkURL);
-                  }
-                }
-              }
+        </div>
+      </div>
+    </div>
+    <% } %>
 
 
 
 
-            </script>
+
+      <!-- new results layout ends here -->
+      <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+
+      <script>
+        function useDiet() {
+          $.post('/useDiet', function (data) {
+            console.log(data);
+          });
+          document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
+          document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+        }
+
+        function dontUseDiet() {
+          $.post('/dontUseDiet', function (data) {
+            console.log(data);
+          });
+          document.getElementById('dietOfProfile').innerHTML = '';
+          document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+        }
+        function openModal() {
+          document.getElementById("modal").classList.remove("hidden");
+        }
+        function closeModal() {
+          document.getElementById("modal").classList.add("hidden");
+        }
+
+        window.addEventListener('load', function () {
+          var egg = 'egg';
+          var easter = '/easter-egg';
+          var body = document.querySelector('body');
+
+          replaceTextWithLink(body, egg, easter);
+        });
+
+        function replaceTextWithLink(element, keyword, linkURL) {
+          if (element.nodeType === Node.TEXT_NODE) {
+            var content = element.textContent;
+            var regex = new RegExp(keyword, 'gi');
+            if (regex.test(content)) {
+              var newContent = content.replace(regex, '<a href="' + linkURL + '">$&</a>');
+              var span = document.createElement('span');
+              span.innerHTML = newContent;
+              element.parentNode.replaceChild(span, element);
+            }
+          } else {
+            var childNodes = element.childNodes;
+            for (var i = 0; i < childNodes.length; i++) {
+              replaceTextWithLink(childNodes[i], keyword, linkURL);
+            }
+          }
+        }
 
 
-<%- include('templates/footer') -%>
+
+
+      </script>
+
+
+      <%- include('templates/footer') -%>

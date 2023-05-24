@@ -12,7 +12,7 @@ app.use("/public", express.static("./public"));
 app.use('/styles', express.static('styles'));
 
 //he
-const he = require('he');
+const he = require('he');s
 
 //body parser
 const bodyParser = require("body-parser");
@@ -548,7 +548,7 @@ app.get("/search", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   if (!diet) {
-    diet = 0;
+    diet = "null";
   }
   if (!time) {
     time = 0;
@@ -580,7 +580,7 @@ app.get("/search", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -616,7 +616,10 @@ app.get("/search", async (req, res) => {
     times: times,
     images: images,
     profile: profile,
-    profileDiet: profileDiet
+    profileDiet: profileDiet,
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
@@ -633,6 +636,9 @@ app.get("/searchIngredients", async (req, res) => {
   let time = req.query.time;
   let diet = req.query.diet;
   let images = [];
+  if (!diet) {
+    diet = "null";
+  }
   if (!time) {
     time = 0;
   }
@@ -664,7 +670,7 @@ app.get("/searchIngredients", async (req, res) => {
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
-        } else if (diet){
+        } else if (!(diet == "null")){
           connection.$and.push({
           search_terms: {$regex: new RegExp(diet, "i")}
           })
@@ -738,22 +744,23 @@ app.get("/searchIngredients", async (req, res) => {
     times: times,
     current: search,
     images: images,
-    profileDiet: profileDiet
+    profileDiet: profileDiet,
+    restrictions: restrictionsArray,
+    diet: diet,
+    time: time
   });
 });
 
-//turns using the profile diets on and off in the search pages
-app.get("/useDiet", urlencodedParser, async (req, res) => {
-  if (req.query.type == "off") {
-    req.session.useDiet = false;
-  } else {
+//turns using the profile diets on
+app.post("/useDiet", urlencodedParser, async (req, res) => {
     req.session.useDiet = true;
-  }
-  if (req.query.return == "regular") {
-  res.redirect("/search");
-  } else {
-    res.redirect("/searchIngredients");
-  }
+    res.send("success");
+});
+
+//turns the profile diets off
+app.post("/dontUseDiet", urlencodedParser, async (req, res) => {
+    req.session.useDiet = false;
+    res.send("success");
 });
 
 //Profile
@@ -803,16 +810,40 @@ app.get("/profile", async (req, res) => {
     bookmarks: bookmarks,
     images: images,
     times: times,
-    aiCount: aiBookmarksCount
+    aiCount: aiBookmarksCount,
+    error: req.query.error
   });
 });
 
 //Update Profile
 app.post("/profileUpdate", urlencodedParser, async (req, res) => {
+  //gets the inputted email and username
   let email = req.body.email;
   let username = req.body.username;
+  //sets up connection to database
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
+  //checks if the email or username is already taken
+  let emailList = await database.find({ email: email }).toArray();
+  let usernameList = await database.find({ username: username }).toArray();
+  //gets the current user
+  let curUser = await database.find({ email: req.session.email, username: req.session.username}).toArray();
+  //if the email or username is already taken, redirect to profile with error
+  if (emailList.length > 0 ) {
+    console.log("email" + emailList[0]._id, curUser[0]._id);
+    if (!(emailList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  if (usernameList.length > 0) {
+    console.log("username" + usernameList[0]._id, curUser[0]._id);
+    if (!(usernameList[0]._id.toString() == curUser[0]._id.toString())) {
+      res.redirect("/profile?error=Email or Username already taken");
+      return;
+    }
+  } 
+  //updates the user's email and username if they are not taken
   database.updateMany({
     email: req.session.email,
     username: req.session.username
@@ -822,6 +853,7 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
       email: email
     }
   });
+  //updates the session variables
   req.session.username = username;
   req.session.email = email;
   res.send("Profile Updated <a href='/profile'>Go Back</a>")
