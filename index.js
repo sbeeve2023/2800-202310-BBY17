@@ -714,38 +714,44 @@ app.get("/searchIngredients", async (req, res) => {
       connection.$and.push({
         // $or: [
         //   { ingredientArray: { $all: search } },
-        //   {
-        //     $and: [
-        //       { ingredientArray: { $in: search } }
-        //     ]
-        //   }
+          // {
+               ingredients_raw_str: {  $regex: new RegExp(`\\b(${search.map(term => `\\b${term}\\b`).join('|')})\\b`, 'i')} 
+              // ingredientArray: {$in: 
+                // ...search.map(term => ({ ingredients_raw_str: { $regex: `\\b${term}\\b`, $options: 'i' } }))
+              // }
+          // }
         // ]
         
-          "$text": { "$search": "ingredients_raw_str"
-          // {$reduce : {
-          //   input: "$ingredientArray",
-          //   initialValue: "",
-          //   in: { $concat : ["$$value", "$$this"] }
-          // } } 
-        }},
-          { "score": { "$meta": "textScore" }
+        //   "$text": { "$search": "ingredients_raw_str"
+        //   // {$reduce : {
+        //   //   input: "$ingredientArray",
+        //   //   initialValue: "",
+        //   //   in: { $concat : ["$$value", "$$this"] }
+        //   // } } 
+        // }},
+        //   { "score": { "$meta": "textScore" }
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
-      // recipes = await database.find(connection).project({ tags: 1,
-      //   name: 1,
-      //   ingredientArray: 1,
-      //   servings: 1,
-      //   score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-      //   .sort({ "score": 1/*{ "$meta": "textScore" }*/ }).limit(50000).toArray();
-      //   console.log('Recipes:', recipes);
-      //Test
-      database.createIndex({ "ingredients_raw_str": "text" });
-      recipes = await database.find({"$text": { "$search": "egg" } },
-          { "score": { "$meta": "textScore" }}
-          ).sort({ "score": { "$meta": "textScore" } }).limit(10000).toArray();
-
+      recipes = await database.find(connection).project({ tags: 1,
+        name: 1,
+        ingredientArray: 1,
+        servings: 1,
+        // score: { $size: { $setIntersection: ["$ingredientArray", search] } } 
+        score: {
+          $sum: {
+            $cond: {
+              if: { $regexMatch: { input: "$ingredients_raw_str", regex: `(${search.join('|')})`, options: "i" } },
+              then: 1,
+              else: 0
+            }
+          }
+        }
+      })
+        .sort({ "score": 1 })
+        .limit(50000).toArray();
+        console.log('Recipes:', recipes);
     // }else {
     //   recipes = await database.find({
     //     $or: [
