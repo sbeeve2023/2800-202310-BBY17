@@ -8,7 +8,7 @@
         <div>
           <p class="font-bold text-gray-700 text-xl">
             <% if(bookmarks != undefined) { %>
-            <%= bookmarks.length %> <% } else { %> 0 <% } %>
+            <%=bookmarks.length %> <% } else { %> 0 <% } %>
           </p>
           <p class="text-gray-400">Saved Recipes</p>
         </div>
@@ -17,7 +17,10 @@
           <p class="text-gray-400">Reviews</p>
         </div>
         <div>
-          <p class="font-bold text-gray-700 text-xl">5</p>
+          <p class="font-bold text-gray-700 text-xl">
+            <% if(locals.aiCount) { %>
+              <%=aiCount%> <%} else { %> 0 <% } %>
+          </p>
           <p class="text-gray-400">Saved AI Recipes</p>
         </div>
       </div>
@@ -106,7 +109,7 @@
   <label class="text-mmfo" for="recipe-scroll">Bookmarked Recipes</label>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2 ml-3 md:mx-3">
     
-      <% for (let i = 0; i < bookmarks.length; i++) {%>
+      <% for (let i = bookmarks.length-1; i >= 0; i--) {%>
         <div class="flex-shrink-0 min-w-[270px] mx-4">
         <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
         </div>

@@ -1,34 +1,46 @@
 <%- include('templates/header') %>
 
 <%if(locals.recipe){%>
-  <%- include('ai-recipe', {
-    name: recipe.name || "Error",
-    ingredients: recipe.ingredients || ["Error"],
-    servings: recipe.serving_size || "Error",
-    steps: recipe.steps || ["Error"],
-    time: recipe.cook_time || "Error",
-    restrictions: restrictions || ["Error"]}) %>
+  <%- include('ai-recipe', {recipe: recipe}) %>
   <%}else{%>
     <img class="h-36 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/2048px-ChatGPT_logo.svg.png"/>
     <h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Something went wrong.</h1>
+    <h2>Attempted to make <%=orName%></h2>
+    <h2>with dietary restrictions: <%for (let i = 0; i < restrictions.length; i++){%><%=restrictions[i]%>, <%}%></h2>
     <%}%>
 
-
+<!--Regenerate Button-->
   <div class="flex justify-center mb-4 mt-3">
-    <form action="/ai-substitute?recipeID=<%=recipeID%>">
-      <input type="hidden" name="generate" value="true">
-      <button type="submit" class="mb-4 px-6 py-2 leading-5 text-mmfo transition-colors duration-200 transform bg-mmpr rounded-md hover:bg-mmse focus:outline-none focus:bg-mmse" name="recipeID" value="<%=recipeID%>" onclick="showLoading()">
+    <form action="generate">
+      <button name="recipeID" value="<%=recipeID%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
         Regenerate
       </button>
       <div class="flex items-center justify-center">
         <div id="loading" class="w-12 h-12 rounded-full animate-spin
         border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
       </div>
-      </form>
+    </form>
   </div>
+  <!--Original Recipe Button-->
+  <%if(locals.recipe){%>
+  <div class="flex justify-center mb-4 mt-3">
+    <form action="recipe">
+      <button name="id" value="<%=recipe.originalRecipeID%>" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
+        Original Recipe
+      </button>
+      <div class="flex items-center justify-center">
+        <div id="loading" class="w-12 h-12 rounded-full animate-spin
+        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+      </div>
+    </form>
+  </div>
+  <%}%>
+
+  <!--Script-->
   <script>
     function showLoading(){
     document.getElementById("loading").hidden = false;
     }
   </script>
+  
 <%- include('templates/footer') %>
