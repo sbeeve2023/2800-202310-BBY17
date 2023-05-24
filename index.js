@@ -12,7 +12,7 @@ app.use("/public", express.static("./public"));
 app.use('/styles', express.static('styles'));
 
 //he
-const he = require('he');s
+const he = require('he');
 
 //body parser
 const bodyParser = require("body-parser");
