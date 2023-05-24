@@ -126,9 +126,9 @@
                 <!-- Find Recipe Button -->
                 <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
                 <script>
+                    //Gets the initial query parameters from the last search and adds them to the search path
                     window.addEventListener("load", function () {
                       var initialList = document.getElementsByClassName("Initial");
-                      console.log("List" + initialList);
                       for (var i = 0; i < initialList.length; i++){
                         initialList[i].addEventListener("click", function () {
                               this.remove();
@@ -142,6 +142,7 @@
                         }
                       }
                     });
+                    //Inserts a new card for an ingredient if the enter button is pressed
                     document.getElementById("ingredient").addEventListener("keypress", function (e) {
                       if (e.keyCode == 13){
                         e.preventDefault();
@@ -165,10 +166,7 @@
                         newSpan.appendChild(newBox);
 
                         //make svg
-                        // var newSVG = document.createElement("svg");
                         var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-                        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
                         newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
                         newSVG.setAttribute("viewBox", "0 0 400 400");
                         newSVG.setAttribute("version", "1.0");
@@ -190,7 +188,7 @@
                         }   
                       }
                     });
-
+                    //Inserts a new card for an ingredient if the add button is pressed
                     document.getElementById("addBtn").addEventListener("click", 
                     function () {
                         var textBox = document.getElementById("ingredient");
@@ -205,18 +203,13 @@
                         newBox.setAttribute("name", "search")
                         newBox.setAttribute("value", item.toLowerCase());
                         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
-                        // newBox.setAttribute("disabled", true);
-                        // newBox.innerHTML += item;
                         newSpan.addEventListener("click", function () {
                             this.remove();
                         });
                         newSpan.appendChild(newBox);
 
                         //make svg
-                        // var newSVG = document.createElement("svg");
                         var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-                        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
                         newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
                         newSVG.setAttribute("viewBox", "0 0 400 400");
                         newSVG.setAttribute("version", "1.0");
@@ -639,7 +632,6 @@
 
               
               <% if(current != undefined) { %>
-                <% console.log(current) %>
                 <% for (let i= 0; i < current.length; i++) { %>
                 <%= current[i]%>
                 <% } %>
