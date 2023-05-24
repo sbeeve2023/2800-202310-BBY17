@@ -156,35 +156,13 @@ app.get("/", async (req, res) => {
     }
   }
 
-  let times = [];
-  for (let i = 0; i < recipes.length; i++) {
-    if(recipes[i].tags){
-      timeCurrent = recipes[i].tags;
-      timeCurrent = timeCurrent.replaceAll("'", "");
-      timeCurrent = timeCurrent.replaceAll("[", "");
-      timeCurrent = timeCurrent.replaceAll("]", "");
-      timeCurrent = timeCurrent.split(",");
-      for (let i = timeCurrent.length - 1; i >= 0; i--) {
-        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-          timeCurrent.splice(i, 1);
-        }
-      }
-    } else if (recipes[i].make_time){
-      times.push(timeCurrent);
-    }
-  }
-  for(let i = 0; i < times.length; i++){
-    if (times[i].length == 0){
-      times[i].push("N/A");
-    }
-  }
-
-
+  let times = getRecipeTimes(recipes);
+  
   res.render("landing-loggedin", {
     username: req.session.username,
     recipes: recipes,
     images: images,
-    times: times,
+    times: times
   });
 });
 
@@ -722,19 +700,7 @@ app.get("/searchIngredients", async (req, res) => {
   //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-             
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-            }
-          })
-          .catch((error) => {
-           
-          });
+    images.push(await getGoogleImage(recipes[i].name));
   }
   //BK CODE
   let times = getRecipeTimes(recipes);
@@ -1417,7 +1383,6 @@ function arrayWithout(array, string){
 function getRecipeTimes(recipeArray){
   let times = [];
   for (let i = 0; i < recipeArray.length; i++) {
-    if (recipeArray[i].tags) {
       timeCurrent = recipeArray[i].tags;
       timeCurrent = timeCurrent.replaceAll("'", "");
       timeCurrent = timeCurrent.replaceAll("[", "");
@@ -1429,14 +1394,12 @@ function getRecipeTimes(recipeArray){
         }
       }
       times.push(timeCurrent);
-    } else if (recipeArray[i].make_time) {
-      times.push([recipeArray[i].make_time]);
-    }
   }
   for (let i = 0; i < times.length; i++) {
     if (times[i].length == 0) {
       times[i].push("N/A");
     }
   }
+  console.log(times);
   return times;
 }
