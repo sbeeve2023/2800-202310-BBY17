@@ -1,18 +1,29 @@
 <%- include('templates/header') -%>
 
+<div class="container mx-auto p-4">
+  <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Search by Recipe</h1>
 
 <!--Search Bar -->
 <form type="text" name="search" class="h-[30vmin] mt-6">
     <!-- Dropdown Menu and Advanced Filters Button -->
     <div class="flex justify-between items-center mb-4">
-        <select class="p-2 rounded border bg-mmth" name="time">
+        <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
           <option name="time" value="0">Prep Time</option>
           <option name="time" value="15" <% if (time == 15) {%> selected="selected"<%}%> >15 Minutes</option>
           <option name="time" value="30" <% if (time == 30) {%> selected="selected"<%}%>>30 Minutes</option>
           <option name="time" value="60" <% if (time == 60) {%> selected="selected"<%}%>>60 Minutes</option>
           <option name="time" value="4" <% if (time == 4) {%> selected="selected"<%}%>>60+ Minutes</option>
         </select>
-        <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+        <div>
+          <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+          <% if(session.useDiet) { %>
+            <br/>
+            <br/>
+            <a 
+            href="/useDiet?type=off&return=regular" 
+            class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
+          <% } %>
+        </div>
       </div>
 
        <!-- Modal -->
@@ -70,20 +81,23 @@
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
-        <input name="search" type="search" id="default-search"
-            class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search for a recipe" required>
-        <button type="submit"
-            class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
-    </div>
-</form>
+
+
+          <input name="search" type="search" id="default-search"
+              class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Search for a recipe" required>
+          <button type="submit"
+              class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
+      </div>
+  </form>
 
 </div>
+
 
 <hr/>
 
 <!-- Search Results -->
-<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded">
+<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded mt-1">
 <% if (recipes) { %>
     <h3 class="text-4xl font-bold text-gray-950 items-center flex justify-center font-title mt-5">Recipes for <%= search %>   </h3>
     <!--Recipe List-->
@@ -99,14 +113,6 @@
 </div>
 
 <script>
-  // window.addEventListener('load', function() {
-  //   var egg = 'egg';
-  //   var easter = '/easter-egg';
-  //   var body = document.querySelector('body');
-
-  //   var regex = new RegExp(egg, 'gi');
-  //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
-  // });
 
   function useDiet() {
     $.post('/useDiet', function(data) {

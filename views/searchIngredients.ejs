@@ -5,6 +5,27 @@
                 <!-- Dropdown Menu and Advanced Filters Button -->
               <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Mealmatch - Select your ingredients</h1>
 
+<<<<<<< HEAD
+                <div class="flex justify-between items-center mb-4">
+                  <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
+                    <option name="time" value="0">Prep Time</option>
+                    <option name="time" value="15">15 Minutes</option>
+                    <option name="time" value="30">30 Minutes</option>
+                    <option name="time" value="60">60 Minutes</option>
+                    <option name="time" value="4">60+ Minutes</option>
+                  </select>
+                  <div>
+                    <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+                    <% if(session.useDiet) { %>
+                      <br/>
+                      <br/>
+                      <a 
+                      href="/useDiet?type=off&return=regular" 
+                      class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
+                    <% } %>
+                  </div>
+                </div>
+=======
         <div class="flex justify-between items-center mb-4">
           <select class="p-2 rounded border bg-mmth" name="time">
             <option name="time" value="0">Prep Time</option>
@@ -15,6 +36,7 @@
           </select>
           <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
         </div>
+>>>>>>> 1d87bbd8d01c380fe61d560e9366384b2c2f5ccb
 
         <!-- Modal -->
         <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
@@ -235,62 +257,11 @@
                         <!-- Ingredients in Category 1 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="salt" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">salt</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="black pepper" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">black pepper</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="garlic" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">garlic</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cinnamon" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cinnamon</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="paprika" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">paprika</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="parsley" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">parsley</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chili powder" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chili powder</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="nutmeg" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">nutmeg</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cumin" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cumin</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cayenne pepper" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cayenne pepper</span>
-                          </label>
-                          <label class="flex items-center">
-                              <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="oregano" onclick="addIngredient(this.name)">+</button>
-                              <span class="ml-2 text-mmpr capitalize">oregano</span>
-                          </label>
-                          <label class="flex items-center">
-                              <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="kosher salt" onclick="addIngredient(this.name)">+</button>
-                              <span class="ml-2 text-mmpr capitalize">kosher salt</span>
-                          </label>
-                          <label class="flex items-center">
-                              <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cilantro" onclick="addIngredient(this.name)">+</button>
-                              <span class="ml-2 text-mmpr capitalize">cilantro</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="ginger" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">ginger</span>
-                          </label>
+
+                        <% for (let i=0; i < spiceCat.length; i++) { %>
+                            <% var catItem = spiceCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                        <% } %>
 
 
                           <!-- Add more ingredient items -->
@@ -309,64 +280,11 @@
                         <!-- Ingredients in Category 2 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="lemon juice" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">lemon juice</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="raisins" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">raisins</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="orange juice" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">orange juice</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="lime juice" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">lime juice</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="lemon" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">lemon</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="banana" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">banana</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="avocado" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">avocado</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="apple" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">apple</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="coconut" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">coconut</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="pineapple" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">pineapple</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="dried cranberry" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">dried cranberry</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="blueberry" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">blueberry</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="lime" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">lime</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="strawberry" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">strawberry</span>
-                          </label>
 
-
+                          <% for (let i=0; i < fruitCat.length; i++) { %>
+                            <% var catItem = fruitCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -383,30 +301,11 @@
                         <!-- Ingredients in Category 3 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="bacon" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">bacon</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="ground beef" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">ground beef</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chicken breast" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chicken breast</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="ham" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">ham</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="shrimp" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">shrimp</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chicken drumstick" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chicken drumstick</span>
-                          </label>
+
+                          <% for (let i=0; i < meatCat.length; i++) { %>
+                            <% var catItem = meatCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -425,62 +324,12 @@
                         <!-- Ingredients in Category 4 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="onion" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">onion</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="tomato" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">tomato</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="celery" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">celery</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="carrot" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">carrot</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="green onion" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">green onion</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="green pepper" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">green pepper</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="red bell pepper" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">red bell pepper</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="potato" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">potato</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="zucchini" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">zucchini</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="mushroom" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">mushroom</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="black beans" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">black beans</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cucumber" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cucumber</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="shallot" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">shallot</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="lettuce" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">lettuce</span>
-                          </label>
+
+                          <% for (let i=0; i < veggieCat.length; i++) { %>
+                            <% var catItem = veggieCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
+
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -499,54 +348,11 @@
                         <!-- Ingredients in Category 5 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="butter" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">butter</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="egg" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">egg</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="milk" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">milk</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="parmesan cheese" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">parmesan cheese</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="sour cream" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">sour cream</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cheddar cheese" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cheddar cheese</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cream" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cream</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cream cheese" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cream cheese</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="mozzarella cheese" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">mozzarella cheese</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="margarine" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">margarine</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="buttermilk" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">buttermilk</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="condensed milk" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">condensed milk</span>
-                          </label>
+
+                          <% for (let i=0; i < dairyCat.length; i++) { %>
+                            <% var catItem = dairyCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -565,55 +371,15 @@
                         <!-- Ingredients in Category 6 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="flour" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">flour</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="pecans" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">pecans</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="walnuts" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">walnuts</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="nuts" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">nuts</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="peanut butter" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">peanut butter</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="sesame seeds" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">sesame seeds</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="almonds" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">almonds</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="tortillas" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">tortillas</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="rice" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">rice</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="pine nuts" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">pine nuts</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="oats" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">oats</span>
-                          </label>
+
+                          <% for (let i=0; i < nutCat.length; i++) { %>
+                            <% var catItem = nutCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
                       </div> 
-
 
                       <!-- Category 7 -->
 
@@ -628,54 +394,11 @@
                         <!-- Ingredients in Category 7 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="olive oil" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">olive oil</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="baking powder" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">baking powder</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="baking soda" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">baking soda</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="vegetable oil" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">vegetable oil</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="soy sauce" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">soy sauce</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="mayonnaise" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">mayonnaise</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="worcestershire sauce" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">worcestershire sauce</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="dijon mustard" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">dijon mustard</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="tomato sauce" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">tomato sauce</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="ketchup" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">ketchup</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="vinegar" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">vinegar</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="tabasco sauce" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">tabasco sauce</span>
-                          </label>
+
+                          <% for (let i=0; i < condCat.length; i++) { %>
+                            <% var catItem = condCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -694,34 +417,11 @@
                         <!-- Ingredients in Category 8 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="sugar" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">sugar</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="brown sugar" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">brown sugar</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="honey" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">honey</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="powdered sugar" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">powdered sugar</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chocolate chips" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chocolate chips</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="caster sugar" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">caster sugar</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="molasses" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">molasses</span>
-                          </label>
+
+                          <% for (let i=0; i < sweetCat.length; i++) { %>
+                            <% var catItem = sweetCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
@@ -740,67 +440,28 @@
                         <!-- Ingredients in Category 9 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chicken broth" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chicken broth</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="vanilla" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">vanilla</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cornstarch" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cornstarch</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="chicken stock" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">chicken stock</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="breadcrumbs" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">breadcrumbs</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="white wine" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">white wine</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="shortening" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">shortening</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cream of mushroom soup" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cream of mushroom soup</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="black olives" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">black olives</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="beef broth" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">beef broth</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="cream of chicken soup" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">cream of chicken soup</span>
-                          </label>
-                          <label class="flex items-center">
-                            <button class="text-mmfo bg-mmpr ml-2 rounded px-4" name="vegetable broth" onclick="addIngredient(this.name)">+</button>
-                            <span class="ml-2 text-mmpr capitalize">vegetable broth</span>
-                          </label>
 
-
+                          <% for (let i=0; i < otherCat.length; i++) { %>
+                            <% var catItem = otherCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
                         </div>
                       </div>    
-
 
                       <!-- other categories go here-->
  
                     </div>
                   </div>
 
+<<<<<<< HEAD
+                <!-- close container tag -->
+              </div>
+              
+            <!-- new layout ends here -->
+=======
+>>>>>>> 1d87bbd8d01c380fe61d560e9366384b2c2f5ccb
 
 
 

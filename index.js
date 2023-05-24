@@ -96,6 +96,15 @@ const userCollection = database.collection("users");
 const recipeCollection = database.collection('recipes');
 const airecipeCollection = database.collection('ai-recipes');
 const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "low-sodium", "low-carb", "low-fat"]
+const spiceCat = ["salt", "black pepper", "garlic", "cinnamon", "paprika", "parsley", "chili powder", "nutmeg", "cumin", "cayenne pepper", "oregano", "kosher salt", "cilantro", "ginger"]
+const fruitCat = ["lemon juice", "raisins", "orange juice", "lime juice", "lemon", "banana", "avocado", "apple", "coconut", "pineapple", "dried cranberry", "blueberry", "lime", "strawberry"]
+const meatCat = ["bacon", "ground beef", "chicken breast", "ham", "shrimp", "chicken drumstick"]
+const veggieCat = [ "onion", "tomato", "celery", "carrot", "green onion", "green pepper", "red bell pepper", "potato", "zucchini", "mushroom", "black beans", "cucumber", "shallot", "lettuce"]
+const dairyCat = [ "butter", "egg", "milk", "parmesan cheese", "sour cream", "cheddar cheese", "cream", "cream cheese", "mozzarella cheese", "margarine", "buttermilk", "condensed milk"]
+const nutCat = [ "flour", "pecans", "walnuts", "nuts", "peanut butter", "sesame seeds", "almonds", "tortillas", "rice", "pine nuts", "oats"]
+const condCat = [ "olive oil", "baking powder", "baking soda", "vegetable oil", "soy sauce", "mayonnaise", "worcestershire sauce", "dijon mustard", "tomato sauce", "ketchup", "vinegar", "tabasco sauce"]
+const sweetCat = [ "sugar", "brown sugar", "honey", "powdered sugar", "chocolate chips", "caster sugar", "molasses"]
+const otherCat = [ "chicken broth", "vanilla", "cornstarch", "chicken stock", "breadcrumbs", "white wine", "shortening", "cream of mushroom soup", "black olives", "beef broth", "cream of chicken soup", "vegetable broth"]
 
 
 //Enables Cookies in Express
@@ -703,6 +712,15 @@ app.get("/searchIngredients", async (req, res) => {
     current: search,
     images: images,
     profileDiet: profileDiet,
+    spiceCat: spiceCat,
+    fruitCat: fruitCat,
+    veggieCat: veggieCat,
+    meatCat: meatCat,
+    dairyCat: dairyCat,
+    nutCat: nutCat,
+    condCat: condCat,
+    sweetCat: sweetCat,
+    otherCat: otherCat,
     restrictions: restrictionsArray,
     diet: diet,
     time: time
