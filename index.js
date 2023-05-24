@@ -86,7 +86,6 @@ async function connectToDatabase() {
     client.db(mongodb_database).command({
       ping: 1
     });
-    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Error connecting to MongoDB: " + error);
   }
@@ -95,6 +94,7 @@ connectToDatabase();
 const database = client.db(mongodb_database);
 const userCollection = database.collection("users");
 const recipeCollection = database.collection('recipes');
+const airecipeCollection = database.collection('ai-recipes');
 const restrictionsArray = ["vegetarian", "vegan", "gluten-free", "dairy-free", "low-sodium", "low-carb", "low-fat"]
 
 
@@ -144,36 +144,34 @@ app.get("/", async (req, res) => {
       let recipe = await recipeCollection.findOne({
         _id: new ObjectId(recents[i])
       });
-      recipes.push(recipe);
-      let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipe.name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-              console.log("No images found.");
-            }
-          })
-          .catch((error) => {
-            console.error("An error occurred:", error);
-          });
+      if (recipe == null) {
+        recipe = await airecipeCollection.findOne({
+          _id: new ObjectId(recents[i])
+        });
+      }
+      if(recipe){
+        recipes.push(recipe);
+        images.push(await getGoogleImage(recipe.name));
+      }
     }
   }
 
   let time = [];
   for (let i = 0; i < recipes.length; i++) {
-    timeCurrent = recipes[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
+    if(recipes[i].tags){
+      timeCurrent = recipes[i].tags;
+      timeCurrent = timeCurrent.replaceAll("'", "");
+      timeCurrent = timeCurrent.replaceAll("[", "");
+      timeCurrent = timeCurrent.replaceAll("]", "");
+      timeCurrent = timeCurrent.split(",");
+      for (let i = timeCurrent.length - 1; i >= 0; i--) {
+        if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+          timeCurrent.splice(i, 1);
+        }
       }
+    } else if (recipes[i].make_time){
+      time.push(timeCurrent);
     }
-    time.push(timeCurrent);
   }
   for(let i = 0; i < time.length; i++){
     if (time[i].length == 0){
@@ -192,83 +190,85 @@ app.get("/", async (req, res) => {
 
 
 //ChatGPT
-app.get("/ai-substitute", async (req, res) => {
-  console.log(req.query.recipeID);
-  //Only allow access if user is logged in
+app.get("/generate", async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
-  //throw error if no recipe is specified
+
+  //Remove any previous recipe from session
+  if(req.session.aiRecipe){
+    req.session.aiRecipe = undefined;
+  }
+
+  //Redirect if no recipe is specified
   if (req.query.recipeID == undefined) {
     res.redirect("/");
     return;
   }
 
-  try {
-    new ObjectId(req.query.recipeID);
-  } catch{
-    res.render("pageNotFound");
+  res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
+});
+
+app.get("/ai-recipe", async (req, res) => {
+    try {
+      var recipeId = new ObjectId(req.query.id);
+    } catch {
+      res.redirect("/404");
+      return;
+    }
+
+    //Check if user is logged in and if the recipe is already bookmarked
+    var bookmarked = await isBookmarked(req, recipeId);
+    addToRecents(req, recipeId);
+
+    //Query and parse parts of the recipe
+    var recipe = await airecipeCollection.findOne({_id: recipeId});
+
+    //Check if recipe exists
+    if (recipe == null){
+      res.redirect("/404");
+      return;
+    }
+  
+    res.render("ai-recipe", {recipe: recipe, enableUi: true, bookmarked: bookmarked, id: req.query.id});
+  });
+
+app.get("/ai-substitute", async (req, res) => {
+  if(! await validateAI_Substitute(req, res)){
     return;
   }
-
   //Get recipe from database
-  let originalRecipe = await recipeCollection.findOne({
-    _id: new ObjectId(req.query.recipeID)
-  });
-  let user = await userCollection.findOne({
-    email: req.session.email
-  });
-
-  if(originalRecipe == null){
-    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
+  try{
+    var originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  }catch{
+    res.redirect("/404");
     return;
   }
   
+
+  //Get user from database
+  let user = await userCollection.findOne({email: req.session.email});
+
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
-  orSteps = [];
-  //Parse steps into array
-  parsingSteps = originalRecipe.steps;
-  parsingSteps = parsingSteps.replaceAll("[", "");
-  parsingSteps = parsingSteps.replaceAll("]", "");
-  parsingSteps = parsingSteps.replaceAll("\"", "");
-  orSteps = parsingSteps.split("', '");
-  for (var i = 0; i < orSteps.length; i++) {
-    orSteps[i] = orSteps[i].replaceAll("'", "");
-  }
+  let orSteps = parseSteps(originalRecipe.steps);
 
   //Create dietary restrictions string===================
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
   if (user.diet) {
-    restrictionsArray = user.diet;
-
-    //If only one restriction, make it an array
-    if(!Array.isArray(restrictionsArray)){
-      restrictionsArray = [restrictionsArray];
-    }
-
+    restrictionsArray = stringToArrayItem(user.diet);
     //Add each restriction to the string
-    if (Array.isArray(restrictionsArray)) {
-      for (let i = 0; i < restrictionsArray.length; i++) {
-        dietaryRestrictions += ` ${restrictionsArray[i]},`;
-      }
-    } else {
-      dietaryRestrictions += ` ${restrictionsArray},`;
+    for (let i = 0; i < restrictionsArray.length; i++) {
+      dietaryRestrictions += ` ${restrictionsArray[i]},`;
     }
   } else {
     //If no restrictions, add none
     dietaryRestrictions += ` none`;
   }
 
-  //Create request string===============================
-
-  // Only uses title of recipe
-  //   let recipeName = "<%=//locals.originalRecipe.name%>";
-  //   let request = `recipe for ${recipeName} ${dietaryRestrictions}. 
-  // formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).
-  // `;
+  //Create request string
 
   //Uses full original recipe
   let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
@@ -279,9 +279,9 @@ app.get("/ai-substitute", async (req, res) => {
   for (let i = 0; i < orSteps.length; i++) {
     request += ` ${orSteps[i]},`;
   }
-  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), cook_time (string).`;
+  request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), make_time (string).`;
 
-  //Send request to ChatGPT============================
+  //Send request to ChatGPT
   try {
     const response = await fetch(chatgpt_url, {
       method: 'POST',
@@ -299,54 +299,29 @@ app.get("/ai-substitute", async (req, res) => {
     });
     const data = await response.json();
     let aiString = data.choices[0].message.content;
-    console.log(aiString);
     let aiObject = JSON.parse(aiString);
-    req.session.aiRecipe = aiObject;
-    console.log("Recipe in session",req.session.aiRecipe);
 
     //Generate image
-    var imageURL = "";
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(aiObject.name)}&searchType=image`;
-    await fetch(apiUrl).then((response) => response.json()).then((data) => {
-        if (data.items && data.items.length > 0) {
-          const imageFullURL = encodeURIComponent(data.items[0].link);
-          imageURL =  decodeURIComponent((imageFullURL));
-        } else {
-          console.log("No images found.");
-        }
-      })
-      .catch((error) => {
-        console.error("An error occurred:", error);
-      });
+    var imageURL = await getGoogleImage(aiObject.name);
 
-    res.render("ai-frame",{recipe: aiObject, restrictions: restrictionsArray, imageURL: imageURL, recipeID: req.query.recipeID});
+    //Add more data to object
+    aiObject.restrictions = restrictionsArray;
+    aiObject.imageURL = imageURL;
+    aiObject.originalRecipeID = req.query.recipeID;
+    aiObject.ownerId =  req.session.userId;
+    aiObject.ai = true;
+    req.session.aiRecipe = aiObject;
+
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
     return;
-  } catch (error) {
 
-    //bookmarked: isBookmarked,
+  } catch (error) { //If error, render error page
     console.error("Error:", error);
-    res.render("ai-frame", {error: true, recipeID: req.query.recipeID})
-
+    console.log(restrictionsArray);
+    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
   }
 });
 
-app.get("/ai-recipe", async (req, res) => {
-  var isBookmarked = false;
-  if (!req.session.authenticated) {
-    res.redirect("/login");
-    return;
-  }
-
-  // if (user.aibookmarks) {
-  //   for (let i = 0; i < user.aibookmarks.length && isBookmarked == false; i++) {
-  //     if (user.aibookmarks[i].toString() == req.session.aiRecipe._id.toString()) {
-  //       isBookmarked = true;
-  //     }
-  //   }
-  // }
-
-  res.render("ai-recipe", {recipe: req.session.aiRecipe, aiBookmarked: isBookmarked, recipeID: req.query.recipeID});
-});
 
 //Ai Recipe save
 app.post("/airecipe-save", urlencodedParser, async (req, res) => {
@@ -355,46 +330,73 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
     return;
   }
 
+  //Save to databse first
+  var aiRecipe = req.session.aiRecipe;
+
+  recipeAlreadySaved = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
+  if(recipeAlreadySaved){
+    res.redirect("/recipe?id=" + recipeAlreadySaved._id);
+    return;
+  }
+  await airecipeCollection.insertOne(aiRecipe);
+  let aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
+
   //Get the user's bookmarks
-  var aibookmarks;
+ 
   var user = await userCollection.findOne({ email: req.session.email });
   if(!user){
     res.redirect("/login");
     return;
   }
-  if (!user.aibookmarks) {
-    aibookmarks = [];
-  } else {
-    aibookmarks = user.bookmarks;
-  }
-
-  //Save the recipe
-  var aiRecipe = req.session.aiRecipe;
-  aibookmarks.push(aiRecipe);
+  var bookmarks = [];
+  if (user.bookmarks) {bookmarks = user.bookmarks;}
+  bookmarks.push(aiRecipeGet._id);
  
   await userCollection.findOneAndUpdate({
     email: req.session.email
   }, {
     "$set": {
-      aibookmarks: aibookmarks
+      bookmarks: bookmarks
     }
   });
 
 
-  res.redirect("/ai-recipe?id=" + req.body.id);
+  res.redirect("/ai-recipe?id=" + aiRecipeGet._id);
 
 });
 
-//Ai Recipe unsave TODO: Does nothing
+
+//Ai Recipe unsave
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
-  res.redirect("/ai-recipe?id=" + req.body.id);
+
+  var user = await userCollection.findOne({ email: req.session.email });
+ 
+  //Return if recipe is already removed
+  var newBookmarks = arrayWithout(user.bookmarks, req.body.id);
+  if(newBookmarks.length == user.bookmarks.length){
+    res.redirect("/recipe?id=" + req.body.id);
+    return;
+  }
+
+  //Remove from user's bookmarks
+  await userCollection.findOneAndUpdate({
+    email: req.session.email
+  }, {
+    "$set": {
+      bookmarks: newBookmarks
+    }
+  });
+
+  //Remove from database
+  await airecipeCollection.deleteOne({_id: new ObjectId(req.body.id)});
+
+  res.redirect("/profile");
+
 });
-
-
 
 
 //Sign Up
@@ -407,7 +409,6 @@ app.get("/signup", (req, res) => {
     error: req.query.error
   });
 });
-
 
 app.post("/signup-submit", async (req, res) => {
   let fname = req.body.firstname;
@@ -436,7 +437,6 @@ app.post("/signup-submit", async (req, res) => {
     passwordConfirm,
   });
   if (result.error != null) {
-    console.log(result.error);
     res.redirect("/signup?error=invalid-input");
     return;
   }
@@ -457,7 +457,6 @@ app.post("/signup-submit", async (req, res) => {
 
   //Check if new passwords match
   if (password != passwordConfirm) {
-    console.log(password + " | " + passwordConfirm)
     res.redirect("/signup?error=passwords-dont-match");
     return;
   }
@@ -472,8 +471,11 @@ app.post("/signup-submit", async (req, res) => {
     password: hashedPassword
   });
 
+  var user = await userCollection.findOne({email: email });
+
   //Make a cookie
   req.session.authenticated = true;
+  req.session.userId = user._id;
   req.session.firstname = fname;
   req.session.lastname = lname;
   req.session.username = username;
@@ -511,24 +513,24 @@ app.post("/login-submit", async (req, res) => {
     return;
   }
   //Check if user exists
-  const findUser = await userCollection.findOne({
+  const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (findUser == null) {
+  if (user == null) {
     res.redirect("/login?error=true");
     return;
   }
 
   //Check if password is correct
-  if (await bcrypt.compare(password, findUser.password)) {
+  if (await bcrypt.compare(password, user.password)) {
     //Make a cookie
-    console.log(findUser);
     req.session.authenticated = true;
-    req.session.firstname = findUser.firstname;
-    req.session.lastname = findUser.lastname;
-    req.session.username = findUser.username;
-    req.session.email = findUser.email;
-    req.session.easterEgg = findUser.easterEgg;
+    req.session.userId = user._id;
+    req.session.firstname = user.firstname;
+    req.session.lastname = user.lastname;
+    req.session.username = user.username;
+    req.session.email = user.email;
+    req.session.easterEgg = user.easterEgg;
     req.session.cookie.maxAge = sessionExpireTime;
     req.session.useDiet = true;
     res.redirect("/");
@@ -596,12 +598,12 @@ app.get("/search", async (req, res) => {
   if (connection.$and.length == 0) {
     delete connection.$and;
   }
-  console.log(connection);
   if (search) {
   await client.connect();
   const database = await client.db(mongodb_database).collection("recipes");
   recipes = await database.find(connection).limit(20).toArray();
   }
+    //Find the time tag for each recipe and add it to the times array to be displayed.
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -610,19 +612,8 @@ app.get("/search", async (req, res) => {
     timeCurrent = timeCurrent.replaceAll("]", "");
     timeCurrent = timeCurrent.split(",");
     recipes[i].name = he.decode(recipes[i].name);
-    let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
-        await fetch(apiUrl).then((response) => response.json()).then((data) => {
-            if (data.items && data.items.length > 0) {
-              const imageUrl = encodeURIComponent(data.items[0].link);
-              images.push(imageUrl);
-            } else {
-              console.log("No images found.");
-              images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-            }
-          })
-          .catch((error) => {
-            console.error("An error occurred:", error);
-          });
+    let imageToPush = await getGoogleImage(recipes[i].name);
+    images.push(imageToPush)
     for (let i = timeCurrent.length - 1; i >= 0; i--) {
       if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
         timeCurrent.splice(i, 1);
@@ -678,8 +669,6 @@ app.get("/searchIngredients", async (req, res) => {
   }
   let recipes = false;
   if (search != undefined) {
-    // search = search.toLowerCase();
-    // const keywordArray = search.split(',').map(search => search.trim()); // Split the keywords into an array
     if (typeof search === "string"){
       search = search.split(',');
     }
@@ -688,9 +677,6 @@ app.get("/searchIngredients", async (req, res) => {
     }
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
-    var filter = 1;
-    if (filter == 1){
-      //CG CODE
       var connection = {};
       connection.$and = [];
       if (!(time == 0) && time) {
@@ -717,85 +703,40 @@ app.get("/searchIngredients", async (req, res) => {
           })
         }
       connection.$and.push({
-        $or: [
-          { ingredientArray: { $all: search } },
-          {
-            $and: [
-              { ingredientArray: { $in: search } }
-            ]
-          }
-        ]
+        ingredients_raw_str: {  $regex: new RegExp(`\\b(${search.map(term => `\\b${term}\\b`).join('|')})\\b`, 'i')} 
       });
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
+      //Final query, scores recipes by number of matching ingredients, then sorts by score.
       recipes = await database.find(connection).project({ tags: 1,
         name: 1,
         ingredientArray: 1,
         servings: 1,
-        score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-        .sort({ score: -1 }).limit(10).toArray();
-        console.log('Recipes:', recipes);
-    // }else {
-    //   recipes = await database.find({
-    //     $or: [
-    //       {ingredientArray: {$all: search}},
-    //       {$and: [
-    //         { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] }},
-    //         {ingredientArray: {$in: search}}
-    //     ]}
-    //   ]
-      //BK CODE
-
-    } else {
-      try {
-        recipes = await database
-          .find({
-            $or: [
-              { ingredientArray: { $all: search } },
-              {
-                $and: [
-                  // { $expr: { $lte: [{ $size: "$ingredientArray" }, search.length] } },
-                  { ingredientArray: { $in: search } }
-                  // {
-                  //     $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-                  //     $options: 'i'
-                  //   }
-                ]
+        score: {
+          $reduce: {
+            input: {
+              $map: {
+                input: search, as: "term", in: {
+                  $cond: {
+                    if: { $regexMatch: { input: "$ingredients_raw_str", regex: `${"$" + "$term"}`, options: "i" } }, then: 1, else: 0
+                  }
+                }
               }
-            ]
-          })
-          .project({ tags: 1,
-                    name: 1,
-                    ingredientArray: 1,
-                    servings: 1,
-            score: { $size: { $setIntersection: ["$ingredientArray", search] } } })
-          .sort({ score: -1 })
-          .limit(10)
-          .toArray();
-      
-        // console.log('Recipes:', recipes);
-      } catch (error) {
-        console.log('Error occurred while executing the query:', error);
-      }
-      
-    // for (var i = 0; i < search.length; i++){
-    //   recipes.sort(search[i]);
-    // }
-    // recipes.project({ score: { $size: { $setIntersection: ["$ingredientArray", search] } } }).sort({ score: -1 });
-    // ingredientArray: {
-      //   $regex: search.map(ingredient => `\\b${ingredient}\\b`).join('|'),
-      //   $options: 'i'
-      // }
-      // ingredientArray: {$regex: new RegExp(search)}
-    }
+            },
+            initialValue: 0, in: { $add: ["$$value", "$$this"] }
+          }
+        }
+      })
+        .sort({ "score": -1 })
+        .limit(50000).toArray();
   }
+  //Sorts the recipes by score after it has been set to an array
   if (search) {
     recipes.sort((a, b) => b.score - a.score);
     recipes = recipes.slice(0, 10);
   }
-  // console.log('Filtered:', recipes);
-  //CG CODE
+  //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
     recipes[i].name = he.decode(recipes[i].name);
     let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipes[i].name)}&searchType=image`;
@@ -812,9 +753,7 @@ app.get("/searchIngredients", async (req, res) => {
             console.error("An error occurred:", error);
           });
   }
-  //BK CODE
-
-  // console.log("res" + recipes);
+  //Find the time tag for each recipe and add it to the times array to be displayed.
   let times = [];
   for (let i = 0; i < recipes.length; i++) {
     timeCurrent = recipes[i].tags;
@@ -834,7 +773,6 @@ app.get("/searchIngredients", async (req, res) => {
       times[i].push("N/A");
     }
   }
-console.log(search);
 
   res.render("searchIngredients", {
     recipes: recipes,
@@ -871,64 +809,71 @@ app.get("/profile", async (req, res) => {
   let images = [];
   
   let bookmarks = [];
+  let aiBookmarksCount = 0;
   
   if (user.bookmarks != undefined) {
     var bookmarkIds = user.bookmarks;
     let recipe =[] ;
     
     for (let i = 0; i < bookmarkIds.length; i++) {
+      let aiFlag = false;
       recipe = await recipeCollection.findOne({
         _id: bookmarkIds[i]
       });
-      bookmarks.push(recipe);
-      let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipe.name)}&searchType=image`;
-      await fetch(apiUrl).then((response) => response.json()).then((data) => {
-          if (data.items && data.items.length > 0) {
-            const imageUrl = encodeURIComponent(data.items[0].link);
-            images.push(imageUrl);
-          } else {
-            console.log("No images found.");
-            images.push(encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ='));
-          }
-        })
-        .catch((error) => {
-          console.error("An error occurred:", error);
+      if (recipe == null) {
+        aiFlag = true;
+        recipe = await airecipeCollection.findOne({
+          _id: bookmarkIds[i]
         });
+      }
+      if(recipe){
+      if (aiFlag) {aiBookmarksCount++;}
+      bookmarks.push(recipe);
+      imageURL = await getGoogleImage(recipe.name);
+      if(imageURL == ""){
+        imageURL = encodeURIComponent('https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ=');
+      }
+      images.push(imageURL);
+      }
     }
-
   }
 
 
   let time = [];
-  for (let i = 0; i < bookmarks.length; i++) {
-    console.log(bookmarks[i]);
-    timeCurrent = bookmarks[i].tags;
-    timeCurrent = timeCurrent.replaceAll("'", "");
-    timeCurrent = timeCurrent.replaceAll("[", "");
-    timeCurrent = timeCurrent.replaceAll("]", "");
-    timeCurrent = timeCurrent.split(",");
-    for (let i = timeCurrent.length - 1; i >= 0; i--) {
-      if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
-        timeCurrent.splice(i, 1);
+
+    for (let i = 0; i < bookmarks.length; i++) {
+      if (bookmarks[i].tags) {
+        console.log(bookmarks[i]);
+        timeCurrent = bookmarks[i].tags;
+        timeCurrent = timeCurrent.replaceAll("'", "");
+        timeCurrent = timeCurrent.replaceAll("[", "");
+        timeCurrent = timeCurrent.replaceAll("]", "");
+        timeCurrent = timeCurrent.split(",");
+        for (let i = timeCurrent.length - 1; i >= 0; i--) {
+          if (!timeCurrent[i].includes("minutes") && !timeCurrent[i].includes("hours")) {
+            timeCurrent.splice(i, 1);
+          }
+        }
+        time.push(timeCurrent);
+      } else if (bookmarks[i].make_time) {
+        time.push([bookmarks[i].make_time]);
       }
     }
-    time.push(timeCurrent);
-  }
-  for(let i = 0; i < time.length; i++){
-    if (time[i].length == 0){
-      time[i].push("N/A");
+    for (let i = 0; i < time.length; i++) {
+      if (time[i].length == 0) {
+        time[i].push("N/A");
+      }
     }
-  }
 
 
 
 
-console.log(bookmarks);
   res.render("profile", {
     session: req.session,
     bookmarks: bookmarks,
     images: images,
     time: time,
+    aiCount: aiBookmarksCount
   });
 });
 
@@ -1046,7 +991,6 @@ app.get("/dietEdit", async (req, res) => {
 //Update the dietary restrictions
 app.post("/dietUpdate", urlencodedParser, async (req, res) => {
   let diet = req.body.diet;
-  console.log(diet, req.session.email, req.session.username);
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
   database.findOneAndUpdate({
@@ -1071,68 +1015,49 @@ app.get("/logout", (req, res) => {
 
 //Recipe display
 app.get("/recipe", async (req, res) => {
+  try{
+    var recipeId = new ObjectId(req.query.id);
+  }catch{
+
+    res.redirect("/404");
+    return;
+  }
 
 //Check if user is logged in and if the recipe is already bookmarked
-var isBookmarked = false;
+var bookmarked = false;
 
 if (req.session.authenticated) {
-  var user = await userCollection.findOne({email: req.session.email});
-  //Display Bookmarks
-  if (user.bookmarks) {
-    for (let i = 0; i < user.bookmarks.length && isBookmarked == false; i++) {
-      if (user.bookmarks[i].toString() == req.query.id) {
-        isBookmarked = true;
-       
-      }
-    }
-  }
-  //Add to recent recipes
-  let recents = [];
-  if (user.recents) {
-    recents = user.recents;
-    //Remove from recents if already there
-    for (let i = 0; i < recents.length; i++) {
-      if (recents[i].toString() == req.query.id) {
-        recents.splice(i, 1);
-      }
-    }
-    //Make sure recents is not too long
-    while (user.recents.length >= 20) {
-      recents.shift();
-    }    
-  }
-  //Add to recents
-  recents.push(new ObjectId(req.query.id));
-  await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
+ bookmarked = await isBookmarked(req, req.query.id);
+ addToRecents(req, req.query.id);
 }
 
 
-
-
-  var recipeId = new ObjectId(req.query.id);
   var recipeTime = req.query.time;
 
-  // var recipeId = new ObjectId("645c034dda87e30762932eb4");
   //Query and parse parts of the recipe
+  console.log(recipeId);
   var read = await recipeCollection.find({
     _id: recipeId
   }).limit(1).toArray();  
-  recipeName = read[0].name;
+
+  //Check if recipe is ai generated
+  if(read.length == 0){
+    aiRecipe = await airecipeCollection.findOne({_id: recipeId});
+    console.log(aiRecipe);
+    if (aiRecipe == null){
+      res.redirect("/404");
+      return;
+    }
+    res.redirect("/ai-recipe?id=" + req.query.id);
+    return;
+  }
+
+
+
+  let recipeName = read[0].name;
 
   //Generate image
-  var imageURL = "";
-     apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(recipeName)}&searchType=image`;
-  await fetch(apiUrl).then((response) => response.json()).then((data) => {
-    if (data.items && data.items.length > 0) {
-      const imageFullURL = encodeURIComponent(data.items[0].link);
-      imageURL =  decodeURIComponent((imageFullURL));
-    } else {
-      console.log("No images found.");
-    }
-  })
-  .catch((error) => {
-    console.error("An error occurred:", error);
-  });
+  var imageURL = await getGoogleImage(recipeName);
   let recipeImg = req.query.img || imageURL;
 
   //IngredientsArray
@@ -1146,14 +1071,7 @@ if (req.session.authenticated) {
   var recipeServings = read[0].servings;
   var recipeSize = read[0].serving_size;
   //Instructions Array
-  parsingSteps = read[0].steps;
-  parsingSteps = parsingSteps.replaceAll("[", "");
-  parsingSteps = parsingSteps.replaceAll("]", "");
-  parsingSteps = parsingSteps.replaceAll("\"", "");
-  var recipeSteps = parsingSteps.split("', '");
-  for (var i = 0; i < recipeSteps.length; i++){
-    recipeSteps[i] = recipeSteps[i].replaceAll("'", "");
-  }
+  var recipeSteps = parseSteps(read[0].steps);
   //Search Terms Array
   var parsingTerms = read[0].search_terms;
   parsingTerms = parsingTerms.replaceAll("'", "");
@@ -1162,11 +1080,11 @@ if (req.session.authenticated) {
   parsingTerms = parsingTerms.replaceAll("\"", "");
   var recipeTerms = parsingTerms.split(",");
 
-
+  console.log(bookmarked)
 
   res.render("recipe", {
     id: req.query.id,
-    bookmarked: isBookmarked,
+    bookmarked: bookmarked,
     name: recipeName,
     ingredients: recipeIngList,
     servings: recipeServings,
@@ -1185,34 +1103,31 @@ app.post("/recipe-save", urlencodedParser, async (req, res) => {
     res.redirect("/login");
     return;
   }
-
-  //Get the user's bookmarks
-  var bookmarks;
   var user = await userCollection.findOne({ email: req.session.email });
-  if(!user){
-    res.redirect("/login");
-    return;
-  }
-  if (!user.bookmarks) {
-    bookmarks = [];
-  } else {
+  //Get the user's bookmarks
+  var bookmarked = await isBookmarked(req, req.body.id);
+  console.log(bookmarked);
+  var bookmarks = [];
+  if (user.bookmarks) {
     bookmarks = user.bookmarks;
   }
 
   //Return if the recipe is already bookmarked
-  for (let i = 0; i < bookmarks.length; i++) {
-    if (bookmarks[i].toString() == req.body.id) {
-      res.redirect("/recipe?id=" + req.body.id);
-      return;
-    }
+  if(bookmarked){
+    res.redirect("/recipe?id=" + req.body.id);
+    return;
   }
 
-
   //Save the recipe
+  try{
   var recipeId = new ObjectId(req.body.id);
+  }
+  catch{
+    res.redirect("/404");
+    return;
+  }
   bookmarks.push(recipeId);
  
-  console.log(req.session);
   await userCollection.findOneAndUpdate({
     email: req.session.email
   }, {
@@ -1234,7 +1149,6 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
   }
 
   //Get the user's bookmarks
-  var bookmarks;
   var user = await userCollection.findOne({ email: req.session.email });
   if(!user || !user.bookmarks){
     res.redirect("/login");
@@ -1242,7 +1156,7 @@ app.post("/recipe-unsave", urlencodedParser, async (req, res) => {
   }
 
 
-  //Return if the recipe is already bookmarked
+  //Return if the recipe is already removed
   var newBookmarks = [];
   for (let i = 0; i < user.bookmarks.length; i++) {
     if (user.bookmarks[i].toString() != req.body.id) {
@@ -1337,7 +1251,6 @@ app.get("/test", async (req, res) => {
 app.get("/dbtest", async (req, res) => {
   var html = "";
   var read = await recipeCollection.find({}).limit(1).toArray();
-  // console.log(read);
 
   for (let i = 0; i < read.length; i++) {
     html += "<p>" + read[i].name + "<ul>";
@@ -1374,7 +1287,6 @@ app.get("/querytest", async (req, res) => {
       $all: ["sugar", "eggs"]
     }
   }).limit(5).toArray();
-  console.log(read);
   html += read[0].name + read[1].name + read[2].name;
   res.send(html);
 });
@@ -1414,3 +1326,135 @@ app.get("/*", (req, res) => {
 app.listen(port, () => {
   console.log("Server running on port " + port);
 });
+
+////////////////////////////////////////////////////////////////
+// Routing Functions ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+//Validate /ai-substitute
+async function validateAI_Substitute(req, res){
+  //Only allow access if user is logged in
+  if (!req.session.authenticated) {
+   res.redirect("/login");
+   return false;
+ }
+ //Redirect if no recipe is specified
+ if (req.query.recipeID == undefined) {
+   res.redirect("/");
+   return false;
+ }
+
+ //Don't regenerate if recipe is already loaded
+ if(req.session.aiRecipe){
+   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID});
+   return false;
+ }
+  //Get recipe from database
+  try{
+  var originalRecipe = await recipeCollection.findOne({_id: new ObjectId(req.query.recipeID)});
+  } catch{
+    res.render("pageNotFound");
+    return false;
+  }
+    
+  if(originalRecipe == null){ //throw error if recipe doesn't exist
+    res.render("ai-frame", {error: true, recipeID: req.query.recipeID});
+    return;
+  }
+
+ return true;
+}
+
+////////////////////////////////////////////////////////////////
+// Support Functions ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
+//Get image from Google Custom Search API
+async function getGoogleImage(searchTerm) {
+  var imageFullURL = "";
+  let apiUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${searchEngineId}&q=${encodeURIComponent(searchTerm)}&searchType=image`;
+  await fetch(apiUrl).then((response) => response.json()).then((data) => {
+      if (data.items && data.items.length > 0) {
+        imageFullURL = encodeURIComponent(data.items[0].link);
+      } else {
+        imageFullURL= encodeURIComponent("https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ=");
+      }
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+      
+    });
+  return decodeURIComponent(imageFullURL);
+}
+
+//Parse steps from our beautiful dataset
+function parseSteps(stepsToParse){
+  let parsingSteps = stepsToParse;
+  parsingSteps = parsingSteps.replaceAll("[", "");
+  parsingSteps = parsingSteps.replaceAll("]", "");
+  parsingSteps = parsingSteps.replaceAll("\"", "");
+  steps = parsingSteps.split("', '");
+  for (var i = 0; i < steps.length; i++) {
+    steps[i] = steps[i].replaceAll("'", "");
+  }
+  return steps;
+}
+
+//fix an array that might be a string
+function stringToArrayItem(potentialString){
+  if(!Array.isArray(potentialString)){
+    return [potentialString];
+  }
+  return potentialString;
+}
+
+//Check if recipe is bookmarked
+async function isBookmarked(req, id){
+  var bookmarked = false;
+    var user = await userCollection.findOne({email: req.session.email});
+    //Check if bookmarked
+    if (user.bookmarks != undefined) {
+      for (let i = 0; i < user.bookmarks.length && bookmarked == false; i++) {
+        if (user.bookmarks[i].toString() == id) {
+          bookmarked = true;
+        }
+      }
+    }
+    return bookmarked;
+}
+
+async function addToRecents(req, recipeId){
+  
+//Add to recent recipes
+let recents = [];
+var user = await userCollection.findOne({email: req.session.email});
+if (user.recents) {
+  recents = user.recents;
+  //Remove from recents if already there
+  for (let i = 0; i < recents.length; i++) {
+    if (recents[i].toString() == recipeId.toString()) {
+      recents.splice(i, 1);
+    }
+  }
+  //Make sure recents is not too long
+  while (user.recents.length >= 20) {
+    recents.shift();
+  }    
+  console.log("Adding to recents");
+}
+//Add to recents
+recents.push(recipeId);
+await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
+return isBookmarked;
+}
+
+//remove an item from an array
+function arrayWithout(array, string){
+  var newArray = [];
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].toString() != string) {
+      newArray.push(array[i]);
+    }
+  }
+  return newArray;
+}

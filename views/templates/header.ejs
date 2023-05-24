@@ -9,7 +9,23 @@
     <script type="text/javascript"  src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap" rel="stylesheet">
+    <style>
+        @keyframes transitionBgColor {
+          from { background-color: yellow; }
+          to { background-color: rgb(244 247 237); }
+        }
+      
+        @keyframes transitionTextColor {
+          from { color: black; }
+          to { color: red; }
+        }
+      
+        .warning-transition {
+          animation: transitionBgColor 3s linear forwards,
+                     transitionTextColor 3s linear forwards;
+        }
+      </style>
 
 
 

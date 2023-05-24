@@ -73,8 +73,7 @@
   <!-- Box 4: Ai Button -->
   <%if(locals.authenticated){%>
     <div class="my-4 justify-center items-center flex">
-    <form action="ai-substitute">
-      <input type="hidden" name="generate" value="true">
+    <form action="generate">
       <button name="recipeID" value="<%=id%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
         Use AI to substitute ingredients
       </button>
