@@ -6,6 +6,7 @@
                 <!-- Dropdown Menu and Advanced Filters Button -->
         <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Mealmatch - Select your ingredients</h1>
 
+<<<<<<< HEAD
         <div class="flex justify-between items-center mb-4">
           <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
             <option name="time" value="0">Prep Time</option>
@@ -27,6 +28,27 @@
               </div>
           </div>
         </div>
+=======
+                <div class="flex justify-between items-center mb-4">
+                  <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
+                    <option name="time" value="0">Prep Time</option>
+                    <option name="time" value="15">15 Minutes</option>
+                    <option name="time" value="30">30 Minutes</option>
+                    <option name="time" value="60">60 Minutes</option>
+                    <option name="time" value="4">60+ Minutes</option>
+                  </select>
+                  <div>
+                    <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+                    <% if(session.useDiet) { %>
+                      <br/>
+                      <br/>
+                      <a 
+                      href="/useDiet?type=off&return=regular" 
+                      class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
+                    <% } %>
+                  </div>
+                </div>
+>>>>>>> kade_fraser_ai_ingredient_substitute
 
         <!-- Modal -->
         <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
@@ -444,11 +466,14 @@
  
                     </div>
                   </div>
+<<<<<<< HEAD
 
 
 
 
 
+=======
+>>>>>>> kade_fraser_ai_ingredient_substitute
   <!-- close container tag -->
   </div>
 

@@ -135,14 +135,11 @@ app.use(sessionValidation);
 
 //Landing Page
 app.get("/", async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (user == null) {
     res.render("landing-loggedout");
     return;
   }
-
-  var user = await userCollection.findOne({
-    username: req.session.username
-  });
 
   let recipes = [];
   let images = [];
@@ -178,7 +175,8 @@ app.get("/", async (req, res) => {
 
 //ChatGPT
 app.get("/generate", async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
     res.redirect("/login");
     return;
   }
@@ -192,6 +190,26 @@ app.get("/generate", async (req, res) => {
   if (req.query.recipeID == undefined) {
     res.redirect("/");
     return;
+  }
+
+  //Get the user restrictions
+  var diet = false;
+  if (req.query.diet) {
+    diet = true;
+  }
+
+
+  //Validate Notes
+  var notes = req.query.notes;
+  const schema = Joi.string().regex(/[$\(\)<>{}]/, { invert: true }).max(100)
+  const result = schema.validate(notes);
+  if(result.error){
+    notes = "none";
+  }
+  //Update the user's aipreferences
+  req.session.aiPreferences = {
+    diet: diet,
+    notes: notes || "none",
   }
 
   res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
@@ -233,9 +251,11 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   }
   
+  var user = await getValidUser(req);
 
   //Get user from database
-  let user = await userCollection.findOne({email: req.session.email});
+  var diet = (req.session.aiPreferences.diet ? user.diet : []);
+  var notes = (req.session.aiPreferences.notes ? user.notes : "none");
 
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
@@ -244,8 +264,8 @@ app.get("/ai-substitute", async (req, res) => {
   //Create dietary restrictions string===================
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
-  if (user.diet) {
-    restrictionsArray = stringToArrayItem(user.diet);
+  if (diet) {
+    restrictionsArray = stringToArrayItem(diet);
     //Add each restriction to the string
     for (let i = 0; i < restrictionsArray.length; i++) {
       dietaryRestrictions += ` ${restrictionsArray[i]},`;
@@ -258,7 +278,11 @@ app.get("/ai-substitute", async (req, res) => {
   //Create request string
 
   //Uses full original recipe
-  let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
+  let request = `recipe for ${orName}`;
+  if(restrictionsArray.length > 0){
+    request += ` ${dietaryRestrictions}. `;
+  }
+  request += 'based on the orginal recipe made with'
   for (let i = 0; i < orIngredients.length; i++) {
     request += ` ${orIngredients[i]},`;
   }
@@ -266,6 +290,7 @@ app.get("/ai-substitute", async (req, res) => {
   for (let i = 0; i < orSteps.length; i++) {
     request += ` ${orSteps[i]},`;
   }
+  request += ` with the following notes: ${notes}.`;
   request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), make_time (string).`;
 
   //Send request to ChatGPT
@@ -299,18 +324,19 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.ai = true;
     req.session.aiRecipe = aiObject;
 
-    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, restrictions: restrictionsArray, notes: notes});
     return;
 
   } catch (error) { //If error, render error page
     console.error("Error:", error);
-    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
+    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, notes: notes});
   }
 });
 
 //Ai Recipe save
 app.post("/airecipe-save", urlencodedParser, async (req, res) => {
-  if (!req.session.authenticated) {
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
     res.redirect("/login");
     return;
   }
@@ -327,12 +353,6 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
   let aiRecipeGet = await airecipeCollection.findOne({name: aiRecipe.name, ingredients: aiRecipe.ingredients, steps: aiRecipe.steps, ownerId: req.session.userId});
 
   //Get the user's bookmarks
- 
-  var user = await userCollection.findOne({ email: req.session.email });
-  if(!user){
-    res.redirect("/login");
-    return;
-  }
   var bookmarks = [];
   if (user.bookmarks) {bookmarks = user.bookmarks;}
   bookmarks.push(aiRecipeGet._id);
@@ -352,12 +372,11 @@ app.post("/airecipe-save", urlencodedParser, async (req, res) => {
 
 //Ai Recipe unsave
 app.post("/airecipe-unsave", urlencodedParser, async (req, res) => {
-  if (!req.session.authenticated) {
-    res.redirect("/login");
+  var user = await getValidUser(req);
+  if (!isValid(user)) {
+    res.render("landing-loggedout");
     return;
   }
-
-  var user = await userCollection.findOne({ email: req.session.email });
  
   //Return if recipe is already removed
   var newBookmarks = arrayWithout(user.bookmarks, req.body.id);
@@ -499,7 +518,7 @@ app.post("/login-submit", async (req, res) => {
   const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (user == null) {
+  if (isValid(user)) {
     res.redirect("/login?error=true");
     return;
   }
@@ -988,8 +1007,14 @@ app.get("/recipe", async (req, res) => {
 
 //Check if user is logged in and if the recipe is already bookmarked
 var bookmarked = false;
-
+var restrictions = [];
 if (req.session.authenticated) {
+ user = await getValidUser(req);
+  if(isValid(user.diet) && user.diet.length > 0){
+    restrictions = user.diet;
+  }else{
+    restrictions = ["none"];
+  }
  bookmarked = await isBookmarked(req, req.query.id);
  addToRecents(req, req.query.id);
 }
@@ -1053,6 +1078,7 @@ if (req.session.authenticated) {
     time: recipeTime,
     Image: recipeImg,
     authenticated: req.session.authenticated,
+    restrictions: restrictions
   });
 });
 
@@ -1271,8 +1297,10 @@ async function validateAI_Substitute(req, res){
  }
 
  //Don't regenerate if recipe is already loaded
+
+ var user = getValidUser(req);
  if(req.session.aiRecipe){
-   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID});
+   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID, notes: req.session.notes, authenticated: req.session.authenticated, restrictions: user.diet || [], id: req.session.aiRecipe.originalRecipeID});
    return false;
  }
   //Get recipe from database
@@ -1343,7 +1371,7 @@ async function isBookmarked(req, id){
   var bookmarked = false;
     var user = await userCollection.findOne({email: req.session.email});
     //Check if bookmarked
-    if (user.bookmarks != undefined) {
+    if (user && user.bookmarks && user.bookmarks != undefined) {
       for (let i = 0; i < user.bookmarks.length && bookmarked == false; i++) {
         if (user.bookmarks[i].toString() == id) {
           bookmarked = true;
@@ -1353,12 +1381,13 @@ async function isBookmarked(req, id){
     return bookmarked;
 }
 
-//add to recents
+//add to recent
 async function addToRecents(req, recipeId){
   
 //Add to recent recipes
 let recents = [];
-var user = await userCollection.findOne({email: req.session.email});
+var user = await getValidUser(req)
+if(user){
 if (user.recents) {
   recents = user.recents;
   //Remove from recents if already there
@@ -1367,6 +1396,7 @@ if (user.recents) {
       recents.splice(i, 1);
     }
   }
+  
   //Make sure recents is not too long
   while (user.recents.length >= 20) {
     recents.shift();
@@ -1375,7 +1405,9 @@ if (user.recents) {
 //Add to recents
 recents.push(recipeId);
 await userCollection.updateOne({email: req.session.email }, { $set: {recents: recents } });
-return isBookmarked;
+return isBookmarked(req, recipeId);
+}
+
 }
 
 //remove an item from an array
@@ -1420,7 +1452,21 @@ function getRecipeTimes(recipeArray){
       times[i].push("N/A");
     }
   }
- 
-  //returns the times
   return times;
+}
+
+//Get a valid user from a request
+async function getValidUser(req) {
+  if (isValid(req.session) && req.session.authenticated && req.session.email) {
+    return await userCollection.findOne({email: req.session.email});
+  }
+  return null;
+}
+
+//Check if a thing is defined
+function isValid(thing){
+  if(thing == undefined || thing == null){
+    return false;
+  }
+  return true;
 }
