@@ -192,6 +192,26 @@ app.get("/generate", async (req, res) => {
     return;
   }
 
+  //Get the user restrictions
+  var diet = false;
+  if (req.query.diet) {
+    diet = true;
+  }
+
+
+  //Validate Notes
+  var notes = req.query.notes;
+  const schema = Joi.string().regex(/[$\(\)<>{}]/, { invert: true }).max(100)
+  const result = schema.validate(notes);
+  if(result.error){
+    notes = "none";
+  }
+  //Update the user's aipreferences
+  req.session.aiPreferences = {
+    diet: diet,
+    notes: notes || "none",
+  }
+
   res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
 });
 
@@ -231,9 +251,11 @@ app.get("/ai-substitute", async (req, res) => {
     return;
   }
   
+  var user = await getValidUser(req);
 
   //Get user from database
-  let user = await userCollection.findOne({email: req.session.email});
+  var diet = (req.session.aiPreferences.diet ? user.diet : []);
+  var notes = (req.session.aiPreferences.notes ? user.notes : "none");
 
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
@@ -242,8 +264,8 @@ app.get("/ai-substitute", async (req, res) => {
   //Create dietary restrictions string===================
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
-  if (user.diet) {
-    restrictionsArray = stringToArrayItem(user.diet);
+  if (diet) {
+    restrictionsArray = stringToArrayItem(diet);
     //Add each restriction to the string
     for (let i = 0; i < restrictionsArray.length; i++) {
       dietaryRestrictions += ` ${restrictionsArray[i]},`;
@@ -256,7 +278,11 @@ app.get("/ai-substitute", async (req, res) => {
   //Create request string
 
   //Uses full original recipe
-  let request = `recipe for ${orName} ${dietaryRestrictions}. based on the orginal recipe made with`;
+  let request = `recipe for ${orName}`;
+  if(restrictionsArray.length > 0){
+    request += ` ${dietaryRestrictions}. `;
+  }
+  request += 'based on the orginal recipe made with'
   for (let i = 0; i < orIngredients.length; i++) {
     request += ` ${orIngredients[i]},`;
   }
@@ -264,6 +290,7 @@ app.get("/ai-substitute", async (req, res) => {
   for (let i = 0; i < orSteps.length; i++) {
     request += ` ${orSteps[i]},`;
   }
+  request += ` with the following notes: ${notes}.`;
   request += ` formatted as a JSON object with keys: name (string), ingredients (array of strings), serving_size (string), steps (array of strings), make_time (string).`;
 
   //Send request to ChatGPT
@@ -297,12 +324,12 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.ai = true;
     req.session.aiRecipe = aiObject;
 
-    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID});
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, restrictions: restrictionsArray, notes: notes});
     return;
 
   } catch (error) { //If error, render error page
     console.error("Error:", error);
-    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID})
+    res.render("ai-frame", {error: true, orName: orName, restrictions: restrictionsArray, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, notes: notes});
   }
 });
 
@@ -963,9 +990,14 @@ app.get("/recipe", async (req, res) => {
 
 //Check if user is logged in and if the recipe is already bookmarked
 var bookmarked = false;
-
+var restrictions = [];
 if (req.session.authenticated) {
-  
+ user = await getValidUser(req);
+  if(isValid(user.diet) && user.diet.length > 0){
+    restrictions = user.diet;
+  }else{
+    restrictions = ["none"];
+  }
  bookmarked = await isBookmarked(req, req.query.id);
  addToRecents(req, req.query.id);
 }
@@ -1029,6 +1061,7 @@ if (req.session.authenticated) {
     time: recipeTime,
     Image: recipeImg,
     authenticated: req.session.authenticated,
+    restrictions: restrictions
   });
 });
 
@@ -1277,8 +1310,10 @@ async function validateAI_Substitute(req, res){
  }
 
  //Don't regenerate if recipe is already loaded
+
+ var user = getValidUser(req);
  if(req.session.aiRecipe){
-   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID});
+   res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID, notes: req.session.notes, authenticated: req.session.authenticated, restrictions: user.diet || [], id: req.session.aiRecipe.originalRecipeID});
    return false;
  }
   //Get recipe from database
@@ -1422,7 +1457,6 @@ function getRecipeTimes(recipeArray){
       times[i].push("N/A");
     }
   }
-  console.log(times);
   return times;
 }
 

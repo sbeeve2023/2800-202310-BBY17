@@ -4,23 +4,14 @@
   <%- include('ai-recipe', {recipe: recipe}) %>
   <%}else{%>
     <img class="h-36 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/2048px-ChatGPT_logo.svg.png"/>
-    <h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Something went wrong.</h1>
+    <h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">The AI couldn't process your request. Please try again.</h1>
     <h2>Attempted to make <%=orName%></h2>
     <h2>with dietary restrictions: <%for (let i = 0; i < restrictions.length; i++){%><%=restrictions[i]%>, <%}%></h2>
     <%}%>
 
-<!--Regenerate Button-->
-  <div class="flex justify-center mb-4 mt-3">
-    <form action="generate">
-      <button name="recipeID" value="<%=recipeID%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
-        Regenerate
-      </button>
-      <div class="flex items-center justify-center">
-        <div id="loading" class="w-12 h-12 rounded-full animate-spin
-        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
-      </div>
-    </form>
-  </div>
+
+  <!-- AI Button -->
+  <%- include('templates/ai-button') %>
   <!--Original Recipe Button-->
   <%if(locals.recipe){%>
   <div class="flex justify-center mb-4 mt-3">
@@ -36,11 +27,5 @@
   </div>
   <%}%>
 
-  <!--Script-->
-  <script>
-    function showLoading(){
-    document.getElementById("loading").hidden = false;
-    }
-  </script>
   
 <%- include('templates/footer') %>
