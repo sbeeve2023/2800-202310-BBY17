@@ -9,10 +9,10 @@ app.use(express.urlencoded({
   extended: false
 }));
 app.use("/public", express.static("./public"));
-app.use('/styles', express.static('styles'));
+app.use("/styles", express.static("styles"));
 
 //he
-const he = require('he');
+const he = require("he");
 
 //body parser
 const bodyParser = require("body-parser");
@@ -20,7 +20,7 @@ var urlencodedParser = bodyParser.urlencoded({
   extended: false
 });
 //EJS
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 
 //tailwind
 const tailwindcss = require("tailwindcss");
@@ -33,7 +33,7 @@ const {
 } = require("console");
 const saltRounds = 12;
 const sessionExpireTime = 1000 * 60 * 60 * 24 * 7; // 1 week
-require('dotenv').config();
+require("dotenv").config();
 
 //Mongo 
 const MongoStore = require("connect-mongo");
@@ -43,7 +43,7 @@ const {
 } = require("mongodb");
 const {
   ObjectId
-} = require('mongodb');
+} = require("mongodb");
 var port = process.env.PORT || 8000;
 //ENV Variables
 const mongodb_user = process.env.MONGODB_USER;
