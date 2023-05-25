@@ -10,32 +10,35 @@
     <%}%>
 
 <!--Regenerate Button-->
-  <div class="flex justify-center mb-4 mt-3">
-    <form action="generate">
-      <button name="recipeID" value="<%=recipeID%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
-        Regenerate
-      </button>
-      <div class="flex items-center justify-center">
-        <div id="loading" class="w-12 h-12 rounded-full animate-spin
-        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
-      </div>
-    </form>
+<div class="container w-full bg-mmse">
+  <div class="mx-auto max-w-3xl border rounded-lg p-4 flex flex-col items-center8 bg-mmfo">
+    <div class="flex justify-center mb-4 mt-3">
+      <form action="generate">
+        <button name="recipeID" value="<%=recipeID%>" onclick="showLoading() "class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
+          Regenerate
+        </button>
+        <div class="flex items-center justify-center">
+          <div id="loading" class="w-12 h-12 rounded-full animate-spin
+          border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+        </div>
+      </form>
+    </div>
+    <!--Original Recipe Button-->
+    <%if(locals.recipe){%>
+    <div class="flex justify-center mb-4 mt-3">
+      <form action="recipe">
+        <button name="id" value="<%=recipe.originalRecipeID%>" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-1">
+          Original Recipe
+        </button>
+        <div class="flex items-center justify-center">
+          <div id="loading" class="w-12 h-12 rounded-full animate-spin
+          border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+        </div>
+      </form>
+    </div>
+    <%}%>
   </div>
-  <!--Original Recipe Button-->
-  <%if(locals.recipe){%>
-  <div class="flex justify-center mb-4 mt-3">
-    <form action="recipe">
-      <button name="id" value="<%=recipe.originalRecipeID%>" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
-        Original Recipe
-      </button>
-      <div class="flex items-center justify-center">
-        <div id="loading" class="w-12 h-12 rounded-full animate-spin
-        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
-      </div>
-    </form>
-  </div>
-  <%}%>
-
+</div>
   <!--Script-->
   <script>
     function showLoading(){
