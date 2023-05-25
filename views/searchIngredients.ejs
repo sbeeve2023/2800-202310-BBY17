@@ -6,7 +6,7 @@
               <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Mealmatch - Select your ingredients</h1>
 
         <div class="flex justify-between items-center mb-4">
-          <select class="p-2 rounded border bg-mmth" name="time">
+          <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
             <option name="time" value="0">Prep Time</option>
             <option name="time" value="15" <% if (time==15) {%> selected="selected"<%}%> >15 Minutes</option>
             <option name="time" value="30" <% if (time==30) {%> selected="selected"<%}%>>30 Minutes</option>
@@ -15,13 +15,15 @@
           </select>
           <div>
             <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
-            <% if(session.useDiet) { %>
-              <br/>
-              <br/>
-              <a 
-              href="/useDiet?type=off&return=regular" 
-              class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
-            <% } %>
+            <div id="profileOn">
+              <% if(session.useDiet) { %>
+                <br/>
+                <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>
+              <% } else {%>
+                <br/>
+                <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOff">Profile diet off</a>
+              <% } %>
+              </div>
           </div>
         </div>
 
@@ -581,6 +583,7 @@
           });
           document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
           document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+          document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>';
         }
 
         function dontUseDiet() {
@@ -589,6 +592,7 @@
           });
           document.getElementById('dietOfProfile').innerHTML = '';
           document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+          document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet off</a>';
         }
         function openModal() {
           document.getElementById("modal").classList.remove("hidden");

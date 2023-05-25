@@ -16,13 +16,15 @@
         </select>
         <div>
           <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+          <div id="profileOn">
           <% if(session.useDiet) { %>
             <br/>
+            <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>
+          <% } else {%>
             <br/>
-            <a 
-            href="/useDiet?type=off&return=regular" 
-            class="bg-mmfo hover:bg-mmth text-mmpr border border-mmpr py-2 px-4 rounded">Profile diet on</a>
+            <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOff">Profile diet off</a>
           <% } %>
+          </div>
         </div>
       </div>
 
@@ -70,7 +72,6 @@
             <% } %>
           </div>
           </div>
-          </div>
 
     <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
     <div id="search-area" class="relative">
@@ -90,8 +91,7 @@
               class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
       </div>
   </form>
-
-</div>
+  </div>
 
 
 <hr/>
@@ -120,6 +120,7 @@
     });
     document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
     document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+    document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>';
   }
 
   function dontUseDiet() {
@@ -128,6 +129,7 @@
     });
     document.getElementById('dietOfProfile').innerHTML = '';
     document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+    document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet off</a>';
   }
 
   function openModal() {
