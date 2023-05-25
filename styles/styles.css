@@ -758,11 +758,6 @@ video {
   margin-right: auto;
 }
 
-.my-3 {
-  margin-top: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -2255,11 +2250,6 @@ video {
 .border-mmpr {
   --tw-border-opacity: 1;
   border-color: rgb(81 143 58 / var(--tw-border-opacity));
-}
-
-.border-mmth {
-  --tw-border-opacity: 1;
-  border-color: rgb(134 238 96 / var(--tw-border-opacity));
 }
 
 .border-mmse {
