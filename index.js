@@ -732,7 +732,7 @@ app.get("/searchIngredients", async (req, res) => {
   //Sorts the recipes by score after it has been set to an array
   if (search) {
     recipes.sort((a, b) => b.score - a.score);
-    recipes = recipes.slice(0, 10);
+    recipes = recipes.slice(0, 12);
   }
   //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
