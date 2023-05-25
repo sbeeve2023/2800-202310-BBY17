@@ -27,7 +27,7 @@
           <div class="w-48 h-48 mx-auto absolute inset-x-0 top-0 -mt-24">
             <div
               class="rounded-full overflow-hidden w-full h-full bg-indigo-100 shadow-2xl flex items-center justify-center">
-              <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" />
+              <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" alt="Image not Found"/>
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@
         </h1>
         <% if(easterEgg){ %>
           <div>
-            <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" />
+            <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" alt="Image not Found"/>
           </div>
           <form action="/remove-egg" method="post">
             <button type="submit" class="text-white py-2 px-4 uppercase rounded text-sm bg-red-400 hover:bg-red-500 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
@@ -69,7 +69,7 @@
           Username/Email</button>
         <div class="max-w-screen-sm mx-auto">
           <form action="/profileUpdate" method="post">
-            <fieldset id="editable2" disabled="true">
+            <fieldset id="editable2" disabled>
               <div class="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2 flex-col">
                 <div>
                   <label class="text-gray-700" for="username">Username</label>
