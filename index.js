@@ -508,6 +508,7 @@ app.post("/login-submit", async (req, res) => {
   const schema = Joi.string().alphanum().max(30).required()
   const result = schema.validate(username);
   if (result.error != null) {
+   
     res.redirect("/login?error=true");
     return;
   }
@@ -515,7 +516,8 @@ app.post("/login-submit", async (req, res) => {
   const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (isValid(user)) {
+  console.log(user);
+  if (!isValid(user)) {
     res.redirect("/login?error=true");
     return;
   }
