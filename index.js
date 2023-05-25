@@ -210,8 +210,7 @@ app.get("/generate", async (req, res) => {
   req.session.aiPreferences = {
     diet: diet,
     notes: notes || "none",
-  }
-
+  };
   res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
 });
 
@@ -250,13 +249,11 @@ app.get("/ai-substitute", async (req, res) => {
     res.redirect("/404");
     return;
   }
-  
-  var user = await getValidUser(req);
 
   //Get user from database
-  var diet = (req.session.aiPreferences.diet ? user.diet : []);
-  var notes = (req.session.aiPreferences.notes ? user.notes : "none");
-
+  var diet = (req.session.aiPreferences.diet ? req.session.aiPreferences.diet : []);
+  var notes = (req.session.aiPreferences.notes ? req.session.aiPreferences.notes : "none");
+  console.log(notes);
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
   let orSteps = parseSteps(originalRecipe.steps);
@@ -511,6 +508,7 @@ app.post("/login-submit", async (req, res) => {
   const schema = Joi.string().alphanum().max(30).required()
   const result = schema.validate(username);
   if (result.error != null) {
+   
     res.redirect("/login?error=true");
     return;
   }
@@ -518,7 +516,8 @@ app.post("/login-submit", async (req, res) => {
   const user = await userCollection.findOne({
     username: { $regex: new RegExp(username, "i")} //Regex with 'i' makes it case insensitive
   });
-  if (isValid(user)) {
+  console.log(user);
+  if (!isValid(user)) {
     res.redirect("/login?error=true");
     return;
   }
@@ -570,7 +569,7 @@ app.get("/search", async (req, res) => {
   //if there is a search term it will search for it
   if (search) {
     connection.name = {
-      $regex: new RegExp(search, "i"),
+      $regex: new RegExp(search.trim(), "i"),
     };
   }
   connection.$and = [];
@@ -735,7 +734,7 @@ app.get("/searchIngredients", async (req, res) => {
   //Sorts the recipes by score after it has been set to an array
   if (search) {
     recipes.sort((a, b) => b.score - a.score);
-    recipes = recipes.slice(0, 10);
+    recipes = recipes.slice(0, 12);
   }
   //Finds a relevent image to display for each recipe.
   for (let i = 0; i < recipes.length; i++) {
@@ -875,7 +874,8 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   //updates the session variables
   req.session.username = username;
   req.session.email = email;
-  res.send("Profile Updated <a href='/profile'>Go Back</a>")
+  res.render("changed-profile");
+  // res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
 
 //Change Password

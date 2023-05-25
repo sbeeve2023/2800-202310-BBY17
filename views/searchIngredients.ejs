@@ -154,7 +154,7 @@
         var newBox = document.createElement("input");
         newBox.setAttribute("type", "text");
         newBox.setAttribute("name", "search")
-        newBox.setAttribute("value", item.toLowerCase());
+        newBox.setAttribute("value", item.toLowerCase().trim());
         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
 
         newSpan.addEventListener("click", function () {
@@ -199,7 +199,7 @@
         var newBox = document.createElement("input");
         newBox.setAttribute("type", "text");
         newBox.setAttribute("name", "search")
-        newBox.setAttribute("value", item.toLowerCase());
+        newBox.setAttribute("value", item.toLowerCase().trim());
         newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
         newSpan.addEventListener("click", function () {
           this.remove();
