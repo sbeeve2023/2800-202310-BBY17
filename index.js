@@ -210,8 +210,7 @@ app.get("/generate", async (req, res) => {
   req.session.aiPreferences = {
     diet: diet,
     notes: notes || "none",
-  }
-
+  };
   res.redirect("ai-substitute?recipeID=" + req.query.recipeID);
 });
 
@@ -250,13 +249,11 @@ app.get("/ai-substitute", async (req, res) => {
     res.redirect("/404");
     return;
   }
-  
-  var user = await getValidUser(req);
 
   //Get user from database
-  var diet = (req.session.aiPreferences.diet ? user.diet : []);
-  var notes = (req.session.aiPreferences.notes ? user.notes : "none");
-
+  var diet = (req.session.aiPreferences.diet ? req.session.aiPreferences.diet : []);
+  var notes = (req.session.aiPreferences.notes ? req.session.aiPreferences.notes : "none");
+  console.log(notes);
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
   let orSteps = parseSteps(originalRecipe.steps);
