@@ -649,16 +649,19 @@ app.get("/search", async (req, res) => {
 
 //Search for recipes using a list of ingredients.
 app.get("/searchIngredients", async (req, res) => {
+  //gets the ingredients and filters from the url
   let search = req.query.search;
   let time = req.query.time;
   let diet = req.query.diet;
   let images = [];
+  //sets null values if they are not defined
   if (!diet) {
     diet = "null";
   }
   if (!time) {
     time = 0;
   }
+  //gets the users profile diet if they are signed in
   if (req.session.authenticated) {
     await client.connect();
     let profile = await client.db(mongodb_database).collection("users").findOne({username: req.session.username });
@@ -668,22 +671,28 @@ app.get("/searchIngredients", async (req, res) => {
     var profileDiet = false;
   }
   let recipes = false;
+  //if there is a search term it will search for it
   if (search != undefined) {
+    //turns it into an array if it is a string
     if (typeof search === "string"){
       search = search.split(',');
     }
+    //makes all the search terms lowercase
     for (var i = 0; i < search.length; i++){
       search[i].toLowerCase;
     }
+    //sets up the connection
     await client.connect();
     const database = await client.db(mongodb_database).collection("recipes");
       var connection = {};
       connection.$and = [];
+      //if there is a time it will search for it
       if (!(time == 0) && time) {
         connection.tags = {
           $regex: new RegExp(time, "i")
         }
       }
+      //if there is a diet it will search for it
       if (Array.isArray(diet)) {
         connection.$and.push({ $and: diet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' } }))})
@@ -692,6 +701,7 @@ app.get("/searchIngredients", async (req, res) => {
           search_terms: {$regex: new RegExp(diet, "i")}
           })
         }
+      //if there is a profile diet it will search for it
       if (Array.isArray(profileDiet) && req.session.useDiet) {
         connection.$and.push({ $and: profileDiet.map(restriction => ({
           search_terms: { $regex: `\\b${restriction}\\b`, $options: 'i' }
@@ -705,6 +715,7 @@ app.get("/searchIngredients", async (req, res) => {
       connection.$and.push({
         ingredients_raw_str: {  $regex: new RegExp(`\\b(${search.map(term => `\\b${term}\\b`).join('|')})\\b`, 'i')} 
       });
+      //if there is no search terms it will delete the $and
       if (connection.$and.length == 0) {
         delete connection.$and;
       }
@@ -783,16 +794,19 @@ app.post("/dontUseDiet", urlencodedParser, async (req, res) => {
 
 //Profile
 app.get("/profile", async (req, res) => { 
+  //if they aren't logged in, redirect to login
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+  //connect to the database
   user = await userCollection.findOne({email: req.session.email});
   let images = [];
   
   let bookmarks = [];
   let aiBookmarksCount = 0;
   
+  //if the user has bookmarks display them
   if (user.bookmarks != undefined) {
     var bookmarkIds = user.bookmarks;
     let recipe =[] ;
@@ -802,6 +816,7 @@ app.get("/profile", async (req, res) => {
       recipe = await recipeCollection.findOne({
         _id: bookmarkIds[i]
       });
+      //checks if it is an ai recipe
       if (recipe == null) {
         aiFlag = true;
         recipe = await airecipeCollection.findOne({
@@ -820,7 +835,7 @@ app.get("/profile", async (req, res) => {
     }
   }
 
-
+  //gets the times of the bookmarked recipes
   let times = getRecipeTimes(bookmarks);
 
   res.render("profile", {
@@ -880,10 +895,12 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
 
 //Change Password
 app.get("/change-password", async (req, res) => {
+  //if they aren't logged in, redirect to login
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+  //renders the change password page
   res.render("change-password", {
     error: req.query.error
   });
@@ -957,15 +974,19 @@ app.get("/changed-password", (req, res) => {
 
 //Change the dietary restrictions
 app.get("/dietEdit", async (req, res) => {
+  //if they aren't logged in, redirect to login
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+  //Get the user's current dietary restrictions from mongodb
   var user = await userCollection.findOne({email: req.session.email})
   var diet = user.diet;
+  //if the diet is undefined, set it to an empty array
   if (diet == undefined){
     diet = []; //If the user has no dietary restrictions, set it to an empty array
   }
+  //Renders the page with the current dietary restrictions
   res.render("dietEdit", {
     currentDiet: diet, restrictions: restrictionsArray
   });
@@ -973,9 +994,12 @@ app.get("/dietEdit", async (req, res) => {
 
 //Update the dietary restrictions
 app.post("/dietUpdate", urlencodedParser, async (req, res) => {
+  //Gets the diet from the form
   let diet = req.body.diet;
+  //Sets up connection to database
   await client.connect();
   const database = await client.db(mongodb_database).collection("users");
+  //Updates the user's dietary restrictions
   database.findOneAndUpdate({
     email: req.session.email,
     username: req.session.username
@@ -984,7 +1008,7 @@ app.post("/dietUpdate", urlencodedParser, async (req, res) => {
       diet: diet
     }
   });
-
+  //Updates the session variable
   req.session.diet = diet;
   res.redirect("/profile");
 });
@@ -1171,15 +1195,19 @@ app.get("/easter-egg", async (req, res) => {
 
 //create easteregg check on profile
 app.post("/add-egg", async (req, res) => {
+  //Check if user is logged in
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+  //Finds the user
   var user = await userCollection.findOne({ email: req.session.email });
+  //If user does not exist, redirect to login
   if(!user){
     res.redirect("/login");
     return;
   } else {
+    //Update the user's easteregg status
     await userCollection.findOneAndUpdate({
       email: req.session.email
     }, {
@@ -1188,6 +1216,7 @@ app.post("/add-egg", async (req, res) => {
       }
     });
 
+    //Update the session
     req.session.easterEgg = true;
 
   res.redirect("/profile");
@@ -1195,15 +1224,19 @@ app.post("/add-egg", async (req, res) => {
 
 //remove easteregg check on profile
 app.post("/remove-egg", async (req, res) => {
+  //Check if user is logged in
   if (!req.session.authenticated) {
     res.redirect("/login");
     return;
   }
+  //Finds the user
   var user = await userCollection.findOne({ email: req.session.email });
+  //If user does not exist, redirect to login
   if(!user){
     res.redirect("/login");
     return;
   } else {
+    //Update the user's easteregg status
     await userCollection.findOneAndUpdate({
       email: req.session.email
     }, {
@@ -1211,7 +1244,7 @@ app.post("/remove-egg", async (req, res) => {
         easterEgg: false
       }
     });
-
+    //Update the session
     req.session.easterEgg = false;
 
   res.redirect("/profile");
@@ -1348,13 +1381,17 @@ async function getGoogleImage(searchTerm) {
 //Parse steps from our beautiful dataset
 function parseSteps(stepsToParse){
   let parsingSteps = stepsToParse;
+  //Remove all the extra characters
   parsingSteps = parsingSteps.replaceAll("[", "");
   parsingSteps = parsingSteps.replaceAll("]", "");
   parsingSteps = parsingSteps.replaceAll("\"", "");
+  //Split into an array
   steps = parsingSteps.split("', '");
+  //Remove all the extra apostrophes
   for (var i = 0; i < steps.length; i++) {
     steps[i] = steps[i].replaceAll("'", "");
   }
+  //Return the array
   return steps;
 }
 
