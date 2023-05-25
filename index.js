@@ -569,7 +569,7 @@ app.get("/search", async (req, res) => {
   //if there is a search term it will search for it
   if (search) {
     connection.name = {
-      $regex: new RegExp(search, "i"),
+      $regex: new RegExp(search.trim(), "i"),
     };
   }
   connection.$and = [];
