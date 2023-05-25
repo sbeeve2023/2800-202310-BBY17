@@ -86,13 +86,16 @@
 
           <input name="search" type="search" id="default-search"
               class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Search for a recipe" required>
+              placeholder="Search for a recipe" required >
           <button type="submit"
-              class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
+              class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 " onclick="showLoading()">Search</button>
       </div>
   </form>
   </div>
-
+  <div class="flex items-center justify-center">
+    <div id="loading" class="w-12 h-12 rounded-full animate-spin
+border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+  </div>
 
 <hr/>
 
@@ -113,6 +116,9 @@
 </div>
 
 <script>
+  function showLoading() {
+    document.getElementById("loading").hidden = false;
+  }
 
   function useDiet() {
     $.post('/useDiet', function(data) {
