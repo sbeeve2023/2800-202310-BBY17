@@ -27,7 +27,7 @@
           <div class="w-48 h-48 mx-auto absolute inset-x-0 top-0 -mt-24">
             <div
               class="rounded-full overflow-hidden w-full h-full bg-indigo-100 shadow-2xl flex items-center justify-center">
-              <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" alt="Image not Found"/>
+              <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" alt="Image not Found">
             </div>
           </div>
         </div>
@@ -56,7 +56,7 @@
         </h1>
         <% if(easterEgg){ %>
           <div>
-            <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" alt="Image not Found"/>
+            <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" alt="Image not Found">
           </div>
           <form action="/remove-egg" method="post">
             <button type="submit" class="text-white py-2 px-4 uppercase rounded text-sm bg-red-400 hover:bg-red-500 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
@@ -75,12 +75,12 @@
                   <label class="text-gray-700" for="username">Username</label>
                   <input id="username" name="username" type="text" placeholder="Username" value="<%=session.username%>"
                     required
-                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" />
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 </div>
                 <div>
                   <label class="text-gray-700" for="email">Email</label>
                   <input id="email" type="email" name="email" placeholder="Email" value="<%=session.email%>"
-                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" />
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 </div>
                 <% if(error) { %>
                 <p class="text-red-500 text-xs italic"> <%=error%> </p>
@@ -109,7 +109,7 @@
 
       <%if (bookmarks != undefined) { %>
         <div id="recent-recipes" class="bg-green-950 -mx-8 md:mx-0">
-          <label class="text-mmfo" for="recipe-scroll">Bookmarked Recipes</label>
+          <h3 class="text-mmfo">Bookmarked Recipes</h3>
           <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2 ml-3 md:mx-3">
             
               <% for (let i = bookmarks.length-1; i >= 0; i--) {%>
@@ -158,46 +158,12 @@
           <!--Modal closed-->
 
         </div>
-
-        <!-- More Button to display modal-->
-        <%if (bookmarks.length > 10){console.log("Hello");%>
-        <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
-        <%}%>
       </div>
 
-<div id="recipe-modal" tabindex="-1" class="hidden fixed top-0 left-0 right-0 z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-max max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <!-- Modal header -->
-            <div class="flex items-center justify-between p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-medium text-gray-900 dark:text-white">
-                    Extra Large modal
-                </h3>
-             
-                <button id="close-recipes" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" data-modal-hide="extralarge-modal">
-                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    <span class="sr-only">Close modal</span>
-                </button>
-              
-            </div>
-            <!-- Modal body -->
-            <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
-              <%if (bookmarks != undefined && bookmarks.length > 10) {
-                for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
-                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: times[i], image: images[i]}) -%>
-                <%}}%>
-            </div>
-            <!-- Modal footer -->
-            <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-            </div>
-        </div>
-    </div>
-</div>
+
 
     </div>
   </div>
-</div>
 
 <script>
 
