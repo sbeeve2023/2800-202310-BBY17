@@ -872,7 +872,8 @@ app.post("/profileUpdate", urlencodedParser, async (req, res) => {
   //updates the session variables
   req.session.username = username;
   req.session.email = email;
-  res.send("Profile Updated <a href='/profile'>Go Back</a>")
+  res.render("changed-profile");
+  // res.send("Profile Updated <a href='/profile'>Go Back</a>")
 });
 
 //Change Password
