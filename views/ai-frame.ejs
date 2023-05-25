@@ -9,23 +9,28 @@
     <h2>with dietary restrictions: <%for (let i = 0; i < restrictions.length; i++){%><%=restrictions[i]%>, <%}%></h2>
     <%}%>
 
+<div class="container w-full bg-mmse">
+  <div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-mmfo">
 
-  <!-- AI Button -->
-  <%- include('templates/ai-button') %>
-  <!--Original Recipe Button-->
-  <%if(locals.recipe){%>
-  <div class="flex justify-center mb-4 mt-3">
-    <form action="recipe">
-      <button name="id" value="<%=recipe.originalRecipeID%>" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
-        Original Recipe
-      </button>
-      <div class="flex items-center justify-center">
-        <div id="loading" class="w-12 h-12 rounded-full animate-spin
-        border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
-      </div>
-    </form>
+    <!-- AI Button -->
+    <%- include('templates/ai-button') %>
+    <!--Original Recipe Button-->
+
+    <%if(locals.recipe){%>
+    <div class="flex justify-center mb-4 mt-3">
+      <form action="recipe">
+        <button name="id" value="<%=recipe.originalRecipeID%>" class="bg-mmpr hover:bg-mmse text-mmfo font-bold py-2 px-4 rounded mb-3">
+          Original Recipe
+        </button>
+        <div class="flex items-center justify-center">
+          <div id="loading" class="w-12 h-12 rounded-full animate-spin
+          border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+        </div>
+      </form>
+    </div>
+    <%}%>
   </div>
-  <%}%>
+</div>
 
   
 <%- include('templates/footer') %>
