@@ -80,19 +80,18 @@
 
           </div>
         </div>
-      </form>
 
   <!-- Search Bar with Add Button -->
   <div class="relative mt-4">
-    <form id="thisForm">
-      <input name="search" type="text" id="ingredient"
+    <div id="thisForm" >
+      <input type="text" id="ingredient"
         class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Enter an Ingredient">
       <button type="button" id="addBtn"
         class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
         Add
       </button>
-    </form>
+    </div>
   </div>
 
   <!-- Ingredients List -->
@@ -119,6 +118,8 @@
 
     </div>
   </div>
+  </div>
+</form>
 
   <!-- Find Recipe Button -->
   <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit"
@@ -151,6 +152,7 @@
     document.getElementById("ingredient").addEventListener("keypress", function (e) {
       if (e.keyCode == 13) {
         e.preventDefault();
+        var url = document.getElementById("submitForm");
         var textBox = document.getElementById("ingredient");
         var item = textBox.value;
         if (item.length != 0){
@@ -163,7 +165,8 @@
         newBox.setAttribute("type", "text");
         newBox.setAttribute("name", "search")
         newBox.setAttribute("value", item.toLowerCase().trim());
-        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
+        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1");
+        
 
         newSpan.addEventListener("click", function () {
           this.remove();
@@ -183,8 +186,7 @@
         newSpan.appendChild(newSVG);
         document.getElementById("ingList").appendChild(newSpan);
 
-        document.getElementById("thisForm").reset();
-        var url = document.getElementById("submitForm");
+        document.getElementById("ingredient").value = "";
         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
           url.action += item;
         } else {
@@ -228,7 +230,7 @@
         newSpan.appendChild(newSVG);
         document.getElementById("ingList").appendChild(newSpan);
 
-        document.getElementById("thisForm").reset();
+        document.getElementById("ingredient").value = "";
         var url = document.getElementById("submitForm");
         if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
             url.action += item;
@@ -246,12 +248,12 @@
                       
                       <!-- Category 1 -->
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                             <img src="/public/images/spices.webp" alt="Category 1" class="h-full w-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Spices and Herbs</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 1 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -269,12 +271,12 @@
 
                       <!-- Category 2 -->
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9">
                             <img src="/public/images/fruits.jpg" alt="Category 2" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Fruits</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 2 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -290,12 +292,12 @@
                       </div>
                       <!-- Category 3 -->
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                             <img src="/public/images/meat.jpg" alt="Category 3" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Meat / Seafood</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 3 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -313,12 +315,12 @@
                     <!-- Category 4 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/vegetables.jpg" alt="Category 4" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Vegetables</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 4 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -337,12 +339,12 @@
                       <!-- Category 5 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/dairy.jpg" alt="Category 5" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Dairy</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 5 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -360,12 +362,12 @@
                       <!-- Category 6 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/nuts-seeds.jpeg" alt="Category 7" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Grains, nuts and seeds</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 6 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -383,12 +385,12 @@
                       <!-- Category 7 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/condiments.jpg" alt="Category 8" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Condiments, flavoring and oils</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 7 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -406,12 +408,12 @@
   <!-- Category 8 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/sugarprod.jpg" alt="Category 9" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Sweeteners and Sugar Products</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 8 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -429,12 +431,12 @@
                       <!-- Category 9 -->
 
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/unknown.png" alt="Category 10" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Other</h2>
-                        </label>
+                        </div>
 
                         <!-- Ingredients in Category 9 -->
                         <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
@@ -454,7 +456,7 @@
                     </div>
                   </div>
   <!-- close container tag -->
-  </div>
+  <!-- </div> -->
 
   <!-- new layout ends here -->
 
@@ -536,7 +538,7 @@
           newSpan.appendChild(newSVG);
           document.getElementById("ingList").appendChild(newSpan);
 
-          document.getElementById("thisForm").reset();
+          document.getElementById("ingredient").value = "";
           var url = document.getElementById("submitForm");
           if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
             url.action += item;

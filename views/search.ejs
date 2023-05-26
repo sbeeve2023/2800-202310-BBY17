@@ -4,15 +4,15 @@
   <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Search by Recipe</h1>
 
 <!--Search Bar -->
-<form type="text" name="search" class="h-[30vmin] mt-6">
+<form name="search" class="h-[30vmin] mt-6">
     <!-- Dropdown Menu and Advanced Filters Button -->
     <div class="flex justify-between items-center mb-4">
         <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
-          <option name="time" value="0">Prep Time</option>
-          <option name="time" value="15" <% if (time == 15) {%> selected="selected"<%}%> >15 Minutes</option>
-          <option name="time" value="30" <% if (time == 30) {%> selected="selected"<%}%>>30 Minutes</option>
-          <option name="time" value="60" <% if (time == 60) {%> selected="selected"<%}%>>60 Minutes</option>
-          <option name="time" value="4" <% if (time == 4) {%> selected="selected"<%}%>>60+ Minutes</option>
+          <option value="0">Prep Time</option>
+          <option value="15" <% if (time == 15) {%> selected="selected"<%}%> >15 Minutes</option>
+          <option value="30" <% if (time == 30) {%> selected="selected"<%}%>>30 Minutes</option>
+          <option value="60" <% if (time == 60) {%> selected="selected"<%}%>>60 Minutes</option>
+          <option value="4" <% if (time == 4) {%> selected="selected"<%}%>>60+ Minutes</option>
         </select>
         <div>
           <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
