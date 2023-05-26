@@ -19,7 +19,7 @@
             <form action="generate">
               <!--Checkbox for getting diet preferences-->
               <label class="text-mmpr" for="loaddiet">Use restrictions from your profile</label>
-              <input onclick="showDiet()" id="loaddiet" type="checkbox" name="diet" value="true">
+              <input onclick="showDiet()" id="loaddiet" type="checkbox" name="diet" value="false">
               <div id="diet" hidden>
                 <h3 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h3>
                 <ul>
@@ -69,8 +69,10 @@
           function showDiet() {
             if (document.getElementById("loaddiet").checked) {
               document.getElementById("diet").hidden = false;
+              document.getElementById("loaddiet").value = true;
             } else {
               document.getElementById("diet").hidden = true;
+              document.getElementById("loaddiet").value = false;
             }
           }
         </script>
