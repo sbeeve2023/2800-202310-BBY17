@@ -234,8 +234,14 @@ app.get("/ai-recipe", async (req, res) => {
       res.redirect("/404");
       return;
     }
+
+    var isOwner = true;
+    //Check if user owns recipe
+    if (new ObjectId(recipe.ownerId) != req.session.userId){
+      isOwner = false;
+    }
   
-    res.render("ai-recipe", {recipe: recipe, enableUi: true, bookmarked: bookmarked, id: req.query.id});
+    res.render("ai-recipe", {recipe: recipe, enableUi: true, bookmarked: bookmarked, id: req.query.id, isOwner: isOwner});
   });
 
 app.get("/ai-substitute", async (req, res) => {
@@ -253,7 +259,6 @@ app.get("/ai-substitute", async (req, res) => {
   //Get user from database
   var diet = (req.session.aiPreferences.diet ? req.session.aiPreferences.diet : []);
   var notes = (req.session.aiPreferences.notes ? req.session.aiPreferences.notes : "none");
-  console.log(notes);
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
   let orSteps = parseSteps(originalRecipe.steps);
@@ -321,7 +326,7 @@ app.get("/ai-substitute", async (req, res) => {
     aiObject.ai = true;
     req.session.aiRecipe = aiObject;
 
-    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, restrictions: restrictionsArray, notes: notes});
+    res.render("ai-frame",{recipe: aiObject, imageURL: imageURL, recipeID: req.query.recipeID, authenticated: req.session.authenticated, id: req.query.recipeID, restrictions: restrictionsArray, notes: notes, isOwner: true});
     return;
 
   } catch (error) { //If error, render error page
