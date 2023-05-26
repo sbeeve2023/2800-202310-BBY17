@@ -267,6 +267,8 @@ app.get("/ai-substitute", async (req, res) => {
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
   if (diet) {
+    var user = await userCollection.findOne({email: req.session.email})
+    diet = user.diet;
     restrictionsArray = stringToArrayItem(diet);
     //Add each restriction to the string
     for (let i = 0; i < restrictionsArray.length; i++) {
