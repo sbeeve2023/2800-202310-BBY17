@@ -257,7 +257,8 @@ app.get("/ai-substitute", async (req, res) => {
   }
 
   //Get user from database
-  var diet = (req.session.aiPreferences.diet ? req.session.aiPreferences.diet : []);
+  var user = await userCollection.findOne({email: req.session.email})
+  var diet = (req.session.aiPreferences.diet ? user.diet : []);
   var notes = (req.session.aiPreferences.notes ? req.session.aiPreferences.notes : "none");
   orName = originalRecipe.name;
   orIngredients = originalRecipe.ingredientArray;
@@ -267,8 +268,6 @@ app.get("/ai-substitute", async (req, res) => {
   let restrictionsArray = []
   let dietaryRestrictions = "that meets dietary restrictions:";
   if (diet) {
-    var user = await userCollection.findOne({email: req.session.email})
-    diet = user.diet;
     restrictionsArray = stringToArrayItem(diet);
     //Add each restriction to the string
     for (let i = 0; i < restrictionsArray.length; i++) {
@@ -1338,7 +1337,7 @@ async function validateAI_Substitute(req, res){
 
  //Don't regenerate if recipe is already loaded
 
- var user = getValidUser(req);
+ var user = await getValidUser(req);
  if(req.session.aiRecipe){
    res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID, notes: req.session.notes, authenticated: req.session.authenticated, restrictions: user.diet || [], id: req.session.aiRecipe.originalRecipeID});
    return false;
