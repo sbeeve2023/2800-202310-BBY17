@@ -1,65 +1,67 @@
+<%if (locals.enableUi){%>
+  <%- include('templates/header')%>
+<%}%>
 
 
-
-
-<div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-beige-50">
-  <!-- Recipe Title and Subtitle -->
-  <div class="mb-4">
-    <h1 class="text-3xl font-bold"><%= name %></h1>
-    <%if(locals.aiBookmarked){%>
-    <form <%if(aiBookmarked){%>action="airecipe-unsave"<%}else{%>action="airecipe-save"<%}%> method="post">
-      <button name="id" value="<%=id%>" type="submit" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"><%if(aiBookmarked){%>Remove From Bookmarks<%}else{%>Bookmark<%}%></button>
-    </form>
-    <%}%>
-    <div class="border-b-2 my-4"></div>
-    <p class="text-gray-600 mb-2"><strong>Review:</strong> 4.5/5</p>
-    <p class="text-gray-600 mb-2"><strong>Prep/Cook Time:</strong> <%= time%></p>
-    <p class="text-gray-600 mb-2"><strong>Serving Size:</strong> <%= servings %> servings</p>
-    <div class="border-b-2 my-4"></div>
-  </div>
-  
-  
-  
-    <!-- Recipe tags -->
-  <div class="flex flex-wrap mb-4">
-    <%for (var i = 0; i < restrictions.length; i++) {%>
-      <span class="text-sm bg-gray-200 text-gray-700 px-2 py-1 rounded-full mr-2 mb-2">#<%=restrictions[i]%></span>
-    <% } %>
-      <!-- Add more tags as needed -->
-  </div>
-
-
-  <!-- Recipe Image -->
-  <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl"
-  <%if (locals.imageURL) { %> 
-    src="<%=imageURL%>"
-  <% } else { %>
-    src="https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ="
-  <% } %>
-   alt="Error Loading Image" class="mb-8">
-
-  <!-- Box 2: Ingredients -->
-  <div class="mb-8">
-    <h2 class="text-xl font-bold mb-4">Ingredients</h2>
-    <ul>
-        <% for (var i = 0; i < ingredients.length; i++) { %>
-        <li class="mb-2"><%= ingredients[i] %></li>
-        <% }%>
-    </ul>
-  </div>
-
-  <!-- Box 3: Instructions -->
-  <div>
-    <h2 class="text-xl font-bold mb-4">Instructions</h2>
-        <% for (var j = 0; j < steps.length; j++) { %>
-      <p class="mb-4"><strong><%= j+1 %> </strong><%= steps[j] %></p>
+<div class="container w-full bg-mmse">
+  <div class="mx-auto max-w-3xl border rounded-lg p-8 flex flex-col items-center8 bg-mmfo">
+    <!-- Recipe Title and Subtitle -->
+    <div class="mb-4">
+      <h1 class="text-3xl font-bold mb-4 font-title text-green-950"><%= recipe.name %></h1>
+    
+      <%if(locals.isOwner && isOwner){%>
+      <form <%if(locals.bookmarked && bookmarked){%>action="airecipe-unsave"<%}else{%>action="airecipe-save"<%}%> method="post">
+        <button  <%if (locals.id){%>name="id" value="<%=id%>"<%}%> type="submit" <%if(locals.bookmarked && bookmarked){%>onclick="return confirm('Are you sure? it will be deleted forever.')" class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-red-700 rounded-md hover:bg-red-500 focus:outline-none focus:bg-red-600"<%}else{%>class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-green-700 rounded-md hover:bg-green-500 focus:outline-none focus:bg-green-600"<%}%>><%if(locals.bookmarked && bookmarked){%>Delete<%}else{%>Save<%}%></button>
+      </form>
+      <%}%>
+    
+      <div class="border-b-2 border-mmse my-4"></div>
+      <p class="text-gray-600 mb-2"><strong>Prep/Cook Time:</strong> <%=recipe.make_time%></p>
+      <p class="text-gray-600 mb-2"><strong>Serving Size:</strong> <%=recipe.serving_size %></p>
+      <div class="border-b-2 border-mmse mt-4 mb-2"></div>
+    </div>
+    
+    
+    
+      <!-- Recipe tags -->
+    <h2 class="text-xl font-bold mb-1 text-mmpr">Common Terms</h2>
+    <div class="text-xl font-bold mb-1 text-mmpr">
+      <%for (var i = 0; i < recipe.restrictions.length; i++) {%>
+        <span class="text-sm bg-mmse text-mmfo border border-mmpr px-2 py-1 rounded-full mr-2 mb-2 capitalize">#<%=recipe.restrictions[i]%></span>
       <% } %>
+        <!-- Add more tags as needed -->
+    </div>
+
+
+    <!-- Recipe Image -->
+    <img class="mx-auto mb-8 max-w-full md:max-w-md lg:max-w-lg xl:max-w-xl"
+    <%if (locals.recipe.imageURL) { %> 
+      src="<%=decodeURIComponent(recipe.imageURL)%>"
+    <% } else { %>
+      src="https://media.istockphoto.com/id/184276935/photo/empty-plate-on-white.jpg?s=612x612&w=0&k=20&c=ZRYlQdMJIfjoXbbPzygVkg8Hb9uYSDeEpY7dMdoMtdQ="
+    <% } %>
+    alt="Error Loading Image" class="mb-8">
+
+    <!-- Box 2: Ingredients -->
+    <div class="mb-8">
+      <h2 class="text-xl font-bold mb-4">Ingredients</h2>
+      <ul>
+          <% for (var i = 0; i < recipe.ingredients.length; i++) { %>
+          <li class="mb-2"><%= recipe.ingredients[i] %></li>
+          <% }%>
+      </ul>
+    </div>
+
+    <!-- Box 3: Instructions -->
+    <div>
+      <h2 class="text-xl font-bold mb-4">Instructions</h2>
+          <% for (var j = 0; j < recipe.steps.length; j++) { %>
+        <p class="mb-4"><strong><%= j+1 %> </strong><%= recipe.steps[j] %></p>
+        <% } %>
+    </div>
   </div>
 </div>
 
-
-
-
-
-
-
+<%if (locals.enableUi){%>
+  <%- include('templates/footer')%>
+<%}%>

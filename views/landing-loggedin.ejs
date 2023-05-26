@@ -1,8 +1,8 @@
 <%- include('templates/header') %>
-<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Welcome back, <%- firstname %> ! </h1>
+<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Welcome, <%- firstname %> ! </h1>
 
 <!-- Search Area -->
-<form type="text" action="/search"  class="h-[30vmin]">   
+<form action="/search"  class="h-[30vmin]">   
   <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
   <div id="search-area" class="relative">
       <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -13,28 +13,36 @@
   </div>
 </form>
 
-<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Make it again!</h1>
+
+
 
 
 <!-- Recent Recipes Area -->
+
+<%if (recipes.length > 0){%>
+<h1 class="text-3xl font-semibold text-mmpr justify-center mb-4 text-center mt-4 font-title">Make it again!</h1>
+
 <div id="recent-recipes" class="bg-green-950">
-  <label class="text-mmfo" for="recipe-scroll">Recent Recipes</label>
+  <div class="text-mmfo">Recent Recipes</div>
   <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2">
     
-    <%if (recipes.length > 0){%>
+    
     <%for (let i = recipes.length-1; i >= 0; i--) {%>
       <div class="flex-shrink-0 min-w-[300px] mx-4">
-      <%- include('templates/recipe-card', {recipe: recipes[i], time: time[i], image: images[i]}) -%>
+      <%- include('templates/recipe-card', {recipe: recipes[i], time: times[i], image: images[i]}) -%>
       </div>
-      <%}}%>
+      <%}%>
   </div>
-  <!-- More Button -->
+  <!-- More Button that opens modal -->
   <%if (recipes.length > 10){%>
   <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
   <%}%>
+<%}%>
+
   
 </div>
 
+<!-- Modal with recent recipes -->
 <div id="recipe-modal" tabindex="-1" class="hidden fixed z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative w-full max-w-max max-h-full">
         <!-- Modal content -->
@@ -53,7 +61,7 @@
             <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around bg-green-950 border-b-2 border-l-2 border-r-2 border-mmpr">
               <%if (recipes.length > 10){%>
               <%for (let i = recipes.length-1; i >= 0; i--) {%>
-                <%- include('templates/recipe-card', {recipe: recipes[i], time: time[i], image: images[i]}) -%>
+                <%- include('templates/recipe-card', {recipe: recipes[i], time: times[i], image: images[i]}) -%>
               <%}}%>
             </div>
             <!-- Modal footer -->

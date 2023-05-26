@@ -3,165 +3,171 @@
 
 <div class="p-2 pt-16 md:p-16 bg-mmth">
   <div class="p-8 bg-mmfo shadow mt-24">
-    <div class="grid grid-cols-1 md:grid-cols-3">
-      <div class="grid grid-cols-3 text-center order-last md:order-first mt-20 md:mt-0">
-        <div>
-          <p class="font-bold text-gray-700 text-xl">
-            <% if(bookmarks != undefined) { %>
-            <%= bookmarks.length %> <% } else { %> 0 <% } %>
-          </p>
-          <p class="text-gray-400">Saved Recipes</p>
-        </div>
-        <div>
-          <p class="font-bold text-gray-700 text-xl">10</p>
-          <p class="text-gray-400">Reviews</p>
-        </div>
-        <div>
-          <p class="font-bold text-gray-700 text-xl">5</p>
-          <p class="text-gray-400">Saved AI Recipes</p>
-        </div>
-      </div>
-      <div class="relative">
-        <div class="w-48 h-48 mx-auto absolute inset-x-0 top-0 -mt-24">
-          <div
-            class="rounded-full overflow-hidden w-full h-full bg-indigo-100 shadow-2xl flex items-center justify-center">
-            <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" />
+      <!-- Top part of the profile page -->
+      <div class="grid grid-cols-1 md:grid-cols-3">
+        <!-- counters for saved recipes and ai recipes -->
+        <div class="grid grid-cols-2 text-center order-last md:order-first mt-20 md:mt-0">
+          <div>
+            <p class="font-bold text-gray-700 text-xl">
+              <% if(bookmarks != undefined) { %>
+              <%=bookmarks.length %> <% } else { %> 0 <% } %>
+            </p>
+            <p class="text-gray-400">Saved Recipes</p>
+          </div>
+          <div>
+            <p class="font-bold text-gray-700 text-xl">
+              <% if(locals.aiCount) { %>
+                <%=aiCount%> <%} else { %> 0 <% } %>
+            </p>
+            <p class="text-gray-400">Saved AI Recipes</p>
           </div>
         </div>
-      </div>
-
-      <div class="space-x-8 flex justify-between mt-32 md:mt-0 md:justify-center">
-        <form action="/dietEdit">
-          <button  class="text-mmfo py-2 px-4 Capitalize rounded text-sm bg-mmpr hover:bg-mmse shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5" id="diet">
-            Edit dietary Restrictions
-          </button>
-        </form>
-        <form action="/change-password">
-          <button class="text-mmfo py-2 px-4 capitalize rounded text-sm bg-mmpr hover:bg-gray-800 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
-            Change password
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <div class="mt-20 text-center border-b pb-12">
-      <h1 class="text-4xl font-medium text-gray-700">
-        <%=session.firstname%> <%=session.lastname%>,
-        <span class="font-light text-gray-500">27</span>
-      </h1>
-      <% if(easterEgg){ %>
-        <div>
-          <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" />
+        <!-- profile image (placeholder) -->
+        <div class="relative">
+          <div class="w-48 h-48 mx-auto absolute inset-x-0 top-0 -mt-24">
+            <div
+              class="rounded-full overflow-hidden w-full h-full bg-indigo-100 shadow-2xl flex items-center justify-center">
+              <img class="w-full h-full object-cover" src="/public/avatar-gene2da1ab92aa0244882177a848c7193aa.jpg" alt="Image not Found">
+            </div>
+          </div>
         </div>
-        <form action="/remove-egg" method="post">
-          <button type="submit" class="text-white py-2 px-4 uppercase rounded text-sm bg-red-400 hover:bg-red-500 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
-            Remove Easter Egg
-          </button>
-        </form>
-      <% } %>
-      <button id="edit2"
-        class="mt-4 px-6 py-2 leading-5 text-mmpr transition-colors duration-200 transform border border-mmpr bg-mmfo rounded-md hover:bg-mmth focus:outline-none focus:bg-mmse">Edit
-        Username</button>
-      <div class="max-w-screen-sm mx-auto">
-        <form action="/profileUpdate" method="post">
-          <fieldset id="editable2" disabled="true">
-            <div class="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2 flex-col">
-              <div>
-                <label class="text-gray-700" for="username">Username</label>
-                <input id="username" name="username" type="text" placeholder="Username" value="<%=session.username%>"
-                  required
-                  class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring" />
-              </div>
-              <div>
-                <label class="text-gray-700" for="email">Email</label>
-                <input id="email" type="email" name="email" placeholder="Email" value="<%=session.email%>"
-                  class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 blue-500 focus:outline-none focus:ring" />
-              </div>
-            </div>
 
-            <div class="flex justify-center mt-6">
-              <button type="submit"
-                class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-mmpr rounded-md hover:bg-mmse focus:outline-none focus:bg-mmse"
-                value="Update" onclick="return confirm('Are you sure?')">
-                Update
-              </button>
-            </div>
-          </fieldset>
-        </form>
+        <!-- edit restrictions and change password buttons -->
+        <div class="space-x-8 flex justify-between mt-32 md:mt-0 md:justify-center">
+          <form action="/dietEdit">
+            <button  class="text-mmfo py-2 px-4 Capitalize rounded text-sm bg-mmpr hover:bg-mmse shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5" id="diet">
+              Edit dietary Restrictions
+            </button>
+          </form>
+          <form action="/change-password">
+            <button class="text-mmfo py-2 px-4 capitalize rounded text-sm bg-mmpr hover:bg-gray-800 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
+              Change password
+            </button>
+          </form>
+        </div>
       </div>
 
-      <!-- <p class="font-light text-gray-600 mt-3">Bucharest, Romania</p>
+      <!-- mid part of the profile page -->
+      <!-- First and last name display, edit username and email, and easter egg -->
+      <div class="mt-20 text-center border-b pb-12">
+        <h1 class="text-4xl font-medium text-gray-700">
+          <%=session.firstname%> <%=session.lastname%>,
+          <span class="font-light text-gray-500">27</span>
+        </h1>
+        <% if(easterEgg){ %>
+          <div>
+            <img src="/public/images/EggGifLQ.gif" class="w-20 h-20 mx-auto mt-4" alt="Image not Found">
+          </div>
+          <form action="/remove-egg" method="post">
+            <button type="submit" class="text-white py-2 px-4 uppercase rounded text-sm bg-red-400 hover:bg-red-500 shadow hover:shadow-lg font-medium transition transform hover:-translate-y-0.5">
+              Remove Easter Egg
+            </button>
+          </form>
+        <% } %>
+        <button id="edit2"
+          class="mt-4 px-6 py-2 leading-5 text-mmpr transition-colors duration-200 transform border border-mmpr bg-mmfo rounded-md hover:bg-mmth focus:outline-none focus:bg-mmse">Edit
+          Username/Email</button>
+        <div class="max-w-screen-sm mx-auto">
+          <form action="/profileUpdate" method="post">
+            <fieldset id="editable2" disabled>
+              <div class="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2 flex-col">
+                <div>
+                  <label class="text-gray-700" for="username">Username</label>
+                  <input id="username" name="username" type="text" placeholder="Username" value="<%=session.username%>"
+                    required
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                </div>
+                <div>
+                  <label class="text-gray-700" for="email">Email</label>
+                  <input id="email" type="email" name="email" placeholder="Email" value="<%=session.email%>"
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-300 rounded-md focus:border-blue-500 blue-500 focus:outline-none focus:ring disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                </div>
+                <% if(error) { %>
+                <p class="text-red-500 text-xs italic"> <%=error%> </p>
+                <% } %>
+              </div>
 
-      <p class="mt-8 text-gray-500">Solution Manager - Creative Tim Officer</p>
-      <p class="mt-2 text-gray-500">University of Computer Science</p> -->
-    </div>
+              <div class="flex justify-center mt-6">
+                <button type="submit"
+                  class="px-6 py-2 leading-5 text-white transition-colors duration-200 transform bg-mmpr rounded-md hover:bg-mmse focus:outline-none focus:bg-mmse"
+                  value="Update" onclick="return confirm('Are you sure?')">
+                  Update
+                </button>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+
+      </div>
+
+
+        <!-- Bottom part of profile page -->
 
     <div class="mt-12 flex flex-col justify-center">
 
+        <!-- Saved Recipes Area -->
 
- <!-- Saved Recipes Area -->
-<div id="recent-recipes" class="bg-green-950 -mx-8 md:mx-0">
-  <label class="text-mmfo" for="recipe-scroll">Bookmarked Recipes</label>
-  <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2 -ml-3 md:mx-3">
-    <%if (bookmarks != undefined) {
-      for (let i = 0; i < bookmarks.length; i++) {%>
-        <div class="flex-shrink-0 min-w-[270px] mx-4">
-        <%- include('templates/recipe-card', {recipe: bookmarks[i], time: "", image: images[i]}) -%>
+      <%if (bookmarks != undefined) { %>
+        <div id="recent-recipes" class="bg-green-950 -mx-8 md:mx-0">
+          <h3 class="text-mmfo">Bookmarked Recipes</h3>
+          <div id="recipe-scroll" class=" w-auto overflow-x-scroll flex gap-3 p-2 ml-3 md:mx-3">
+            
+              <% for (let i = bookmarks.length-1; i >= 0; i--) {%>
+                <div class="flex-shrink-0 min-w-[270px] mx-4">
+                <%- include('templates/recipe-card', {recipe: bookmarks[i], time: times[i], image: images[i]}) -%>
+                </div>
+              <%}%>
+
+          </div>
+          <!-- More Button to display modal-->
+          <%if (bookmarks.length > 10){%>
+            <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
+          <%}}%>          
+          
+            
+
+          <div id="recipe-modal" tabindex="-1" class="hidden fixed top-0 left-0 right-0 z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+            <div class="relative w-full max-w-max max-h-full">
+                <!-- Modal content -->
+                <div class="relative bg-white rounded-lg shadow">
+                    <!-- Modal header -->
+                    <div class="flex items-center justify-between p-5 border-b rounded-t bg-mmfo border-t-2 border-l-2 border-r-2 border-mmpr">
+                        <h3 class="text-xl font-medium text-gray-900">
+                            Bookmark Recipes
+                        </h3>
+                    
+                        <button id="close-recipes" type="button" class="text-green-950  bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" data-modal-hide="extralarge-modal">
+                            <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            <span class="sr-only">Close modal</span>
+                        </button>
+                      
+                    </div>
+                    <!-- Modal body -->
+                    <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around bg-green-950 border-b-2 border-l-2 border-r-2 border-mmpr">
+                      <%if (bookmarks != undefined && bookmarks.length > 10) {
+                        for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
+                          <%- include('templates/recipe-card', {recipe: bookmarks[i], time: times[i], image: images[i]}) -%>
+                        <%}}%>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                    </div>
+                </div>
+            </div>
+          </div>
+          <!--Modal closed-->
+
         </div>
-      <%}}%>
-  </div>
-  <!-- More Button -->
-  <%if (bookmarks.length > 10){console.log("Hello");%>
-  <button id="more-recipes" type="submit" class="text-mmfo bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 m-3 hidden md:block">More</button>
-  <%}%>
-</div>
+      </div>
 
-<div id="recipe-modal" tabindex="-1" class="hidden fixed top-0 left-0 right-0 z-50 w-[calc(100%-1rem)] p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-    <div class="relative w-full max-w-max max-h-full">
-        <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            <!-- Modal header -->
-            <div class="flex items-center justify-between p-5 border-b rounded-t dark:border-gray-600">
-                <h3 class="text-xl font-medium text-gray-900 dark:text-white">
-                    Extra Large modal
-                </h3>
-             
-                <button id="close-recipes" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" data-modal-hide="extralarge-modal">
-                    <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                    <span class="sr-only">Close modal</span>
-                </button>
-              
-            </div>
-            <!-- Modal body -->
-            <div class="p-6 space-y-6 flex flex-row flex-wrap justify-around">
-              <%if (bookmarks != undefined && bookmarks.length > 10) {
-                for (let i = bookmarks.length-1; i >= 0 ; i--) {%>
-                  <%- include('templates/recipe-card', {recipe: bookmarks[i], time: time[i], image: images[i]}) -%>
-                <%}}%>
-            </div>
-            <!-- Modal footer -->
-            <div class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-            </div>
-        </div>
-    </div>
-</div>
+
 
     </div>
   </div>
-</div>
-
-<!--TODO: Does this do anything? there is no id of "edit" -->
-<!-- <script>
-  document.getElementById("edit").addEventListener("click", function () {
-    if (document.getElementById("editable").disabled == true) {
-      document.getElementById("editable").disabled = false;
-    } else {
-      document.getElementById("editable").disabled = true;
-    }
-  });
-</script> -->
 
 <script>
+
+    // Makes profile page editable
     document.getElementById("edit2").addEventListener("click", function () {
       if (document.getElementById("editable2").disabled == true) {
         document.getElementById("editable2").disabled = false;

@@ -1,18 +1,31 @@
 <%- include('templates/header') -%>
 
+<div class="container mx-auto p-4">
+  <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Search by Recipe</h1>
 
 <!--Search Bar -->
-<form type="text" name="search" class="h-[30vmin] mt-6">
+<form name="search" class="h-[30vmin] mt-6">
     <!-- Dropdown Menu and Advanced Filters Button -->
     <div class="flex justify-between items-center mb-4">
-        <select class="p-2 rounded border bg-mmth" name="time">
-          <option name="time" value="0">Prep Time</option>
-          <option name="time" value="15">15 Minutes</option>
-          <option name="time" value="30">30 Minutes</option>
-          <option name="time" value="60">60 Minutes</option>
-          <option name="time" value="4">60+ Minutes</option>
+        <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
+          <option value="0">Prep Time</option>
+          <option value="15" <% if (time == 15) {%> selected="selected"<%}%> >15 Minutes</option>
+          <option value="30" <% if (time == 30) {%> selected="selected"<%}%>>30 Minutes</option>
+          <option value="60" <% if (time == 60) {%> selected="selected"<%}%>>60 Minutes</option>
+          <option value="4" <% if (time == 4) {%> selected="selected"<%}%>>60+ Minutes</option>
         </select>
-        <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+        <div>
+          <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+          <div id="profileOn">
+          <% if(session.useDiet) { %>
+            <br/>
+            <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>
+          <% } else {%>
+            <br/>
+            <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOff">Profile diet off</a>
+          <% } %>
+          </div>
+        </div>
       </div>
 
        <!-- Modal -->
@@ -27,39 +40,14 @@
           </div>
           <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
           <div class="mb-4">
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
-              vegan
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
-              vegetarian
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
-              dairy-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
-              healthy
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
-              gluten-free
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
-              low-fat
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
-              low-sodium
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
-              low-carb
-            </label>
-            <!-- Add more checkboxes placeholders here -->
+            <%for (let i = 0; i < restrictions.length; i++) {%>
+              <label class="flex items-center">
+                  <input type="checkbox" name="diet" value=<%=restrictions[i]%> <% if(diet.includes(restrictions[i])) { %>checked<% } %>>
+                   <%=restrictions[i]%>
+              </label>
+              <% } %>
+          </div>
+          <div id="dietOfProfile">
             <% if (profileDiet && session.useDiet) { %>
                 <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
                 <ul>
@@ -72,18 +60,19 @@
                 <% } %>
                 </ul>
                 <% } %>
+              </div>
             <% if (session.useDiet) { %>
-                <div class="py-3">
-               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=regular">Turn profile diet off</a>
+                <div class="py-3" id="button">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>
                </div>
             <% } else { %>
-                <div class="py-3">
-                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=regular">Turn profile diet on</a>
+                <div class="py-3" id="button">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>
                 </div>
             <% } %>
           </div>
           </div>
-          </div>
+
     <label for="default-search" class="mb-2 text-sm font-medium text-gray-900 sr-only">Search</label>
     <div id="search-area" class="relative">
         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -93,20 +82,25 @@
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
         </div>
-        <input name="search" type="search" id="default-search"
-            class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search for a recipe" required>
-        <button type="submit"
-            class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 ">Search</button>
-    </div>
-</form>
 
-</div>
+
+          <input name="search" type="search" id="default-search"
+              class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Search for a recipe" required >
+          <button type="submit"
+              class="text-mmfo absolute right-2.5 bottom-2.5 bg-mmpr hover:bg-mmse focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 " onclick="showLoading()">Search</button>
+      </div>
+  </form>
+  </div>
+  <div class="flex items-center justify-center">
+    <div id="loading" class="w-12 h-12 rounded-full animate-spin
+border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+  </div>
 
 <hr/>
 
 <!-- Search Results -->
-<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded">
+<div class="container bg-gradient-to-tr from-mmpr to-mmth border border-mmpr rounded mt-1">
 <% if (recipes) { %>
     <h3 class="text-4xl font-bold text-gray-950 items-center flex justify-center font-title mt-5">Recipes for <%= search %>   </h3>
     <!--Recipe List-->
@@ -122,14 +116,27 @@
 </div>
 
 <script>
-  // window.addEventListener('load', function() {
-  //   var egg = 'egg';
-  //   var easter = '/easter-egg';
-  //   var body = document.querySelector('body');
+  function showLoading() {
+    document.getElementById("loading").hidden = false;
+  }
 
-  //   var regex = new RegExp(egg, 'gi');
-  //   body.innerHTML = body.innerHTML.replace(regex, '<a href="' + easter + '">$&</a>');
-  // });
+  function useDiet() {
+    $.post('/useDiet', function(data) {
+      console.log(data);
+    });
+    document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
+    document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+    document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>';
+  }
+
+  function dontUseDiet() {
+    $.post('/dontUseDiet', function(data) {
+      console.log(data);
+    });
+    document.getElementById('dietOfProfile').innerHTML = '';
+    document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+    document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet off</a>';
+  }
 
   function openModal() {
                 document.getElementById("modal").classList.remove("hidden");

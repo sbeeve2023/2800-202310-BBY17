@@ -1,710 +1,607 @@
 <%- include('templates/header') -%>
             <!-- new layout starts here -->
-            <form action="/searchIngredients?search=" method="get" id="submitForm" >
-            <div class="container mx-auto p-4">
+    <form action="/searchIngredients?search=" method="get" id="submitForm" >
+    <div class="container mx-auto p-4">
+      
+    
                 <!-- Dropdown Menu and Advanced Filters Button -->
-              <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex items-center justify-center">Mealmatch - Select your ingredients</h2>
+        <h1 class="text-4xl font-bold mb-4 font-title text-mmpr flex text-center justify-center">Mealmatch - Select your ingredients</h1>
 
-                <div class="flex justify-between items-center mb-4">
-                  <select class="p-2 rounded border bg-mmth" name="time">
-                    <option name="time" value="0">Prep Time</option>
-                    <option name="time" value="15">15 Minutes</option>
-                    <option name="time" value="30">30 Minutes</option>
-                    <option name="time" value="60">60 Minutes</option>
-                    <option name="time" value="4">60+ Minutes</option>
-                  </select>
-                  <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
-                </div>
+        <div class="flex justify-between items-center mb-4">
+          <select class="p-2 rounded border bg-mmse hover:bg-mmpr text-mmfo" name="time">
+            <option name="time" value="0">Prep Time</option>
+            <option name="time" value="15" <% if (time==15) {%> selected="selected"<%}%> >15 Minutes</option>
+            <option name="time" value="30" <% if (time==30) {%> selected="selected"<%}%>>30 Minutes</option>
+            <option name="time" value="60" <% if (time==60) {%> selected="selected"<%}%>>60 Minutes</option>
+            <option name="time" value="4" <% if (time==4) {%> selected="selected"<%}%>>60+ Minutes</option>
+          </select>
+          <div>
+            <a class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onclick="openModal()">Advanced Filters</a>
+            <div id="profileOn">
+              <% if(session.useDiet) { %>
+                <br/>
+                <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>
+              <% } else {%>
+                <br/>
+                <a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOff">Profile diet off</a>
+              <% } %>
+              </div>
+          </div>
+        </div>
 
-                <!-- Modal -->
-                <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
-                  <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
-                    <div class="flex justify-end">
-                      <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                      </a>
-                    </div>
-                    <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
-                    <div class="mb-4">
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegan">
-                        vegan
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="vegetarian">
-                        vegetarian
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="dairy-free">
-                        dairy-free
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="healthy">
-                        healthy
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="gluten-free">
-                        gluten-free
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-fat">
-                        low-fat
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-sodium">
-                        low-sodium
-                      </label>
-                      <label class="flex items-center">
-                        <input type="checkbox" class="form-checkbox mr-2" name="diet" value="low-carb">
-                        low-carb
-                      </label>
-                      <!-- Add more checkboxes placeholders here -->
-                    </div>
-                    <% if (profileDiet && session.useDiet) { %>
-                    <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
-                    <ul>
-                    <% if (Array.isArray(profileDiet)) { %>
-                    <% for (var i = 0; i < profileDiet.length; i++) { %>
-                    <li><%= profileDiet[i] %></li>
+        <!-- Modal -->
+        <div id="modal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+          <div class="bg-mmth rounded-lg p-6 max-w-md w-full md:w-auto border border-mmpr">
+            <div class="flex justify-end">
+              <a class="text-gray-600 hover:text-gray-800" onclick="closeModal()">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </a>
+            </div>
+            <h2 class="text-lg font-semibold mb-4">Dietary Restrictions</h2>
+            <div class="mb-4">
+              <%for (let i=0; i < restrictions.length; i++) {%>
+                <label class="flex items-center">
+                  <input type="checkbox" name="diet" value=<%=restrictions[i]%>
+                  <% if(diet.includes(restrictions[i])) { %>checked<% } %>>
+                      <%=restrictions[i]%>
+                </label>
+                <% } %>
+            </div>
+            <div id="dietOfProfile">
+            <% if (profileDiet && session.useDiet) { %>
+              <h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2>
+              <ul>
+                <% if (Array.isArray(profileDiet)) { %>
+                  <% for (var i=0; i < profileDiet.length; i++) { %>
+                    <li>
+                      <%= profileDiet[i] %>
+                    </li>
                     <% } %>
-                    <% } else { %>
-                    <li><%= profileDiet %></li>
-                    <% } %>
-                    </ul>
-                    <% } %>
-                    <% if (session.useDiet) { %>
-                      <div class="py-3">
-                     <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" href="/useDiet?type=off&return=nope">Turn profile diet off</a>
-                     </div>
-                  <% } else { %>
-                      <div class="py-3">
-                      <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" href="/useDiet?type=on&return=nope">Turn profile diet on</a>
-                      </div>
-                  <% } %>
-                  
-                  </div>
+                      <% } else { %>
+                        <li>
+                          <%= profileDiet %>
+                        </li>
+                        <% } %>
+              </ul>
+              <% } %>
+            </div>
+              <% if (session.useDiet) { %>
+                <div class="py-3" id="button">
+               <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>
+               </div>
+            <% } else { %>
+                <div class="py-3" id="button">
+                <a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>
                 </div>
-              </form>
+            <% } %>
 
-                <!-- Search Bar with Add Button -->
-                <div class="relative mt-4">
-                    <form id="thisForm">
-                        <input name="search" type="text" id="ingredient"
-                        class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter an Ingredient">
-                        <button type="button" id="addBtn"
-                  class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
-                  Add
-                  </button>
-                    </form>
-                </div>
-                
-                <!-- Ingredients List -->
-                <div class="mt-4">
-                  <!-- Ingredient item -->
-                  <div class="flex items-center mb-2 flex-wrap" id="ingList">
-                    <% if (current != undefined) { %>
-                    <% for (var i = 0; i < current.length; i++) { %>
-                    <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
-                      <input type="text" class="bg-mmse hover:bg-mmpr text-mmfo outline-none pr-1 mr-1" name="search" value="<%= current[i]%>">
-                      <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
-                        <g transform="translate(1173.2 38.831)">
-                          <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
-                            <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
-                          </g>
-                        </g>
-                      </svg>
-                    </span>
-                  <% }}%>
-                    <!-- Add more ingredient items -->
-                  
-                  </div>
-                </div>
+          </div>
+        </div>
 
-                <!-- Find Recipe Button -->
-                <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit" form="submitForm">Find Recipe</button>
-                <script>
-                    window.addEventListener("load", function () {
-                      var initialList = document.getElementsByClassName("Initial");
-                      console.log("List" + initialList);
-                      for (var i = 0; i < initialList.length; i++){
-                        initialList[i].addEventListener("click", function () {
-                              this.remove();
-                          });
-                          var item = initialList[i].children[0].value;
-                          var url = document.getElementById("submitForm");
-                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item.toLowerCase();
-                        } else {
-                            url.action += "&search=" + item.toLowerCase();
-                        }
-                      }
-                    });
-                    document.getElementById("ingredient").addEventListener("keypress", function (e) {
-                      if (e.keyCode == 13){
-                        e.preventDefault();
-                        var textBox = document.getElementById("ingredient");
-                        var item = textBox.value;
-                        //Make span element
-                        var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+  <!-- Search Bar with Add Button -->
+  <div class="relative mt-4">
+    <div id="thisForm" >
+      <input type="text" id="ingredient"
+        class="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+        placeholder="Enter an Ingredient">
+      <button type="button" id="addBtn"
+        class="text-white absolute right-2.5 bottom-2.5 bg-mmse hover:bg-mmpr focus:ring-4 focus:outline-none focus:ring-mmth font-medium rounded-lg text-sm px-4 py-2 ">
+        Add
+      </button>
+    </div>
+  </div>
 
-                        //Make input element
-                        var newBox = document.createElement("input");
-                        newBox.setAttribute("type", "text");
-                        newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item.toLowerCase());
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
-                        // newBox.setAttribute("disabled", true);
-                        // newBox.innerHTML += item;
-                        newSpan.addEventListener("click", function () {
-                            this.remove();
-                        });
-                        newSpan.appendChild(newBox);
+  <!-- Ingredients List -->
+  <div class="mt-4">
+    <!-- Ingredient item -->
+    <div class="flex items-center mb-2 flex-wrap" id="ingList">
+      <% if (current !=undefined) { %>
+        <% for (var i=0; i < current.length; i++) { %>
+          <span class="bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center Initial">
+            <input type="text" class="bg-mmse hover:bg-mmpr text-mmfo outline-none pr-1 mr-1" name="search"
+              value="<%= current[i]%>">
+            <svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svg="http://www.w3.org/2000/svg"
+              class="w-4 h-4 fill-current text-white cursor-pointer" viewBox="0 0 400 400" version="1.0">
+              <g transform="translate(1173.2 38.831)">
+                <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                  <path style="fill:#b7bcc3"
+                    d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z" />
+                </g>
+              </g>
+            </svg>
+          </span>
+          <% }}%>
+            <!-- Add more ingredient items -->
 
-                        //make svg
-                        // var newSVG = document.createElement("svg");
-                        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-                        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
-                        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
-                        newSVG.setAttribute("viewBox", "0 0 400 400");
-                        newSVG.setAttribute("version", "1.0");
-                        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
-                          <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
-                            <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
-                          </g>
-                        </g>`;
-                        newSpan.appendChild(newSVG);
-                        document.getElementById("ingList").appendChild(newSpan);
+    </div>
+  </div>
+  </div>
+</form>
 
-                        // document.getElementById("submitForm").appendChild(newBox);
-                        document.getElementById("thisForm").reset();
-                        var url = document.getElementById("submitForm");
-                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item;
-                        } else {
-                            url.action += "," + item;
-                        }   
-                      }
-                    });
+  <!-- Find Recipe Button -->
+  <button class="bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 mb-4 rounded w-full" id="search" type="submit"
+    form="submitForm" onclick="showLoading()">Find Recipe</button>
+    <div class="flex items-center justify-center">
+      <div id="loading" class="w-12 h-12 rounded-full animate-spin
+  border-y-4 border-solid border-mmpr border-t-transparent shadow-md" hidden></div>
+    </div>
+  <script>
+          function showLoading() {
+            document.getElementById("loading").hidden = false;
+          }
 
-                    document.getElementById("addBtn").addEventListener("click", 
-                    function () {
-                        var textBox = document.getElementById("ingredient");
-                        var item = textBox.value;
-                        //Make span element
-                        var newSpan = document.createElement("span");
-                        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+    window.addEventListener("load", function () {
+      var initialList = document.getElementsByClassName("Initial");
+      console.log("List" + initialList);
+      for (var i = 0; i < initialList.length; i++) {
+        initialList[i].addEventListener("click", function () {
+          this.remove();
+        });
+        var item = initialList[i].children[0].value;
+        var url = document.getElementById("submitForm");
+        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
+          url.action += item.toLowerCase();
+        } else {
+          url.action += "&search=" + item.toLowerCase();
+        }
+      }
+    });
+    document.getElementById("ingredient").addEventListener("keypress", function (e) {
+      if (e.keyCode == 13) {
+        e.preventDefault();
+        var url = document.getElementById("submitForm");
+        var textBox = document.getElementById("ingredient");
+        var item = textBox.value;
+        if (item.length != 0){
+        //Make span element
+        var newSpan = document.createElement("span");
+        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
 
-                        //Make input element
-                        var newBox = document.createElement("input");
-                        newBox.setAttribute("type", "text");
-                        newBox.setAttribute("name", "search")
-                        newBox.setAttribute("value", item.toLowerCase());
-                        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
-                        // newBox.setAttribute("disabled", true);
-                        // newBox.innerHTML += item;
-                        newSpan.addEventListener("click", function () {
-                            this.remove();
-                        });
-                        newSpan.appendChild(newBox);
+        //Make input element
+        var newBox = document.createElement("input");
+        newBox.setAttribute("type", "text");
+        newBox.setAttribute("name", "search")
+        newBox.setAttribute("value", item.toLowerCase().trim());
+        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1");
+        
 
-                        //make svg
-                        // var newSVG = document.createElement("svg");
-                        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        // newSVG.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
-                        // newSVG.setAttribute("xmlns:svg", "http://www.w3.org/2000/svg");
-                        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
-                        newSVG.setAttribute("viewBox", "0 0 400 400");
-                        newSVG.setAttribute("version", "1.0");
-                        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+        newSpan.addEventListener("click", function () {
+          this.remove();
+        });
+        newSpan.appendChild(newBox);
+
+        //make svg
+        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+        newSVG.setAttribute("viewBox", "0 0 400 400");
+        newSVG.setAttribute("version", "1.0");
+        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
                           <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
                             <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
                           </g>
                         </g>`;
-                        newSpan.appendChild(newSVG);
-                        document.getElementById("ingList").appendChild(newSpan);
+        newSpan.appendChild(newSVG);
+        document.getElementById("ingList").appendChild(newSpan);
 
-                        // document.getElementById("submitForm").appendChild(newBox);
-                        document.getElementById("thisForm").reset();
-                        var url = document.getElementById("submitForm");
-                        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
-                            url.action += item;
-                        } else {
-                            url.action += "," + item;
-                        }   
-                    });
-                </script>
+        document.getElementById("ingredient").value = "";
+        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
+          url.action += item;
+        } else {
+          url.action += "," + item;
+        }
+      }
+    }
+    });
+
+    document.getElementById("addBtn").addEventListener("click",
+      function () {
+        var textBox = document.getElementById("ingredient");
+        var item = textBox.value;
+        if (item.length != 0){
+        //Make span element
+        var newSpan = document.createElement("span");
+        newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+
+        //Make input element
+        var newBox = document.createElement("input");
+        newBox.setAttribute("type", "text");
+        newBox.setAttribute("name", "search")
+        newBox.setAttribute("value", item.toLowerCase().trim());
+        newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
+        newSpan.addEventListener("click", function () {
+          this.remove();
+        });
+        newSpan.appendChild(newBox);
+
+        //make svg
+        // var newSVG = document.createElement("svg");
+        var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+        newSVG.setAttribute("viewBox", "0 0 400 400");
+        newSVG.setAttribute("version", "1.0");
+        newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+                          <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                            <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
+                          </g>
+                        </g>`;
+        newSpan.appendChild(newSVG);
+        document.getElementById("ingList").appendChild(newSpan);
+
+        document.getElementById("ingredient").value = "";
+        var url = document.getElementById("submitForm");
+        if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "="){
+            url.action += item;
+        } else {
+            url.action += "," + item;
+        }
+      }   
+    });
+  </script>
                 
                   <!-- Ingredient Categories -->
-                  <!-- <div class="mt-5">
+                  <div class="mt-5">
                     <h1 class="text-center text-lg font-bold mb-5 text-mmpr">Most Common Ingredients</h1>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       
                       <!-- Category 1 -->
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                            <img src="/public/images/fats_and_oils.jpeg" alt="Category 1" class="h-full w-full mr-2">
+                            <img src="/public/images/spices.webp" alt="Category 1" class="h-full w-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Spices and Herbs</h2>
-                        </label> -->
+                        </div>
 
                         <!-- Ingredients in Category 1 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                        <% for (let i=0; i < spiceCat.length; i++) { %>
+                            <% var catItem = spiceCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                        <% } %>
+
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
+                        </div>
+                      </div>
 
                       <!-- Category 2 -->
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9">
-                            <img src="/public/images/fruits_detailfeature.jpg" alt="Category 2" class="w-full h-full mr-2">
+                            <img src="/public/images/fruits.jpg" alt="Category 2" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Fruits</h2>
-                        </label> -->
+                        </div>
 
                         <!-- Ingredients in Category 2 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < fruitCat.length; i++) { %>
+                            <% var catItem = fruitCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
+                        </div>
+                      </div>
                       <!-- Category 3 -->
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                            <img src="/public/images/different-types-of-meat.jpg" alt="Category 3" class="w-full h-full mr-2">
+                            <img src="/public/images/meat.jpg" alt="Category 3" class="w-full h-full mr-2">
                           </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Meat</h2>
-                        </label> -->
+                          <h2 class="text-lg font-semibold text-mmpr">Meat / Seafood</h2>
+                        </div>
 
                         <!-- Ingredients in Category 3 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < meatCat.length; i++) { %>
+                            <% var catItem = meatCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
+                        </div>
+                      </div>
 
-                      <!-- Category 4 -->
+                    <!-- Category 4 -->
 
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/vegetables.jpg" alt="Category 4" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Vegetables</h2>
-                        </label> -->
+                        </div>
 
                         <!-- Ingredients in Category 4 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < veggieCat.length; i++) { %>
+                            <% var catItem = veggieCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
+
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
+                        </div>
+                      </div>
+                      
                       <!-- Category 5 -->
-<!-- 
+
                       <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/dairy.jpg" alt="Category 5" class="w-full h-full mr-2">
                           </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Dairy Products</h2>
-                        </label> -->
+                          <h2 class="text-lg font-semibold text-mmpr">Dairy</h2>
+                        </div>
 
                         <!-- Ingredients in Category 5 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < dairyCat.length; i++) { %>
+                            <% var catItem = dairyCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
-
+                        </div>
+                      </div>
+              
                       <!-- Category 6 -->
 
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                          <img src="/public/images/seafood.jpg" alt="Category 6" class="w-full h-full mr-2">
+                          <img src="/public/images/nuts-seeds.jpeg" alt="Category 7" class="w-full h-full mr-2">
                           </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Seafood</h2>
-                        </label> -->
+                          <h2 class="text-lg font-semibold text-mmpr">Grains, nuts and seeds</h2>
+                        </div>
 
                         <!-- Ingredients in Category 6 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < nutCat.length; i++) { %>
+                            <% var catItem = nutCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div> -->
-              
+                        </div>
+                      </div> 
+
                       <!-- Category 7 -->
 
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                          <img src="/public/images/Cereals-and-Pulses.jpg" alt="Category 7" class="w-full h-full mr-2">
+                          <img src="/public/images/condiments.jpg" alt="Category 8" class="w-full h-full mr-2">
                           </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Cereal and pulses</h2>
-                        </label> -->
+                          <h2 class="text-lg font-semibold text-mmpr">Condiments, flavoring and oils</h2>
+                        </div>
 
                         <!-- Ingredients in Category 7 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < condCat.length; i++) { %>
+                            <% var catItem = condCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div>  -->
+                        </div>
+                      </div> 
 
+  <!-- Category 8 -->
 
-                      <!-- Category 8 -->
-
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                          <img src="/public/images/sugarprod.jpg" alt="Category 8" class="w-full h-full mr-2">
+                          <img src="/public/images/sugarprod.jpg" alt="Category 9" class="w-full h-full mr-2">
                           </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Sugar and sugar products</h2>
-                        </label> -->
+                          <h2 class="text-lg font-semibold text-mmpr">Sweeteners and Sugar Products</h2>
+                        </div>
 
                         <!-- Ingredients in Category 8 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < sweetCat.length; i++) { %>
+                            <% var catItem = sweetCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div>  -->
-
+                        </div>
+                      </div> 
+                      
                       <!-- Category 9 -->
 
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
-                          <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
-                          <img src="/public/images/nuts-seeds.jpeg" alt="Category 9" class="w-full h-full mr-2">
-                          </div>
-                          <h2 class="text-lg font-semibold text-mmpr">Nuts and oilseeds</h2>
-                        </label> -->
-
-                        <!-- Ingredients in Category 9 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
-                          <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
-
-                          <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div>  -->
-                      
-                      <!-- Category 10 -->
-
-                      <!-- <div x-data="{ open: false }">
-                        <label @click="open = !open" class="cursor-pointer flex items-center">
+                      <div x-data="{ open: false }">
+                        <div @click="open = !open" class="cursor-pointer flex items-center">
                           <div class="rounded-full overflow-hidden w-9 h-9 mr-1">
                           <img src="/public/images/unknown.png" alt="Category 10" class="w-full h-full mr-2">
                           </div>
                           <h2 class="text-lg font-semibold text-mmpr">Other</h2>
-                        </label> -->
+                        </div>
 
-                        <!-- Ingredients in Category 10 -->
-                        <!-- <div x-show="open" class="mt-2 grid grid-cols-2 gap-4"> -->
+                        <!-- Ingredients in Category 9 -->
+                        <div x-show="open" class="mt-2 grid grid-cols-2 gap-4">
                           <!-- Ingredient item -->
-                          <!-- <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 1</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 2</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 3</span>
-                          </label>
-                          <label class="flex items-center">
-                            <input type="checkbox" class="form-checkbox text-blue-500 h-4 w-4">
-                            <span class="ml-2 text-mmpr">Ingredient Name 4</span>
-                          </label> -->
+
+                          <% for (let i=0; i < otherCat.length; i++) { %>
+                            <% var catItem = otherCat[i] %>
+                            <%- include('templates/cat-button', {catItem: catItem}) -%>
+                          <% } %>
 
                           <!-- Add more ingredient items -->
-                        <!-- </div>
-                      </div>     -->
-
+                        </div>
+                      </div>    
 
                       <!-- other categories go here-->
  
-                    <!-- </div>
-                  </div> -->
-
-                  
-                  
-  
-  
-                <!-- close container tag -->
-              </div>
-              
-            <!-- new layout ends here -->
-
-            <!-- <% if (recipes) { %>
-              <h3>Recipes</h3>
-              <% for (let i=0; i < recipes.length; i++) { %>
-      
-                  <div
-                      class="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-                      <a href="#">
-                          <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"><%= recipes[i].name.replace(/&quot;/g, '\"' ) %></h5>
-                      </a>
-                      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Ingredients:
-                          <ul>
-                              <% for (let j=0; j < recipes[i].ingredientArray.length; j++) {%>
-                                  <li>
-                                      <%= recipes[i].ingredientArray[j]%>
-                                  </li>
-                                  <% } %>
-                          </ul>
-                          <p>Servings: <%= recipes[i].servings %>
-                          </p>
-                          <p>Prep Time: <%= times[i] %>
-                          </p>
-                          </p>
-                      <a href="/recipe?id=<%= recipes[i]._id %>&time=<%= times[i] %>"
-                          class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                          View Recipe
-                          <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20"
-                              xmlns="http://www.w3.org/2000/svg">
-                              <path fill-rule="evenodd"
-                                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                                  clip-rule="evenodd"></path>
-                          </svg>
-                      </a>
+                    </div>
                   </div>
-      
-                  <% }} %> -->
+  <!-- close container tag -->
+  <!-- </div> -->
 
-            <!-- new results layout start here -->
-            <% if (recipes) { %>
-              <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
+  <!-- new layout ends here -->
 
-              <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with
+  <!-- new results layout start here -->
+  <% if (recipes) { %>
+    <div
+      class="flex flex-col items-center justify-center bg-gradient-to-tr from-mmpr to-mmth ml-3 mr-3 rounded border border-mmpr">
+
+      <h3 class="text-4xl font-medium text-gray-950 items-center flex justify-center pt-3">Recipes with
 
               
               <% if(current != undefined) { %>
-                <% console.log(current) %>
                 <% for (let i= 0; i < current.length; i++) { %>
                 <%= current[i]%>
                 <% } %>
-              <% } else { %>
+                  <% } else { %>
+                    <% } %>
+
+      </h3>
+      <!--Recipe List-->
+      <div class="min-h-screen flex justify-center items-center py-20">
+        <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
+          <% for (let i=0; i < recipes.length; i++) { %>
+            <% var recipe=recipes[i] %>
+              <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
                 <% } %>
-                
-              </h3>
-              <!--Recipe List-->
-              <div class="min-h-screen flex justify-center items-center py-20">
-                <div class="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
-              <% for (let i=0; i < recipes.length; i++) { %>
-                  <% var recipe = recipes[i] %>
-                  <%- include('templates/recipe-card', {recipe: recipe, time: times[i], image: images[i]}) -%>
-              <% } %>
-          
-            </div>
-          </div>
-          </div>
-          <% } %>
 
-            
-
-            
-                  
-            <!-- new results layout ends here -->
-            <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-
-            <script>
-              function openModal() {
-                document.getElementById("modal").classList.remove("hidden");
-              }
-              function closeModal() {
-                document.getElementById("modal").classList.add("hidden");
-              }
-
-              window.addEventListener('load', function() {
-                var egg = 'egg';
-                var easter = '/easter-egg';
-                var body = document.querySelector('body');
-                
-                replaceTextWithLink(body, egg, easter);
-              });
-
-              function replaceTextWithLink(element, keyword, linkURL) {
-                if (element.nodeType === Node.TEXT_NODE) {
-                  var content = element.textContent;
-                  var regex = new RegExp(keyword, 'gi');
-                  if (regex.test(content)) {
-                    var newContent = content.replace(regex, '<a href="' + linkURL + '">$&</a>');
-                    var span = document.createElement('span');
-                    span.innerHTML = newContent;
-                    element.parentNode.replaceChild(span, element);
-                  }
-                } else {
-                  var childNodes = element.childNodes;
-                  for (var i = 0; i < childNodes.length; i++) {
-                    replaceTextWithLink(childNodes[i], keyword, linkURL);
-                  }
-                }
-              }
+        </div>
+      </div>
+    </div>
+    <% } %>
 
 
 
 
-            </script>
+
+      <!-- new results layout ends here -->
+      <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+
+      <script>
+        var categories = document.getElementsByTagName("button");
+        for (var i = 0; i < categories.length; i++){
+          if(categories[i].getAttribute("type") != "submit"){
+            categories[i].addEventListener("click", function (e) {
+              e.preventDefault();
+            })
+          }
+        }
+        //Adds the ingredients from the categories into the search list.
+        function addIngredient(ingredientName){
+          var item = ingredientName;
+          if (item.length != 0){
+          //Make span element
+          var newSpan = document.createElement("span");
+          newSpan.setAttribute("class", "bg-mmse hover:bg-mmpr text-mmfo py-1 px-2 rounded-full flex items-center");
+
+          //Make input element
+          var newBox = document.createElement("input");
+          newBox.setAttribute("type", "text");
+          newBox.setAttribute("name", "search")
+          newBox.setAttribute("value", item.toLowerCase());
+          newBox.setAttribute("class", "ingredientBtn bg-transparent text-mmfo outline-none pr-1 mr-1")
+          newSpan.addEventListener("click", function () {
+            this.remove();
+          });
+          newSpan.appendChild(newBox);
+
+          //make svg
+          // var newSVG = document.createElement("svg");
+          var newSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          newSVG.setAttribute("class", "w-4 h-4 fill-current text-white cursor-pointer");
+          newSVG.setAttribute("viewBox", "0 0 400 400");
+          newSVG.setAttribute("version", "1.0");
+          newSVG.innerHTML += `<g transform="translate(1173.2 38.831)">
+                            <g transform="matrix(.48018 0 0 .48018 -316.23 468.11)">
+                              <path style="fill:#b7bcc3" d="m-1535.3-915.12-108.68 108.68 144.8 144.74c12.426 12.426 12.426 32.479 0 44.905l-144.8 144.8 108.68 108.68 144.8-144.8c12.426-12.426 32.479-12.426 44.905 0l144.8 144.8 108.68-108.68-144.8-144.8c-12.426-12.426-12.426-32.479 0-44.905l144.8-144.74-108.68-108.68-144.8 144.74c-12.426 12.426-32.479 12.426-44.905 0l-144.8-144.74z"/>
+                            </g>
+                          </g>`;
+          newSpan.appendChild(newSVG);
+          document.getElementById("ingList").appendChild(newSpan);
+
+          document.getElementById("ingredient").value = "";
+          var url = document.getElementById("submitForm");
+          if (url.getAttribute("action").substring(url.getAttribute("action").length - 1) == "=") {
+            url.action += item;
+          } else {
+            url.action += "," + item;
+          }
+        }
+      }
+
+        function useDiet() {
+          $.post('/useDiet', function (data) {
+            console.log(data);
+          });
+          document.getElementById('dietOfProfile').innerHTML = '<h2 class="text-lg font-semibold mb-4">Your Dietary Restrictions</h2><ul><% if (Array.isArray(profileDiet)) { %><% for (var i = 0; i < profileDiet.length; i++) { %><li><%= profileDiet[i] %></li><% } %><% } else { %><li><%= profileDiet %></li><% } %></ul>';
+          document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded z-10" onClick="dontUseDiet()">Turn profile diet off</a>';
+          document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet on</a>';
+        }
+
+        function dontUseDiet() {
+          $.post('/dontUseDiet', function (data) {
+            console.log(data);
+          });
+          document.getElementById('dietOfProfile').innerHTML = '';
+          document.getElementById('button').innerHTML = '<a class="button bg-mmse hover:bg-mmpr text-mmfo py-2 px-4 rounded" onClick="useDiet()">Turn profile diet on</a>';
+          document.getElementById('profileOn').innerHTML = '<br/><a class="bg-mmfo text-mmpr border border-mmpr py-2 px-4 rounded" id="profileOn">Profile diet off</a>';
+        }
+        function openModal() {
+          document.getElementById("modal").classList.remove("hidden");
+        }
+        function closeModal() {
+          document.getElementById("modal").classList.add("hidden");
+        }
+
+        window.addEventListener('load', function () {
+          var egg = 'egg';
+          var easter = '/easter-egg';
+          var body = document.querySelector('body');
+
+          replaceTextWithLink(body, egg, easter);
+        });
+
+        function replaceTextWithLink(element, keyword, linkURL) {
+          if (element.nodeType === Node.TEXT_NODE) {
+            var content = element.textContent;
+            var regex = new RegExp(keyword, 'gi');
+            if (regex.test(content)) {
+              var newContent = content.replace(regex, '<a href="' + linkURL + '">$&</a>');
+              var span = document.createElement('span');
+              span.innerHTML = newContent;
+              element.parentNode.replaceChild(span, element);
+            }
+          } else {
+            var childNodes = element.childNodes;
+            for (var i = 0; i < childNodes.length; i++) {
+              replaceTextWithLink(childNodes[i], keyword, linkURL);
+            }
+          }
+        }
 
 
-<%- include('templates/footer') -%>
+
+
+      </script>
+
+
+      <%- include('templates/footer') -%>
