@@ -1337,7 +1337,7 @@ async function validateAI_Substitute(req, res){
 
  //Don't regenerate if recipe is already loaded
 
- var user = getValidUser(req);
+ var user = await getValidUser(req);
  if(req.session.aiRecipe){
    res.render("ai-frame", {recipe: req.session.aiRecipe, recipeID: req.query.recipeID, notes: req.session.notes, authenticated: req.session.authenticated, restrictions: user.diet || [], id: req.session.aiRecipe.originalRecipeID});
    return false;
